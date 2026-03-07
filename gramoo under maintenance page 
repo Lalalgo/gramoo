@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>gramoo.in — जल्द वापस आएंगे</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #2d6a4f;
+      --green-light: #52b788;
+      --cream: #fdf8f0;
+    }
+    body {
+      background-color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      color: #2c2c2c;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .bg-pattern::before {
+      content: '';
+      position: fixed;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(82,183,136,0.12) 0%, transparent 70%);
+      top: -200px; left: -200px;
+      animation: float1 8s ease-in-out infinite;
+      z-index: 0;
+    }
+    .bg-pattern::after {
+      content: '';
+      position: fixed;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,168,67,0.10) 0%, transparent 70%);
+      bottom: -150px; right: -150px;
+      animation: float2 10s ease-in-out infinite;
+      z-index: 0;
+    }
+    .bg-pattern { position: fixed; inset: 0; z-index: 0; }
+    .leaf {
+      position: fixed;
+      font-size: 1.5rem;
+      opacity: 0.08;
+      animation: drift linear infinite;
+      user-select: none;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes drift {
+      0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.08; }
+      90% { opacity: 0.08; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+    @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,30px)} }
+    @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,-20px)} }
+    .card {
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,0.78);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(82,183,136,0.2);
+      border-radius: 28px;
+      padding: 52px 60px;
+      max-width: 540px;
+      width: 92%;
+      text-align: center;
+      box-shadow: 0 4px 40px rgba(45,106,79,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+      animation: fadeUp 1s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    .logo-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--green), var(--green-light));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 16px rgba(45,106,79,0.3);
+    }
+    .logo-text {
+      font-family: 'Tiro Devanagari Hindi', serif;
+      font-size: 1.8rem;
+      color: var(--green);
+    }
+    .gear-wrap {
+      margin: 0 auto 26px;
+      width: 76px; height: 76px;
+      background: linear-gradient(135deg, #f0faf4, #e8f5ee);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 0 8px rgba(82,183,136,0.08);
+      font-size: 2rem;
+      animation: spin-slow 6s linear infinite;
+    }
+    @keyframes spin-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    h1 {
+      font-family: 'Tiro Devanagari Hindi', serif;
+      font-size: 1.7rem;
+      color: var(--green);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .subtitle {
+      font-size: 0.93rem;
+      color: #666;
+      line-height: 1.8;
+      margin-bottom: 32px;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(45,106,79,0.15);
+    }
+    .divider span {
+      font-size: 0.72rem;
+      color: var(--green-light);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .status-list {
+      list-style: none;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    .status-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: #555;
+      background: rgba(45,106,79,0.04);
+      padding: 10px 14px;
+      border-radius: 10px;
+      border-left: 3px solid var(--green-light);
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green-light);
+      flex-shrink: 0;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100%{opacity:1;transform:scale(1)}
+      50%{opacity:0.4;transform:scale(0.7)}
+    }
+    .contact { font-size: 0.84rem; color: #888; }
+    .contact a {
+      color: var(--green);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px dashed rgba(45,106,79,0.4);
+    }
+    .badge {
+      margin-top: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--green), var(--green-light));
+      color: white;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 6px 18px;
+      border-radius: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  <div class="leaf" style="left:10%;animation-duration:14s;animation-delay:0s;font-size:2rem;">🌿</div>
+  <div class="leaf" style="left:30%;animation-duration:18s;animation-delay:3s;">🍃</div>
+  <div class="leaf" style="left:55%;animation-duration:12s;animation-delay:6s;font-size:1rem;">🌱</div>
+  <div class="leaf" style="left:78%;animation-duration:16s;animation-delay:1s;font-size:2.2rem;">🌿</div>
+
+  <div class="card">
+    <div class="logo-wrap">
+      <div class="logo-icon">🌾</div>
+      <div class="logo-text">gramoo</div>
+    </div>
+
+    <div class="gear-wrap">⚙️</div>
+
+    <h1>रखरखाव जारी है</h1>
+    <p class="subtitle">
+      हम gramoo.in को और बेहतर बनाने के लिए<br/>कुछ जरूरी काम कर रहे हैं।<br/>
+      जल्द ही वापस आएंगे!
+    </p>
+
+    <div class="divider"><span>क्या हो रहा है</span></div>
+
+    <ul class="status-list">
+      <li><span class="dot"></span> नई सुविधाएं जोड़ी जा रही हैं</li>
+      <li><span class="dot"></span> कुछ bugs ठीक किए जा रहे हैं</li>
+      <li><span class="dot"></span> बेहतर अनुभव के लिए अपडेट हो रहा है</li>
+    </ul>
+
+    <div class="badge">🌾 &nbsp;gramoo.in — जल्द मिलते हैं</div>
+  </div>
+</body>
+</html>
