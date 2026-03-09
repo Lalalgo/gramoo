@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gramoo - बिना दलाल — सीधा खरीदो बेचो</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="loading-bar" id="loadingScreen"></div>
+
+<header>
+    <div class="logo">🌾 Gramoo <span>बिना दलाल — सीधा खरीदो बेचो</span></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+        <span class="fb-status fb-online" id="fbStatus">● Live</span>
+        <button class="header-btn" onclick="openForm()">+ लिस्टिंग डालें</button>
+    </div>
+</header>
+
+<div class="location-bar">
+    <div class="location-info">
+        <span style="font-size:18px">📍</span>
+        <div>
+            <div class="location-name" id="locationName">अपनी लोकेशन चुनें</div>
+            <div class="location-sub" id="locationSub">नजदीकी लिस्टिंग देखने के लिए</div>
+        </div>
+    </div>
+    <select class="distance-select" id="distanceSelect" onchange="filterListings()">
+        <option value="25">25 किमी</option>
+        <option value="50">50 किमी</option>
+        <option value="100" selected>100 किमी</option>
+        <option value="9999">सभी जगह</option>
+    </select>
+    <button class="btn-location" onclick="openLocationPopup()">📍 लोकेशन बदलें</button>
+</div>
+
+<div class="hero">
+    <h1>अनाज खरीदें बेचें — सरकारी सूचना देखें</h1>
+    <p>5 किलो हो या 500 क्विंटल — खाद, बीज, सरकारी योजना — सब एक जगह</p>
+    <div class="hero-stats">
+        <div class="stat"><div class="stat-num" id="totalListings">0</div><div class="stat-label">लिस्टिंग्स</div></div>
+        <div class="stat"><div class="stat-num" id="totalDeals">47+</div><div class="stat-label">सफल सौदे</div></div>
+        <div class="stat"><div class="stat-num" id="noticeCount">0</div><div class="stat-label">सूचनाएं</div></div>
+        <div class="stat"><div class="stat-num">मुफ्त</div><div class="stat-label">बिल्कुल फ्री</div></div>
+    </div>
+    <div class="search-bar">
+        <input type="text" placeholder="🔍 गेहूं, खाद, DAP, सरकारी योजना..." id="searchInput" oninput="filterListings()">
+        <select id="grainFilter" onchange="filterListings()">
+            <option value="">सभी</option>
+            <option value="गेहूं">गेहूं</option>
+            <option value="चावल">चावल</option>
+            <option value="दाल">दाल</option>
+            <option value="सरसों">सरसों</option>
+            <option value="मक्का">मक्का</option>
+        </select>
+    </div>
+</div>
+
+<div class="main-tabs">
+    <div class="main-tab active" onclick="switchMainTab('anaaj',this)">🌾 अनाज मंडी</div>
+    <div class="main-tab" onclick="switchMainTab('shop',this)">🏪 कृषि दुकान</div>
+    <div class="main-tab sarkari-tab" onclick="switchMainTab('suchna',this)">📢 सरकारी सूचना पट्ट</div>
+</div>
+
+<div class="sub-tabs" id="subTabsRow">
+    <div class="sub-tab active" onclick="switchSubTab('becho',this)">बेचना है</div>
+    <div class="sub-tab" onclick="switchSubTab('kharido',this)">खरीदना है</div>
+</div>
+
+<div class="post-bar">
+    <p id="postBarText">आपके पास अनाज है? <b>मुफ्त में लिस्टिंग दें!</b></p>
+    <button class="btn-post" id="postBtn" onclick="openForm()">+ लिस्टिंग डालें</button>
+</div>
+
+<div class="main-layout">
+    <div class="listings-col"><div id="listingsContainer"></div></div>
+    <div class="sidebar">
+        <div class="deals-box">
+            <div class="deals-num" id="sideDeals">47+</div>
+            <div class="deals-label">✅ अब तक सफल सौदे</div>
+        </div>
+        <div class="activity-box">
+            <div class="box-title">🔔 हाल की गतिविधि</div>
+            <div id="activityFeed"></div>
+        </div>
+    </div>
+</div>
+
+<!-- LOCATION POPUP -->
+<div class="popup-overlay" id="locationPopup">
+    <div class="popup">
+        <h3>📍 अपनी लोकेशन चुनें</h3>
+        <p>नजदीकी खरीदार, विक्रेता और सरकारी सूचना देखने के लिए</p>
+        <button class="btn-gps" onclick="autoLocation()">📡 GPS से लोकेशन लें</button>
+        <div class="popup-divider">— या मैन्युअल चुनें —</div>
+        <select class="state-select" id="stateSelect">
+            <option value="">राज्य चुनें</option>
+            <option value="UP" data-lat="26.8" data-lng="80.9">उत्तर प्रदेश</option>
+            <option value="Bihar" data-lat="25.0" data-lng="85.3">बिहार</option>
+            <option value="MP" data-lat="22.9" data-lng="78.6">मध्य प्रदेश</option>
+            <option value="Rajasthan" data-lat="27.0" data-lng="74.2">राजस्थान</option>
+            <option value="Haryana" data-lat="29.0" data-lng="76.0">हरियाणा</option>
+            <option value="Punjab" data-lat="31.1" data-lng="75.3">पंजाब</option>
+            <option value="Maharashtra" data-lat="19.7" data-lng="75.7">महाराष्ट्र</option>
+            <option value="Gujarat" data-lat="22.2" data-lng="71.7">गुजरात</option>
+            <option value="WB" data-lat="22.9" data-lng="87.8">पश्चिम बंगाल</option>
+            <option value="Odisha" data-lat="20.9" data-lng="85.0">ओडिशा</option>
+            <option value="Chhattisgarh" data-lat="21.3" data-lng="81.8">छत्तीसगढ़</option>
+            <option value="Jharkhand" data-lat="23.6" data-lng="85.2">झारखंड</option>
+        </select>
+        <button class="btn-manual" onclick="setManualLocation()">✅ इस राज्य की लिस्टिंग देखें</button>
+    </div>
+</div>
+
+<!-- FORM MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeFormOutside(event)">
+    <div class="modal">
+        <button class="btn-close" onclick="closeForm()">✕</button>
+        <h2>लिस्टिंग डालें — बिल्कुल मुफ्त!</h2>
+        <div class="modal-tabs">
+            <button class="modal-tab active" onclick="switchFormTab('anaaj-form',this)">🌾 अनाज</button>
+            <button class="modal-tab" onclick="switchFormTab('shop-form',this)">🏪 दुकान</button>
+            <button class="modal-tab" onclick="switchFormTab('suchna-form',this)">📢 सूचना</button>
+        </div>
+        <div class="success-msg" id="successMsg">✅ सेव हो गया! सभी को दिखेगा।</div>
+        <div class="saving-indicator" id="savingIndicator">⏳ सेव हो रहा है...</div>
+
+        <!-- अनाज Form -->
+        <div class="form-section active" id="anaaj-form">
+            <form onsubmit="addAnaajListing(event)">
+                <div class="fgroup"><label>आपका नाम *</label><input type="text" id="fName" placeholder="जैसे: रमेश कुमार" required></div>
+                <div class="frow">
+                    <div class="fgroup"><label>कौन सा अनाज? *</label>
+                        <select id="fGrain" required><option value="">चुनें</option><option>गेहूं</option><option>चावल</option><option>दाल</option><option>सरसों</option><option>मक्का</option><option>बाजरा</option><option>अन्य</option></select>
+                    </div>
+                    <div class="fgroup"><label>कितना? (KG) *</label><input type="number" id="fQty" placeholder="जैसे: 50" required min="1"></div>
+                </div>
+                <div class="frow">
+                    <div class="fgroup"><label>कीमत (₹/KG) *</label><input type="number" id="fPrice" placeholder="जैसे: 25" required min="1"></div>
+                    <div class="fgroup"><label>आपका क्षेत्र *</label><input type="text" id="fLoc" placeholder="जैसे: अनूपशहर" required></div>
+                </div>
+                <div class="fgroup"><label>WhatsApp नंबर *</label>
+                    <div class="phone-wrap"><span class="phone-prefix">+91</span>
+                        <input class="phone-input-pad" type="tel" id="fWA" placeholder="10 अंक" required maxlength="10" oninput="validatePhone(this,'fWAErr','fWAOk')" onkeypress="return event.charCode>=48&&event.charCode<=57">
+                    </div>
+                    <div class="phone-error" id="fWAErr">❌ सही नंबर डालें</div>
+                    <div class="phone-ok" id="fWAOk">✅ नंबर सही है</div>
+                </div>
+                <div class="fgroup"><label>कोई खास बात?</label><textarea id="fDesc" rows="2" placeholder="जैसे: नया माल, जैविक..."></textarea></div>
+                <button type="submit" class="btn-submit" id="fSubmitBtn">✅ मुफ्त लिस्टिंग जोड़ें</button>
+            </form>
+        </div>
+
+        <!-- दुकान Form -->
+        <div class="form-section" id="shop-form">
+            <form onsubmit="addShopListing(event)">
+                <div class="fgroup"><label>दुकान का नाम *</label><input type="text" id="sName" placeholder="जैसे: रामलाल एग्रो सेंटर" required></div>
+                <div class="frow">
+                    <div class="fgroup"><label>श्रेणी *</label>
+                        <select id="sCategory" required><option value="">चुनें</option><option>खाद</option><option>बीज</option><option>कीटनाशक</option><option>कृषि यंत्र</option><option>सिंचाई उपकरण</option><option>पशु आहार</option><option>अन्य</option></select>
+                    </div>
+                    <div class="fgroup"><label>उत्पाद का नाम *</label><input type="text" id="sProduct" placeholder="जैसे: DAP खाद" required></div>
+                </div>
+                <div class="frow">
+                    <div class="fgroup"><label>कीमत *</label><input type="text" id="sPrice" placeholder="जैसे: ₹1200/बोरी" required></div>
+                    <div class="fgroup"><label>क्षेत्र *</label><input type="text" id="sLoc" placeholder="जैसे: खुर्जा" required></div>
+                </div>
+                <div class="fgroup"><label>WhatsApp *</label>
+                    <div class="phone-wrap"><span class="phone-prefix">+91</span>
+                        <input class="phone-input-pad" type="tel" id="sWA" placeholder="10 अंक" required maxlength="10" oninput="validatePhone(this,'sWAErr','sWAOk')" onkeypress="return event.charCode>=48&&event.charCode<=57">
+                    </div>
+                    <div class="phone-error" id="sWAErr">❌ सही नंबर डालें</div>
+                    <div class="phone-ok" id="sWAOk">✅ नंबर सही है</div>
+                </div>
+                <div class="fgroup"><label>विशेष जानकारी</label><textarea id="sDesc" rows="2" placeholder="जैसे: होम डिलीवरी..."></textarea></div>
+                <button type="submit" class="btn-submit orange" id="sSubmitBtn">✅ दुकान लिस्टिंग जोड़ें</button>
+            </form>
+        </div>
+
+        <!-- सूचना Form -->
+        <div class="form-section" id="suchna-form">
+            <div class="form-note">📢 <b>सरकारी विक्रेता, सहकारी समिति, ग्राम पंचायत, कृषि विभाग के लिए</b></div>
+            <form onsubmit="addSuchnaListing(event)">
+                <div class="fgroup"><label>संस्था / व्यक्ति का नाम *</label><input type="text" id="nName" placeholder="जैसे: IFFCO सहकारी समिति" required></div>
+                <div class="frow">
+                    <div class="fgroup"><label>सूचना का प्रकार *</label>
+                        <select id="nType" required><option value="">चुनें</option><option>खाद उपलब्धता</option><option>बीज वितरण</option><option>कीटनाशक उपलब्धता</option><option>सरकारी योजना</option><option>PM किसान सूची</option><option>फसल बीमा</option><option>यंत्र किराया</option><option>अन्य सूचना</option></select>
+                    </div>
+                    <div class="fgroup"><label>क्षेत्र *</label><input type="text" id="nLoc" placeholder="जैसे: अनूपशहर" required></div>
+                </div>
+                <div class="fgroup"><label>सूचना का शीर्षक *</label><input type="text" id="nTitle" placeholder="जैसे: DAP खाद आ गई है" required></div>
+                <div class="fgroup"><label>पूरी जानकारी *</label><textarea id="nDesc" rows="3" required placeholder="विस्तार से लिखें..."></textarea></div>
+                <div class="frow">
+                    <div class="fgroup"><label>संपर्क नंबर *</label>
+                        <div class="phone-wrap"><span class="phone-prefix">+91</span>
+                            <input class="phone-input-pad" type="tel" id="nPhone" placeholder="10 अंक" required maxlength="10" oninput="validatePhone(this,'nPhErr','nPhOk')" onkeypress="return event.charCode>=48&&event.charCode<=57">
+                        </div>
+                        <div class="phone-error" id="nPhErr">❌ सही नंबर डालें</div>
+                        <div class="phone-ok" id="nPhOk">✅ नंबर सही है</div>
+                    </div>
+                    <div class="fgroup"><label>कब तक valid है?</label><input type="date" id="nValid"></div>
+                </div>
+                <div class="fgroup"><label>क्या यह अत्यावश्यक है?</label>
+                    <select id="nUrgent"><option value="no">नहीं</option><option value="yes">हां — जल्दी देखें!</option></select>
+                </div>
+                <button type="submit" class="btn-submit blue" id="nSubmitBtn">📢 सूचना प्रकाशित करें</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MISSED CALL -->
+<div class="missed-overlay" id="missedOverlay">
+    <div class="missed-box">
+        <div class="missed-icon">📞</div>
+        <h3>नंबर वेरीफाई करें — मुफ्त!</h3>
+        <p>लिस्टिंग सेव हो गई! वेरीफाइड बैज के लिए <b>एक Missed Call</b> दें:</p>
+        <div class="missed-number">📱 8800-GRAMOO</div>
+        <div class="missed-steps">
+            <div>1️⃣ नंबर डायल करें</div>
+            <div>2️⃣ एक बार रिंग — फिर काट दें</div>
+            <div>3️⃣ ✅ वेरीफाइड बैज मिलेगा</div>
+        </div>
+        <button class="btn-missed-done" onclick="closeMissedCall()">✅ Missed Call दे दी</button>
+        <button class="btn-missed-skip" onclick="closeMissedCall()">अभी नहीं</button>
+    </div>
+</div>
+
+<!-- LEGAL OVERLAY -->
+<div class="legal-overlay" id="legalOverlay" onclick="closeLegalOutside(event)">
+    <div class="legal-box">
+        <div class="legal-header"><h3 id="legalTitle"></h3><button class="legal-close" onclick="closeLegal()">✕</button></div>
+        <div class="legal-body" id="legalBody"></div>
+        <div class="legal-footer"><button onclick="closeLegal()">✅ समझ गया — बंद करें</button></div>
+    </div>
+</div>
+
+<!-- REPORT OVERLAY -->
+<div class="legal-overlay" id="reportOverlay" onclick="closeReportOutside(event)">
+    <div class="report-box">
+        <div class="report-header"><h3>🚨 Listing Report करें</h3><button class="legal-close" onclick="closeReport()">✕</button></div>
+        <div class="report-body">
+            <div class="fgroup"><label>क्या समस्या है? *</label>
+                <select id="reportReason"><option value="">कारण चुनें</option><option>फर्जी / धोखाधड़ी वाली listing</option><option>गलत कीमत / जानकारी</option><option>प्रतिबंधित वस्तु</option><option>अश्लील / आपत्तिजनक सामग्री</option><option>नकली विक्रेता</option><option>अन्य</option></select>
+            </div>
+            <div class="fgroup"><label>Listing विवरण</label><input type="text" id="reportListingId" placeholder="listing का नाम, क्षेत्र..."></div>
+            <div class="fgroup"><label>आपका नंबर (वैकल्पिक)</label><input type="tel" id="reportPhone" placeholder="संपर्क के लिए" maxlength="10"></div>
+            <div class="fgroup"><label>अतिरिक्त जानकारी</label><textarea id="reportDesc" rows="3" placeholder="कोई और बात..."></textarea></div>
+            <button class="btn-report-submit" onclick="submitReport()">🚨 Report भेजें</button>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    <b>🌾 Gramoo — पूरे भारत के लिए</b>
+    <p>अनाज मंडी • कृषि दुकान • सरकारी सूचना पट्ट | बिल्कुल मुफ्त</p>
+    <hr class="footer-divider">
+    <p style="font-size:12px;opacity:0.85;margin-bottom:4px;">Gramoo केवल खरीदार और विक्रेता को जोड़ने वाला प्लेटफॉर्म है।</p>
+    <div class="footer-links">
+        <span class="footer-link" onclick="openLegal('terms')">📄 Terms &amp; Conditions</span>
+        <span class="footer-link" onclick="openLegal('privacy')">🔒 Privacy Policy</span>
+        <span class="footer-link" onclick="openLegal('disclaimer')">⚠️ Disclaimer</span>
+        <span class="footer-link report" onclick="openReport()">🚨 Report Listing</span>
+    </div>
+    <p style="margin-top:6px;opacity:0.45;font-size:11px;">© 2026 Gramoo | gramoo.in | सूचनाओं की पुष्टि संबंधित विभाग से करें।</p>
+</footer>
+
+<script src="legal.js"></script>
+<script type="module" src="gramoo.js"></script>
+</body>
+</html>
