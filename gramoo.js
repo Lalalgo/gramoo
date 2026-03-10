@@ -523,7 +523,15 @@ async function googleLogin() {
     try {
         await signInWithPopup(auth, new GoogleAuthProvider());
     } catch(e) {
-        if (e.code !== "auth/popup-closed-by-user") alert("Login failed: " + e.message);
+        // In errors ko quietly ignore karo — user ne popup band kiya
+        const ignore = [
+            "auth/popup-closed-by-user",
+            "auth/cancelled-popup-request",
+            "auth/user-cancelled"
+        ];
+        if (!ignore.includes(e.code)) {
+            alert("Login failed: " + e.message);
+        }
     }
 }
 
