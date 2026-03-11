@@ -4,41 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gramoo - बिना दलाल — सीधा खरीदो बेचो</title>
-    <meta name="description" content="Gramoo भारत का किसान मार्केटप्लेस है जहाँ किसान सीधे अनाज खरीद और बेच सकते हैं। गेहूं, चावल, दाल, सरसों और कृषि सामान की खरीद बिक्री करें।">
-    <meta name="keywords" content="किसान मार्केट, अनाज खरीद बिक्री, गेहूं बेचें, दाल खरीदें, किसान बाजार, agriculture marketplace india, grain marketplace">
-  <meta name="robots" content="index, follow">
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-S9HNMVR99Z"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-S9HNMVR99Z');
-    </script>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .auth-btn { display:flex; align-items:center; gap:6px; background:white; color:#2e7d32; border:none; padding:7px 14px; border-radius:20px; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.2s; }
-        .auth-btn:hover { background:#f1f8e9; }
-        .user-info { display:none; align-items:center; gap:8px; }
-        .user-photo { width:30px; height:30px; border-radius:50%; border:2px solid white; display:none; }
-        .user-name { color:white; font-size:13px; font-weight:600; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .btn-my-listings { background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.5); color:white; padding:5px 12px; border-radius:16px; font-size:12px; cursor:pointer; font-weight:600; }
-        .btn-my-listings:hover { background:rgba(255,255,255,0.3); }
-        .btn-logout-small { background:none; border:none; color:rgba(255,255,255,0.7); font-size:18px; cursor:pointer; padding:2px 4px; }
-        .btn-logout-small:hover { color:white; }
-        .my-listings-panel { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; align-items:flex-end; justify-content:center; }
-        .my-listings-panel.active { display:flex; }
-        .my-listings-box { background:white; border-radius:20px 20px 0 0; width:100%; max-width:600px; max-height:70vh; overflow-y:auto; padding:20px; }
-        .my-listings-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-        .my-listings-header h3 { font-size:16px; color:#2e7d32; }
-        .btn-close-panel { background:#f5f5f5; border:none; width:30px; height:30px; border-radius:50%; font-size:16px; cursor:pointer; }
-        .my-listing-item { display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid #e8f5e9; border-radius:10px; margin-bottom:8px; }
-        .my-listing-title { font-weight:700; font-size:14px; }
-        .my-listing-meta { font-size:12px; color:#888; margin-top:2px; }
-        .btn-del-listing { background:#ffebee; color:#c62828; border:1px solid #ffcdd2; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; white-space:nowrap; }
-        .btn-edit-listing { background:#e3f2fd; color:#1565c0; border:1px solid #bbdefb; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; }
-        .tag-owner { background:#e8f5e9; color:#2e7d32; border:1px solid #c8e6c9; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
-    </style>
 </head>
 <body>
 
@@ -48,29 +14,9 @@
     <div class="logo">🌾 Gramoo <span>बिना दलाल — सीधा खरीदो बेचो</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
         <span class="fb-status fb-online" id="fbStatus">● Live</span>
-        <!-- Login Button -->
-        <button class="auth-btn" id="authBtn">🔐 Login</button>
-        <!-- User Info (login ke baad dikhega) -->
-        <div class="user-info" id="userInfo">
-            <img class="user-photo" id="userPhoto" src="" alt="">
-            <span class="user-name" id="userName"></span>
-            <button class="btn-my-listings" id="btnMyListings">📋 मेरी Listings</button>
-            <button class="btn-logout-small" id="btnLogout" title="लॉगआउट">✕</button>
-        </div>
         <button class="header-btn" onclick="openForm()">+ लिस्टिंग डालें</button>
     </div>
 </header>
-
-<!-- MY LISTINGS PANEL -->
-<div class="my-listings-panel" id="myListingsPanel">
-    <div class="my-listings-box">
-        <div class="my-listings-header">
-            <h3>📋 मेरी Listings</h3>
-            <button class="btn-close-panel" id="btnCloseMyListings">✕</button>
-        </div>
-        <div id="myListingsBody"></div>
-    </div>
-</div>
 
 <div class="location-bar">
     <div class="location-info">
@@ -91,22 +37,13 @@
 
 <div class="hero">
     <h1>अनाज खरीदें बेचें — सरकारी सूचना देखें</h1>
-    <p>5 किलो हो या 500 क्विंटल — खाद, बीज, अनाज — सब एक जगह</p>
+    <p>5 किलो हो या 500 क्विंटल — खाद, बीज, सरकारी योजना — सब एक जगह</p>
     <div class="hero-stats">
         <div class="stat"><div class="stat-num" id="totalListings">0</div><div class="stat-label">लिस्टिंग्स</div></div>
         <div class="stat"><div class="stat-num" id="totalDeals">47+</div><div class="stat-label">सफल सौदे</div></div>
         <div class="stat"><div class="stat-num" id="noticeCount">0</div><div class="stat-label">सूचनाएं</div></div>
         <div class="stat"><div class="stat-num">मुफ्त</div><div class="stat-label">बिल्कुल फ्री</div></div>
     </div>
-    <section style="padding:20px;text-align:center">
-        <h2>किसानों के लिए ऑनलाइन अनाज मंडी</h2>
-
-        <p>
-        Gramoo एक डिजिटल प्लेटफॉर्म है जहाँ किसान और व्यापारी सीधे अनाज खरीद और बेच सकते हैं।
-        यहाँ गेहूं, चावल, दाल, सरसों और अन्य फसलों की लिस्टिंग मुफ्त में डाली जा सकती है।
-        </p>
-    </section>
-</div>
     <div class="search-bar">
         <input type="text" placeholder="🔍 गेहूं, खाद, DAP, सरकारी योजना..." id="searchInput" oninput="filterListings()">
         <select id="grainFilter" onchange="filterListings()">
@@ -313,6 +250,29 @@
             <button class="btn-report-submit" onclick="submitReport()">🚨 Report भेजें</button>
         </div>
     </div>
+</div>
+
+
+<!-- FEEDBACK SECTION -->
+<div class="feedback-section">
+    <h3>💬 आपका अनुभव कैसा रहा? Feedback दें!</h3>
+    <div class="feedback-form-box" id="fbFormBox">
+        <div class="fb-stars" id="fbStars">
+            <span data-s="1">⭐</span>
+            <span data-s="2">⭐</span>
+            <span data-s="3">⭐</span>
+            <span data-s="4">⭐</span>
+            <span data-s="5">⭐</span>
+        </div>
+        <p class="fb-label" id="fbLabel">रेटिंग चुनें ⬆️</p>
+        <textarea class="fb-textarea" id="fbText" rows="3" placeholder="आपका अनुभव लिखें — अच्छा हो या बुरा, हमें जानना है..."></textarea>
+        <div class="fb-row">
+            <input type="text" id="fbName" placeholder="आपका नाम (वैकल्पिक)">
+            <input type="text" id="fbLoc" placeholder="आपका क्षेत्र">
+        </div>
+        <button class="btn-fb" onclick="submitFeedback()">📨 Feedback भेजें</button>
+    </div>
+    <div class="fb-done" id="fbDone">✅ धन्यवाद! आपका Feedback मिल गया। 🙏</div>
 </div>
 
 <!-- FOOTER -->

@@ -1,14 +1,13 @@
 // ════════════════════════════════════════════════════════
 // GRAMOO — gramoo.js  (ES Module)
-// v8 — Google Login + My Listings + Verified Badge
 // ════════════════════════════════════════════════════════
 // SECTIONS:
-//  1.  Firebase Init + Auth
+//  1.  Firebase Init
 //  2.  Meta (icons/colors)
 //  3.  Sample Data
 //  4.  Global State (G)
 //  5.  DOM Cache
-//  6.  Helpers
+//  6.  Helpers (getDist, timeAgo)
 //  7.  Phone Encrypt/Decrypt
 //  8.  Spam Control
 //  9.  Render Functions
@@ -18,21 +17,16 @@
 //  13. Form Open/Close
 //  14. Location
 //  15. Phone Validation
-//  16. Missed Call (disabled)
+//  16. Missed Call
 //  17. Form Submit
-//  18. Auth UI (login/logout/profile)
-//  19. My Listings Panel
-//  20. bindEvents
-//  21. Firebase Listeners
-//  22. Init
+//  18. Event Listeners (Event Delegation — no inline onclick)
+//  19. Firebase Listeners
+//  20. Init
 // ════════════════════════════════════════════════════════
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy,
-         serverTimestamp, doc, updateDoc, deleteDoc, where, getDocs }
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, doc, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // ── 1. Firebase Init ─────────────────────────────────────
 const firebaseConfig = {
@@ -43,9 +37,8 @@ const firebaseConfig = {
     messagingSenderId: "527489942630",
     appId:             "1:527489942630:web:08bc4f70cb17185ee199a7"
 };
-const app  = initializeApp(firebaseConfig);
-const db   = getFirestore(app);
-const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
 
 // ── 2. Meta ──────────────────────────────────────────────
 const grainMeta = {
@@ -94,78 +87,56 @@ const G = {
     mainTab:"anaaj", subTab:"becho",
     userLat:null, userLng:null, userLocName:"सभी क्षेत्र",
     allSell:[...sampleSell], allBuy:[...sampleBuy],
-    allShop:[...sampleShop], allSuchna:[...sampleSuchna],
-    currentUser: null   // logged in user
+    allShop:[...sampleShop], allSuchna:[...sampleSuchna]
 };
-window._G = G;
+window._G = G; // debug ke liye
 
 // ── 5. DOM Cache ─────────────────────────────────────────
-const DOM = {};
-function initDOM() {
-    DOM.loadingScreen     = document.getElementById("loadingScreen");
-    DOM.fbStatus          = document.getElementById("fbStatus");
-    DOM.locationName      = document.getElementById("locationName");
-    DOM.locationSub       = document.getElementById("locationSub");
-    DOM.distanceSelect    = document.getElementById("distanceSelect");
-    DOM.searchInput       = document.getElementById("searchInput");
-    DOM.grainFilter       = document.getElementById("grainFilter");
-    DOM.totalListings     = document.getElementById("totalListings");
-    DOM.noticeCount       = document.getElementById("noticeCount");
-    DOM.sideDeals         = document.getElementById("sideDeals");
-    DOM.listingsContainer = document.getElementById("listingsContainer");
-    DOM.activityFeed      = document.getElementById("activityFeed");
-    DOM.subTabsRow        = document.getElementById("subTabsRow");
-    DOM.postBarText       = document.getElementById("postBarText");
-    DOM.postBtn           = document.getElementById("postBtn");
-    DOM.modalOverlay      = document.getElementById("modalOverlay");
-    DOM.successMsg        = document.getElementById("successMsg");
-    DOM.savingIndicator   = document.getElementById("savingIndicator");
-    DOM.locationPopup     = document.getElementById("locationPopup");
-    DOM.stateSelect       = document.getElementById("stateSelect");
-    DOM.missedOverlay     = document.getElementById("missedOverlay");
-    DOM.mainTabsRow       = document.querySelector(".main-tabs");
-    DOM.headerBtn         = document.querySelector(".header-btn");
-    DOM.btnLocation       = document.querySelector(".btn-location");
-    DOM.btnGps            = document.querySelector(".btn-gps");
-    DOM.btnManual         = document.querySelector(".btn-manual");
-    DOM.btnClose          = document.querySelector(".btn-close");
-    DOM.modalTabsRow      = document.querySelector(".modal-tabs");
-    DOM.btnMissedDone     = document.querySelector(".btn-missed-done");
-    DOM.btnMissedSkip     = document.querySelector(".btn-missed-skip");
-    // Auth UI
-    DOM.authBtn           = document.getElementById("authBtn");
-    DOM.userInfo          = document.getElementById("userInfo");
-    DOM.userPhoto         = document.getElementById("userPhoto");
-    DOM.userName          = document.getElementById("userName");
-    DOM.btnLogout         = document.getElementById("btnLogout");
-    DOM.btnMyListings     = document.getElementById("btnMyListings");
-    DOM.myListingsPanel   = document.getElementById("myListingsPanel");
-    DOM.myListingsBody    = document.getElementById("myListingsBody");
-    DOM.btnCloseMyListings= document.getElementById("btnCloseMyListings");
+const DOM = {
+    loadingScreen:    () => document.getElementById("loadingScreen"),
+    fbStatus:         () => document.getElementById("fbStatus"),
+    locationName:     () => document.getElementById("locationName"),
+    locationSub:      () => document.getElementById("locationSub"),
+    distanceSelect:   () => document.getElementById("distanceSelect"),
+    searchInput:      () => document.getElementById("searchInput"),
+    totalListings:    () => document.getElementById("totalListings"),
+    noticeCount:      () => document.getElementById("noticeCount"),
+    sideDeals:        () => document.getElementById("sideDeals"),
+    listingsContainer:() => document.getElementById("listingsContainer"),
+    activityFeed:     () => document.getElementById("activityFeed"),
+    subTabsRow:       () => document.getElementById("subTabsRow"),
+    postBarText:      () => document.getElementById("postBarText"),
+    postBtn:          () => document.getElementById("postBtn"),
+    modalOverlay:     () => document.getElementById("modalOverlay"),
+    successMsg:       () => document.getElementById("successMsg"),
+    savingIndicator:  () => document.getElementById("savingIndicator"),
+    locationPopup:    () => document.getElementById("locationPopup"),
+    stateSelect:      () => document.getElementById("stateSelect"),
+    missedOverlay:    () => document.getElementById("missedOverlay"),
     // Forms
-    DOM.fName    = document.getElementById("fName");
-    DOM.fGrain   = document.getElementById("fGrain");
-    DOM.fQty     = document.getElementById("fQty");
-    DOM.fPrice   = document.getElementById("fPrice");
-    DOM.fLoc     = document.getElementById("fLoc");
-    DOM.fWA      = document.getElementById("fWA");
-    DOM.fDesc    = document.getElementById("fDesc");
-    DOM.sName     = document.getElementById("sName");
-    DOM.sCategory = document.getElementById("sCategory");
-    DOM.sProduct  = document.getElementById("sProduct");
-    DOM.sPrice    = document.getElementById("sPrice");
-    DOM.sLoc      = document.getElementById("sLoc");
-    DOM.sWA       = document.getElementById("sWA");
-    DOM.sDesc     = document.getElementById("sDesc");
-    DOM.nName   = document.getElementById("nName");
-    DOM.nType   = document.getElementById("nType");
-    DOM.nLoc    = document.getElementById("nLoc");
-    DOM.nTitle  = document.getElementById("nTitle");
-    DOM.nDesc   = document.getElementById("nDesc");
-    DOM.nPhone  = document.getElementById("nPhone");
-    DOM.nValid  = document.getElementById("nValid");
-    DOM.nUrgent = document.getElementById("nUrgent");
-}
+    fName:  () => document.getElementById("fName"),
+    fGrain: () => document.getElementById("fGrain"),
+    fQty:   () => document.getElementById("fQty"),
+    fPrice: () => document.getElementById("fPrice"),
+    fLoc:   () => document.getElementById("fLoc"),
+    fWA:    () => document.getElementById("fWA"),
+    fDesc:  () => document.getElementById("fDesc"),
+    sName:     () => document.getElementById("sName"),
+    sCategory: () => document.getElementById("sCategory"),
+    sProduct:  () => document.getElementById("sProduct"),
+    sPrice:    () => document.getElementById("sPrice"),
+    sLoc:      () => document.getElementById("sLoc"),
+    sWA:       () => document.getElementById("sWA"),
+    sDesc:     () => document.getElementById("sDesc"),
+    nName:  () => document.getElementById("nName"),
+    nType:  () => document.getElementById("nType"),
+    nLoc:   () => document.getElementById("nLoc"),
+    nTitle: () => document.getElementById("nTitle"),
+    nDesc:  () => document.getElementById("nDesc"),
+    nPhone: () => document.getElementById("nPhone"),
+    nValid: () => document.getElementById("nValid"),
+    nUrgent:() => document.getElementById("nUrgent"),
+};
 
 // ── 6. Helpers ───────────────────────────────────────────
 function getDist(a,b,c,d) {
@@ -218,13 +189,9 @@ function renderGrain(item) {
     const m  = grainMeta[item.grain] || {icon:"🌾",bg:"#f5f5f5"};
     const db = (G.userLat&&item.lat) ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,item.lat,item.lng))} किमी</span>` : "";
     const t  = timeAgo(item.createdAt);
-    const isOwner = G.currentUser && item.uid === G.currentUser.uid;
     const waBtn = item.wa==="SAMPLE"
         ? `<span style="font-size:11px;color:#aaa">नमूना</span>`
         : `<button class="btn-wa" data-action="wa-grain" data-wa="${item.wa}" data-grain="${item.grain}" data-qty="${item.qty}" data-price="${item.price}">💬 WhatsApp</button>`;
-    const ownerBtns = isOwner ? `
-        <button class="btn-edit-listing" data-action="edit-listing" data-col="sell" data-id="${item.id}">✏️ Edit</button>
-        <button class="btn-del-listing"  data-action="del-listing"  data-col="sell" data-id="${item.id}" data-name="${item.grain}">🗑️</button>` : "";
     return `
     <div class="listing-card">
         <div class="grain-icon" style="background:${m.bg}">${m.icon}</div>
@@ -232,7 +199,6 @@ function renderGrain(item) {
             ${item.tag==="naya"    ? '<span class="tag tag-naya">🔥 नया माल</span>'   : ""}
             ${item.tag==="organic" ? '<span class="tag tag-organic">🌿 जैविक</span>' : ""}
             ${item.verified        ? '<span class="tag tag-verified">✅ वेरीफाइड</span>' : ""}
-            ${isOwner              ? '<span class="tag tag-owner">👤 आपकी listing</span>' : ""}
             <div class="card-top">
                 <div class="grain-name">${item.grain}</div>
                 <div class="price-tag">₹${item.price}/KG</div>
@@ -241,7 +207,7 @@ function renderGrain(item) {
             ${item.desc ? `<div class="card-desc">"${item.desc}"</div>` : ""}
             <div class="card-bottom">
                 <div><div class="sname">👤 ${item.name}</div><div class="stime">🕐 ${t}</div></div>
-                <div style="display:flex;gap:6px;align-items:center">${waBtn}${ownerBtns}</div>
+                ${waBtn}
             </div>
         </div>
     </div>`;
@@ -252,19 +218,14 @@ function renderShop(item) {
     const m  = shopMeta[catKey];
     const db = (G.userLat&&item.lat) ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,item.lat,item.lng))} किमी</span>` : "";
     const t  = timeAgo(item.createdAt);
-    const isOwner = G.currentUser && item.uid === G.currentUser.uid;
     const waBtn = item.wa==="SAMPLE"
         ? `<span style="font-size:11px;color:#aaa">नमूना</span>`
         : `<button class="btn-wa" data-action="wa-shop" data-wa="${item.wa}" data-prod="${item.product}">💬 WhatsApp</button>`;
-    const ownerBtns = isOwner ? `
-        <button class="btn-edit-listing" data-action="edit-listing" data-col="shop" data-id="${item.id}">✏️ Edit</button>
-        <button class="btn-del-listing"  data-action="del-listing"  data-col="shop" data-id="${item.id}" data-name="${item.product}">🗑️</button>` : "";
     return `
     <div class="listing-card shop-card">
         <div class="grain-icon" style="background:${m.bg}">${m.icon}</div>
         <div class="card-body">
             <span class="tag tag-shop">🏪 ${item.cat}</span>
-            ${isOwner ? '<span class="tag tag-owner">👤 आपकी listing</span>' : ""}
             <div class="card-top">
                 <div class="grain-name shop">${item.product}</div>
                 <div class="price-tag shop">${item.price}</div>
@@ -273,7 +234,7 @@ function renderShop(item) {
             ${item.desc ? `<div class="card-desc">"${item.desc}"</div>` : ""}
             <div class="card-bottom">
                 <div><div class="sname">🏪 ${item.name}</div><div class="stime">🕐 ${t}</div></div>
-                <div style="display:flex;gap:6px;align-items:center">${waBtn}${ownerBtns}</div>
+                ${waBtn}
             </div>
         </div>
     </div>`;
@@ -286,20 +247,16 @@ function renderSuchna(item) {
     const t  = timeAgo(item.createdAt);
     const cardCls = item.urgent ? "listing-card sarkari-card" : "listing-card notice-card";
     const nmCls   = item.urgent ? "grain-name sarkari" : "grain-name notice";
-    const isOwner = G.currentUser && item.uid === G.currentUser.uid;
     const waBtn = item.phone==="SAMPLE"
         ? `<span style="font-size:11px;color:#aaa">नमूना</span>`
         : `<button class="btn-wa"   data-action="wa-suchna" data-ph="${item.phone}" data-title="${item.title}">💬 WhatsApp</button>
            <button class="btn-call" data-action="call"      data-ph="${item.phone}">📞 कॉल</button>`;
-    const ownerBtns = isOwner ? `
-        <button class="btn-del-listing" data-action="del-listing" data-col="suchna" data-id="${item.id}" data-name="${item.title}">🗑️ हटाएं</button>` : "";
     return `
     <div class="${cardCls}">
         <div class="grain-icon" style="background:${m.bg}">${m.icon}</div>
         <div class="card-body">
             <span class="tag ${item.urgent ? "tag-urgent" : "tag-notice"}">${item.urgent ? "🚨 अत्यावश्यक" : "📢 सरकारी"}</span>
             <span class="tag tag-notice" style="margin-left:4px">${item.type}</span>
-            ${isOwner ? '<span class="tag tag-owner">👤 आपकी listing</span>' : ""}
             <div class="card-top"><div class="${nmCls}">${item.title}</div></div>
             <div class="card-meta">
                 <span>📍 ${item.loc}${db}</span>
@@ -308,7 +265,7 @@ function renderSuchna(item) {
             <div class="card-desc">${item.desc}</div>
             <div class="card-bottom">
                 <div><div class="sname">🏛️ ${item.name}</div><div class="stime">🕐 ${t}</div></div>
-                <div style="display:flex;gap:6px;align-items:center">${waBtn}${ownerBtns}</div>
+                <div>${waBtn}</div>
             </div>
         </div>
     </div>`;
@@ -316,23 +273,21 @@ function renderSuchna(item) {
 
 // ── 10. Filter & Display ─────────────────────────────────
 function filterListings() {
-    const search   = DOM.searchInput.value.toLowerCase();
-    const dist     = parseInt(DOM.distanceSelect.value);
-    const grainVal = DOM.grainFilter ? DOM.grainFilter.value : "";
-    const list = G.mainTab==="suchna" ? G.allSuchna
-               : G.mainTab==="shop"   ? G.allShop
-               : G.subTab==="becho"   ? G.allSell : G.allBuy;
+    const search = DOM.searchInput().value.toLowerCase();
+    const dist   = parseInt(DOM.distanceSelect().value);
+    const list   = G.mainTab==="suchna" ? G.allSuchna
+                 : G.mainTab==="shop"   ? G.allShop
+                 : G.subTab==="becho"   ? G.allSell : G.allBuy;
 
     const filtered = list.filter(item => {
         const hay = JSON.stringify(item).toLowerCase();
         const mS  = !search || hay.includes(search);
-        const mG  = !grainVal || (G.mainTab==="anaaj" && item.grain===grainVal);
         let   mD  = true;
         if (G.userLat && item.lat) mD = getDist(G.userLat,G.userLng,item.lat,item.lng) <= dist;
-        return mS && mG && mD;
+        return mS && mD;
     });
 
-    const c = DOM.listingsContainer;
+    const c = DOM.listingsContainer();
     if (!filtered.length) {
         c.innerHTML = `<div class="no-results"><div>${G.mainTab==="suchna"?"📢":"🌾"}</div><p>कोई लिस्टिंग नहीं मिली</p><p style="font-size:12px;margin-top:6px;">दूरी बढ़ाएं या "सभी जगह" चुनें</p></div>`;
         return;
@@ -345,15 +300,15 @@ function filterListings() {
 
 // ── 11. Stats & Activity ─────────────────────────────────
 function updateStats() {
-    DOM.totalListings.textContent = G.allSell.length + G.allBuy.length + G.allShop.length;
-    DOM.noticeCount.textContent   = G.allSuchna.length;
+    DOM.totalListings().textContent = G.allSell.length + G.allBuy.length + G.allShop.length;
+    DOM.noticeCount().textContent   = G.allSuchna.length;
 }
 function updateActivity() {
     const items = [];
     G.allSell.slice(0,3).forEach(i   => items.push({blue:false, text:`<b>${i.grain||"अनाज"}</b> बेचने की listing — ${i.loc||""}`, time:timeAgo(i.createdAt)}));
     G.allSuchna.slice(0,3).forEach(i => items.push({blue:true,  text:`📢 ${i.title||""}`,                                           time:timeAgo(i.createdAt)}));
     items.sort(()=>Math.random()-0.5);
-    DOM.activityFeed.innerHTML = items.slice(0,6).map(i =>
+    DOM.activityFeed().innerHTML = items.slice(0,6).map(i =>
         `<div class="activity-item"><div class="dot${i.blue?" blue":""}"></div><div><span>${i.text}</span><span class="atime">${i.time}</span></div></div>`
     ).join("") || `<div class="activity-item"><div class="dot"></div><div><span>अभी कोई गतिविधि नहीं</span></div></div>`;
 }
@@ -363,8 +318,8 @@ function switchMainTab(tab, el) {
     G.mainTab = tab;
     document.querySelectorAll(".main-tab").forEach(t => t.classList.remove("active"));
     el.classList.add("active");
-    DOM.subTabsRow.style.display = tab==="anaaj" ? "flex" : "none";
-    const pb = DOM.postBarText, btn = DOM.postBtn;
+    DOM.subTabsRow().style.display = tab==="anaaj" ? "flex" : "none";
+    const pb  = DOM.postBarText(), btn = DOM.postBtn();
     if      (tab==="suchna") { pb.innerHTML='सरकारी सूचना देनी है? <b>मुफ्त में प्रकाशित करें!</b>'; btn.className="btn-post blue"; }
     else if (tab==="shop")   { pb.innerHTML='कृषि उत्पाद बेचते हैं? <b>मुफ्त में दुकान लिस्ट करें!</b>'; btn.className="btn-post"; }
     else                     { pb.innerHTML='आपके पास अनाज है? <b>मुफ्त में लिस्टिंग दें!</b>';           btn.className="btn-post"; }
@@ -385,43 +340,37 @@ function switchFormTab(sec, el) {
 
 // ── 13. Form Open / Close ────────────────────────────────
 function openForm() {
-    // Login check
-    if (!G.currentUser) {
-        if (confirm("लिस्टिंग डालने के लिए Login करना होगा।\nGoogle से Login करें?")) {
-            googleLogin();
-        }
-        return;
-    }
-    DOM.modalOverlay.classList.add("active");
-    DOM.successMsg.style.display      = "none";
-    DOM.savingIndicator.style.display = "none";
+    DOM.modalOverlay().classList.add("active");
+    DOM.successMsg().style.display      = "none";
+    DOM.savingIndicator().style.display = "none";
     const tabs = document.querySelectorAll(".modal-tab");
     if      (G.mainTab==="suchna") switchFormTab("suchna-form", tabs[2]);
     else if (G.mainTab==="shop")   switchFormTab("shop-form",   tabs[1]);
     else                           switchFormTab("anaaj-form",  tabs[0]);
 }
-function closeForm() { DOM.modalOverlay.classList.remove("active"); }
+function closeForm() { DOM.modalOverlay().classList.remove("active"); }
 
 // ── 14. Location ─────────────────────────────────────────
-function openLocationPopup()  { DOM.locationPopup.classList.add("active"); }
-function closeLocationPopup() { DOM.locationPopup.classList.remove("active"); }
+function openLocationPopup()  { DOM.locationPopup().classList.add("active"); }
+function closeLocationPopup() { DOM.locationPopup().classList.remove("active"); }
 
 function autoLocation() {
-    DOM.btnGps.textContent = "📡 लोकेशन मिल रही है..."; DOM.btnGps.disabled = true;
+    const btn = document.querySelector(".btn-gps");
+    btn.textContent = "📡 लोकेशन मिल रही है..."; btn.disabled = true;
     navigator.geolocation.getCurrentPosition(
         p  => { G.userLat=p.coords.latitude; G.userLng=p.coords.longitude; G.userLocName="आपके पास"; updateLocBar(); closeLocationPopup(); filterListings(); },
-        () => { alert("GPS नहीं मिला।"); DOM.btnGps.textContent="📡 GPS से लोकेशन लें"; DOM.btnGps.disabled=false; }
+        () => { alert("GPS नहीं मिला।"); btn.textContent="📡 GPS से लोकेशन लें"; btn.disabled=false; }
     );
 }
 function setManualLocation() {
-    const s=DOM.stateSelect, o=s.options[s.selectedIndex];
+    const s=DOM.stateSelect(), o=s.options[s.selectedIndex];
     if (!o.value) { alert("राज्य चुनें"); return; }
     G.userLat=parseFloat(o.dataset.lat); G.userLng=parseFloat(o.dataset.lng); G.userLocName=o.text;
     updateLocBar(); closeLocationPopup(); filterListings();
 }
 function updateLocBar() {
-    DOM.locationName.textContent = "📍 " + G.userLocName;
-    DOM.locationSub.textContent  = DOM.distanceSelect.value + " किमी के अंदर";
+    DOM.locationName().textContent = "📍 " + G.userLocName;
+    DOM.locationSub().textContent  = DOM.distanceSelect().value + " किमी के अंदर";
 }
 
 // ── 15. Phone Validation ─────────────────────────────────
@@ -434,206 +383,122 @@ function validatePhone(input, errId, okId) {
     err.style.display="block"; ok.style.display="none"; input.classList.remove("input-ok"); input.classList.add("input-error"); return false;
 }
 
-// ── 16. Missed Call — Disabled ───────────────────────────
-function openMissedCall()  { /* Baad mein add karenge */ }
-function closeMissedCall() { DOM.missedOverlay.classList.remove("active"); }
+// ── 16. Missed Call ──────────────────────────────────────
+function openMissedCall()  { DOM.missedOverlay().classList.add("active"); }
+function closeMissedCall() { DOM.missedOverlay().classList.remove("active"); }
 
 // ── 17. Form Submit ──────────────────────────────────────
 function setLoading(btnId, on) {
     const btn = document.getElementById(btnId);
     if (btn) btn.disabled = on;
-    DOM.savingIndicator.style.display = on ? "block" : "none";
+    DOM.savingIndicator().style.display = on ? "block" : "none";
 }
 
 async function addAnaajListing(e) {
     e.preventDefault();
-    if (!validatePhone(DOM.fWA,"fWAErr","fWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
-    const wa = DOM.fWA.value.trim();
+    const inp = DOM.fWA();
+    if (!validatePhone(inp,"fWAErr","fWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
+    const wa = inp.value.trim();
     if (!checkSpam(wa)) return;
     setLoading("fSubmitBtn", true);
     try {
         await addDoc(collection(db,"sell"), {
-            name:  DOM.fName.value,  grain: DOM.fGrain.value,
-            qty:   parseInt(DOM.fQty.value), price: parseInt(DOM.fPrice.value),
-            loc:   DOM.fLoc.value,   wa:    encPhone(wa), desc: DOM.fDesc.value,
-            tag:"naya", verified: true,   // Google login = verified
-            uid:      G.currentUser.uid,
-            userName: G.currentUser.displayName,
+            name: DOM.fName().value, grain: DOM.fGrain().value,
+            qty:  parseInt(DOM.fQty().value), price: parseInt(DOM.fPrice().value),
+            loc:  DOM.fLoc().value, wa: encPhone(wa), desc: DOM.fDesc().value,
+            tag:"naya", verified:false,
             lat: G.userLat||28.40, lng: G.userLng||77.85,
             createdAt: serverTimestamp()
         });
-        DOM.successMsg.style.display = "block";
+        DOM.successMsg().style.display = "block";
         e.target.reset();
-        setTimeout(() => { closeForm(); }, 1500);
+        setTimeout(() => { closeForm(); openMissedCall(); }, 1500);
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("fSubmitBtn", false);
 }
 
 async function addShopListing(e) {
     e.preventDefault();
-    if (!validatePhone(DOM.sWA,"sWAErr","sWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
-    const wa = DOM.sWA.value.trim();
+    const inp = DOM.sWA();
+    if (!validatePhone(inp,"sWAErr","sWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
+    const wa = inp.value.trim();
     if (!checkSpam(wa)) return;
     setLoading("sSubmitBtn", true);
     try {
         await addDoc(collection(db,"shop"), {
-            name: DOM.sName.value, cat: DOM.sCategory.value,
-            product: DOM.sProduct.value, price: DOM.sPrice.value,
-            loc: DOM.sLoc.value, wa: encPhone(wa), desc: DOM.sDesc.value,
-            verified: true,
-            uid:      G.currentUser.uid,
-            userName: G.currentUser.displayName,
+            name: DOM.sName().value, cat: DOM.sCategory().value,
+            product: DOM.sProduct().value, price: DOM.sPrice().value,
+            loc: DOM.sLoc().value, wa: encPhone(wa), desc: DOM.sDesc().value,
             lat: G.userLat||28.40, lng: G.userLng||77.85,
             createdAt: serverTimestamp()
         });
-        DOM.successMsg.style.display = "block";
+        DOM.successMsg().style.display = "block";
         e.target.reset();
-        setTimeout(() => { closeForm(); switchMainTab("shop", document.querySelectorAll(".main-tab")[1]); }, 1500);
+        setTimeout(() => { closeForm(); switchMainTab("shop", document.querySelectorAll(".main-tab")[1]); openMissedCall(); }, 1500);
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("sSubmitBtn", false);
 }
 
 async function addSuchnaListing(e) {
     e.preventDefault();
-    if (!validatePhone(DOM.nPhone,"nPhErr","nPhOk")) { alert("कृपया सही संपर्क नंबर डालें"); return; }
-    const ph = DOM.nPhone.value.trim();
+    const inp = DOM.nPhone();
+    if (!validatePhone(inp,"nPhErr","nPhOk")) { alert("कृपया सही संपर्क नंबर डालें"); return; }
+    const ph = inp.value.trim();
     if (!checkSpam(ph)) return;
     setLoading("nSubmitBtn", true);
     try {
         await addDoc(collection(db,"suchna"), {
-            name: DOM.nName.value, type: DOM.nType.value,
-            title: DOM.nTitle.value, desc: DOM.nDesc.value,
-            loc: DOM.nLoc.value, phone: encPhone(ph),
-            valid: DOM.nValid.value||"", urgent: DOM.nUrgent.value==="yes",
-            verified: true,
-            uid:      G.currentUser.uid,
-            userName: G.currentUser.displayName,
+            name: DOM.nName().value, type: DOM.nType().value,
+            title: DOM.nTitle().value, desc: DOM.nDesc().value,
+            loc: DOM.nLoc().value, phone: encPhone(ph),
+            valid: DOM.nValid().value||"", urgent: DOM.nUrgent().value==="yes",
             lat: G.userLat||28.40, lng: G.userLng||77.85,
             createdAt: serverTimestamp()
         });
-        DOM.successMsg.style.display = "block";
+        DOM.successMsg().style.display = "block";
         e.target.reset();
         setTimeout(() => { closeForm(); switchMainTab("suchna", document.querySelectorAll(".main-tab")[2]); }, 2000);
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("nSubmitBtn", false);
 }
 
-// ── 18. Auth UI ───────────────────────────────────────────
-async function googleLogin() {
-    try {
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        await signInWithPopup(auth, provider);
-    } catch(e) {
-        const ignore = [
-            "auth/popup-closed-by-user",
-            "auth/cancelled-popup-request",
-            "auth/user-cancelled"
-        ];
-        if (!ignore.includes(e.code)) {
-            alert("Login failed: " + e.message);
-        }
-    }
-}
-
-function updateAuthUI(user) {
-    G.currentUser = user;
-    if (user) {
-        // Logged in
-        DOM.authBtn.style.display    = "none";
-        DOM.userInfo.style.display   = "flex";
-        DOM.userPhoto.src            = user.photoURL || "";
-        DOM.userPhoto.style.display  = user.photoURL ? "block" : "none";
-        DOM.userName.textContent     = user.displayName || user.email;
-    } else {
-        // Logged out
-        DOM.authBtn.style.display    = "flex";
-        DOM.userInfo.style.display   = "none";
-    }
-    filterListings(); // re-render to show/hide owner buttons
-}
-
-// ── 19. My Listings Panel ────────────────────────────────
-async function openMyListings() {
-    if (!G.currentUser) return;
-    DOM.myListingsPanel.classList.add("active");
-    DOM.myListingsBody.innerHTML = "<p style='padding:16px;color:#888'>लोड हो रहा है...</p>";
-
-    const uid = G.currentUser.uid;
-    const results = [];
-
-    for (const col of ["sell","buy","shop","suchna"]) {
-        const q = query(collection(db, col), where("uid","==",uid));
-        const snap = await getDocs(q);
-        snap.docs.forEach(d => results.push({id:d.id, col, ...d.data()}));
-    }
-
-    if (!results.length) {
-        DOM.myListingsBody.innerHTML = "<p style='padding:16px;color:#888'>अभी कोई listing नहीं है।</p>";
-        return;
-    }
-
-    DOM.myListingsBody.innerHTML = results.map(item => `
-        <div class="my-listing-item">
-            <div class="my-listing-info">
-                <div class="my-listing-title">${item.grain||item.product||item.title||"—"}</div>
-                <div class="my-listing-meta">${item.loc||""} • ${item.col}</div>
-            </div>
-            <div class="my-listing-btns">
-                <button class="btn-del-listing" data-action="del-listing"
-                    data-col="${item.col}" data-id="${item.id}"
-                    data-name="${item.grain||item.product||item.title||'listing'}">🗑️ हटाएं</button>
-            </div>
-        </div>
-    `).join("");
-}
-
-function closeMyListings() { DOM.myListingsPanel.classList.remove("active"); }
-
-// ── 20. bindEvents ───────────────────────────────────────
+// ── 18. Event Listeners (Event Delegation) ───────────────
 function bindEvents() {
 
-    // Auth buttons
-    DOM.authBtn.addEventListener("click", googleLogin);
-    DOM.btnLogout.addEventListener("click", () => signOut(auth));
-    DOM.btnMyListings.addEventListener("click", openMyListings);
-    DOM.btnCloseMyListings.addEventListener("click", closeMyListings);
+    // Header + Post bar — form open
+    document.querySelector(".header-btn").addEventListener("click", openForm);
+    DOM.postBtn().addEventListener("click", openForm);
 
-    // Header + Post bar
-    DOM.headerBtn.addEventListener("click", openForm);
-    DOM.postBtn.addEventListener("click", openForm);
-
-    // Main tabs
-    DOM.mainTabsRow.addEventListener("click", e => {
+    // Main tabs — event delegation
+    document.querySelector(".main-tabs").addEventListener("click", e => {
         const tab = e.target.closest(".main-tab");
-        if (tab) switchMainTab(tab.dataset.tab || tab.getAttribute("onclick")?.match(/'(\w+)'/)?.[1], tab);
+        if (tab) switchMainTab(tab.dataset.tab, tab);
     });
 
-    // Sub tabs
-    DOM.subTabsRow.addEventListener("click", e => {
+    // Sub tabs — event delegation
+    DOM.subTabsRow().addEventListener("click", e => {
         const tab = e.target.closest(".sub-tab");
-        if (tab) switchSubTab(tab.dataset.tab || tab.getAttribute("onclick")?.match(/'(\w+)'/)?.[1], tab);
+        if (tab) switchSubTab(tab.dataset.tab, tab);
     });
 
-    // Search, filters
-    DOM.searchInput.addEventListener("input", filterListings);
-    DOM.distanceSelect.addEventListener("change", filterListings);
-    if (DOM.grainFilter) DOM.grainFilter.addEventListener("change", filterListings);
+    // Search & distance
+    DOM.searchInput().addEventListener("input", filterListings);
+    DOM.distanceSelect().addEventListener("change", filterListings);
 
-    // Location
-    DOM.btnLocation.addEventListener("click", openLocationPopup);
-    DOM.btnGps.addEventListener("click", autoLocation);
-    DOM.btnManual.addEventListener("click", setManualLocation);
-    DOM.locationPopup.addEventListener("click", e => { if(e.target===DOM.locationPopup) closeLocationPopup(); });
+    // Location bar
+    document.querySelector(".btn-location").addEventListener("click", openLocationPopup);
+    document.querySelector(".btn-gps").addEventListener("click", autoLocation);
+    document.querySelector(".btn-manual").addEventListener("click", setManualLocation);
+    DOM.locationPopup().addEventListener("click", e => { if(e.target===DOM.locationPopup()) closeLocationPopup(); });
 
-    // Form modal
-    DOM.modalOverlay.addEventListener("click", e => { if(e.target===DOM.modalOverlay) closeForm(); });
-    DOM.btnClose.addEventListener("click", closeForm);
+    // Form modal close
+    DOM.modalOverlay().addEventListener("click", e => { if(e.target===DOM.modalOverlay()) closeForm(); });
+    document.querySelector(".btn-close").addEventListener("click", closeForm);
 
-    // Form tabs
-    DOM.modalTabsRow.addEventListener("click", e => {
+    // Form tab buttons — event delegation
+    document.querySelector(".modal-tabs").addEventListener("click", e => {
         const tab = e.target.closest(".modal-tab");
-        if (tab) switchFormTab(tab.dataset.form || tab.getAttribute("onclick")?.match(/'([^']+)'/)?.[1], tab);
+        if (tab) switchFormTab(tab.dataset.form, tab);
     });
 
     // Form submits
@@ -641,21 +506,16 @@ function bindEvents() {
     document.getElementById("shop-form").querySelector("form").addEventListener("submit", addShopListing);
     document.getElementById("suchna-form").querySelector("form").addEventListener("submit", addSuchnaListing);
 
-    // Phone validation
-    DOM.modalOverlay.addEventListener("input", e => {
+    // Phone validation — event delegation on modal
+    DOM.modalOverlay().addEventListener("input", e => {
         const inp = e.target;
         if      (inp.id==="fWA")    validatePhone(inp,"fWAErr","fWAOk");
         else if (inp.id==="sWA")    validatePhone(inp,"sWAErr","sWAOk");
         else if (inp.id==="nPhone") validatePhone(inp,"nPhErr","nPhOk");
     });
-    DOM.modalOverlay.addEventListener("keypress", e => {
-        if (["fWA","sWA","nPhone"].includes(e.target.id)) {
-            if (e.charCode < 48 || e.charCode > 57) e.preventDefault();
-        }
-    });
 
-    // Card buttons — edit/delete + WhatsApp/Call
-    DOM.listingsContainer.addEventListener("click", async e => {
+    // Card buttons — EVENT DELEGATION (no inline onclick!)
+    DOM.listingsContainer().addEventListener("click", e => {
         const btn = e.target.closest("button[data-action]");
         if (!btn) return;
         const action = btn.dataset.action;
@@ -680,34 +540,14 @@ function bindEvents() {
             if (ph==="SAMPLE") return;
             window.open("tel:"+decPhone(ph));
         }
-        else if (action==="del-listing") {
-            const {col, id, name} = btn.dataset;
-            if (!confirm(`"${name}" delete karna chahte hain?\nYeh wapas nahi aayegi!`)) return;
-            try {
-                await deleteDoc(doc(db, col, id));
-                closeMyListings();
-            } catch(err) { alert("Error: " + err.message); }
-        }
     });
 
-    // My listings panel ke andar bhi delete kaam kare
-    DOM.myListingsPanel && DOM.myListingsPanel.addEventListener("click", async e => {
-        const btn = e.target.closest("button[data-action='del-listing']");
-        if (!btn) return;
-        const {col, id, name} = btn.dataset;
-        if (!confirm(`"${name}" delete karna chahte hain?`)) return;
-        try {
-            await deleteDoc(doc(db, col, id));
-            openMyListings(); // refresh
-        } catch(err) { alert("Error: " + err.message); }
-    });
-
-    // Missed call buttons
-    DOM.btnMissedDone.addEventListener("click", closeMissedCall);
-    DOM.btnMissedSkip.addEventListener("click", closeMissedCall);
+    // Missed call
+    document.querySelector(".btn-missed-done").addEventListener("click", closeMissedCall);
+    document.querySelector(".btn-missed-skip").addEventListener("click", closeMissedCall);
 }
 
-// ── 21. Firebase Listeners ───────────────────────────────
+// ── 19. Firebase Listeners ───────────────────────────────
 function startListeners() {
     onSnapshot(query(collection(db,"sell"),   orderBy("createdAt","desc")), snap => {
         const d = snap.docs.map(x=>({id:x.id,...x.data()}));
@@ -731,34 +571,99 @@ function startListeners() {
         const d = snap.docs.map(x=>({id:x.id,...x.data()}));
         G.allSuchna = d.length ? d : sampleSuchna;
         updateStats(); filterListings(); updateActivity();
-        DOM.loadingScreen.classList.add("hide");
-        DOM.fbStatus.className   = "fb-status fb-online";
-        DOM.fbStatus.textContent = "● Live";
+        DOM.loadingScreen().classList.add("hide");
+        DOM.fbStatus().className   = "fb-status fb-online";
+        DOM.fbStatus().textContent = "● Live";
     }, () => {
         G.allSuchna = sampleSuchna;
-        DOM.fbStatus.className   = "fb-status fb-offline";
-        DOM.fbStatus.textContent = "● Offline";
-        DOM.loadingScreen.classList.add("hide");
+        DOM.fbStatus().className   = "fb-status fb-offline";
+        DOM.fbStatus().textContent = "● Offline";
+        DOM.loadingScreen().classList.add("hide");
     });
 
-    setTimeout(() => DOM.loadingScreen.classList.add("hide"), 2000);
+    setTimeout(() => DOM.loadingScreen().classList.add("hide"), 2000);
 }
 
-// ── 22. Auth Listener ────────────────────────────────────
-function startAuthListener() {
-    onAuthStateChanged(auth, user => updateAuthUI(user));
+
+// ── Tab Settings from Firebase ───────────────────────────
+async function loadTabSettings() {
+    try {
+        const snap = await getDoc(doc(db, "settings", "tabs"));
+        if (snap.exists()) {
+            const d = snap.data();
+            const tabs = document.querySelectorAll(".main-tab");
+            // tabs[1] = shop, tabs[2] = suchna
+            if (d.shop === false) {
+                tabs[1].style.display = "none";
+            } else {
+                tabs[1].style.display = "";
+            }
+            if (d.suchna === false) {
+                tabs[2].style.display = "none";
+            } else {
+                tabs[2].style.display = "";
+            }
+        } else {
+            // Default: dono band
+            document.querySelectorAll(".main-tab")[1].style.display = "none";
+            document.querySelectorAll(".main-tab")[2].style.display = "none";
+        }
+    } catch(e) {
+        // Network error — dono hide rakho by default
+        document.querySelectorAll(".main-tab")[1].style.display = "none";
+        document.querySelectorAll(".main-tab")[2].style.display = "none";
+    }
 }
 
-// ── 23. Init ─────────────────────────────────────────────
+// ── Feedback Submit ───────────────────────────────────────
+var G_fbRating = 0;
+
+document.addEventListener("DOMContentLoaded", function() {
+    var stars = document.querySelectorAll("#fbStars span");
+    var labels = ["", "बहुत बुरा 😞", "ठीक नहीं 😕", "ठीक है 😐", "अच्छा 😊", "बहुत बढ़िया 🤩"];
+    stars.forEach(function(star) {
+        star.addEventListener("click", function() {
+            G_fbRating = parseInt(this.dataset.s);
+            stars.forEach(function(s) {
+                s.classList.toggle("active", parseInt(s.dataset.s) <= G_fbRating);
+            });
+            var lbl = document.getElementById("fbLabel");
+            if (lbl) lbl.textContent = labels[G_fbRating] || "";
+        });
+    });
+});
+
+window.submitFeedback = async function() {
+    var text = document.getElementById("fbText").value.trim();
+    var name = document.getElementById("fbName").value.trim();
+    var loc  = document.getElementById("fbLoc").value.trim();
+    if (!G_fbRating) { alert("कृपया रेटिंग दें!"); return; }
+    if (!text) { alert("कृपया अपना अनुभव लिखें!"); return; }
+    try {
+        await addDoc(collection(db, "feedback"), {
+            rating: G_fbRating,
+            text:   text,
+            name:   name || "Anonymous",
+            loc:    loc  || "—",
+            createdAt: serverTimestamp()
+        });
+        document.getElementById("fbFormBox").style.display = "none";
+        document.getElementById("fbDone").style.display = "block";
+    } catch(e) {
+        alert("Error: " + e.message);
+    }
+};
+
+// ── 20. Init ─────────────────────────────────────────────
 function init() {
-    initDOM();
+    loadTabSettings();
     bindEvents();
     updateStats();
     filterListings();
     updateActivity();
     startListeners();
-    startAuthListener();
 
+    // Auto GPS
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             p  => { G.userLat=p.coords.latitude; G.userLng=p.coords.longitude; G.userLocName="आपके पास"; updateLocBar(); filterListings(); },
