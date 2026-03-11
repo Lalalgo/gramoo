@@ -37,7 +37,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
 // ── 1. Firebase Init ─────────────────────────────────────
 const firebaseConfig = {
     apiKey:            "AIzaSyAeeN9ijnSuA3IyV43QQsiEshTrRdEjL0A",
-    authDomain:        "gramoo-44d83.firebaseapp.com",",
+    authDomain:        "gramoo-44d83.firebaseapp.com",
     projectId:         "gramoo-44d83",
     storageBucket:     "gramoo-44d83.firebasestorage.app",
     messagingSenderId: "527489942630",
@@ -521,9 +521,10 @@ async function addSuchnaListing(e) {
 // ── 18. Auth UI ───────────────────────────────────────────
 async function googleLogin() {
     try {
-        await signInWithPopup(auth, new GoogleAuthProvider());
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        await signInWithPopup(auth, provider);
     } catch(e) {
-        // In errors ko quietly ignore karo — user ne popup band kiya
         const ignore = [
             "auth/popup-closed-by-user",
             "auth/cancelled-popup-request",
