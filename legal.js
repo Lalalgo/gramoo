@@ -83,6 +83,3 @@ function submitReport() {
         document.getElementById(id).value = '';
     });
 }
-```
-
----
