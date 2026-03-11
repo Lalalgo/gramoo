@@ -37,7 +37,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
 // ── 1. Firebase Init ─────────────────────────────────────
 const firebaseConfig = {
     apiKey:            "AIzaSyAeeN9ijnSuA3IyV43QQsiEshTrRdEjL0A",
-    authDomain:        "gramoo.in",
+    authDomain:        "gramoo-44d83.firebaseapp.com",",
     projectId:         "gramoo-44d83",
     storageBucket:     "gramoo-44d83.firebasestorage.app",
     messagingSenderId: "527489942630",
