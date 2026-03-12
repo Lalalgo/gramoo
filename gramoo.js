@@ -45,8 +45,6 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
-// Current user
-G.currentUser = null;
 
 // ── 2. Meta ──────────────────────────────────────────────
 const grainMeta = {
@@ -92,6 +90,7 @@ const sampleSuchna = [
 
 // ── 4. Global State ──────────────────────────────────────
 const G = {
+    currentUser: null,
     mainTab:"anaaj", subTab:"becho",
     userLat:null, userLng:null, userLocName:"सभी क्षेत्र",
     allSell:[...sampleSell], allBuy:[...sampleBuy],
