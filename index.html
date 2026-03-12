@@ -93,9 +93,9 @@
             style="background:#1565c0;color:white;border:none;padding:14px 22px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(21,101,192,0.3);">
             🛒 फसल खरीदें
         </button>
-        <button onclick="openForm();switchFormTab('shop-form',document.querySelectorAll('.modal-tab')[1])"
+        <button onclick="switchMainTab('shop', document.querySelectorAll('.main-tab')[1])"
             style="background:#e65100;color:white;border:none;padding:14px 22px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(230,81,0,0.3);">
-            🏪 दुकान जोड़ें
+            🏪 नज़दीकी दुकान
         </button>
     </div>
 
@@ -178,15 +178,6 @@
     <!-- दुकान cards grid -->
     <div id="shopCardsContainer"></div>
 
-    <!-- अपनी दुकान जोड़ें CTA -->
-    <div style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:16px;padding:20px;margin-top:16px;text-align:center;border:2px dashed #1a6b3c;">
-        <div style="font-size:32px;margin-bottom:8px;">🏪</div>
-        <div style="font-size:16px;font-weight:700;color:#1a6b3c;margin-bottom:4px;">क्या आपकी कृषि दुकान है?</div>
-        <div style="font-size:13px;color:#555;margin-bottom:14px;">Gramoo पर मुफ्त में अपनी दुकान जोड़ें — हजारों किसानों तक पहुँचें</div>
-        <a href="shop.html" style="display:inline-block;background:#1a6b3c;color:white;padding:11px 24px;border-radius:20px;font-size:14px;font-weight:700;text-decoration:none;">
-            🚀 अपनी दुकान जोड़ें — मुफ्त
-        </a>
-    </div>
 </div>
 
 <!-- LOCATION POPUP -->
@@ -222,7 +213,6 @@
         <h2>लिस्टिंग डालें — बिल्कुल मुफ्त!</h2>
         <div class="modal-tabs">
             <button class="modal-tab active" onclick="switchFormTab('anaaj-form',this)">🌾 अनाज</button>
-            <button class="modal-tab" onclick="switchFormTab('shop-form',this)">🏪 दुकान</button>
             <button class="modal-tab" onclick="switchFormTab('suchna-form',this)">📢 सूचना</button>
         </div>
         <div class="success-msg" id="successMsg">✅ सेव हो गया! सभी को दिखेगा।</div>
