@@ -6,10 +6,7 @@
     <title>Gramoo - बिना दलाल — सीधा खरीदो बेचो</title>
     <link rel="stylesheet" href="style.css">
 <style>
-    .cat-btn { padding:7px 13px; border:1px solid #c8e6c9; border-radius:20px; background:white; color:#2e7d32; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.2s; }
-    .cat-btn.active { background:#1a6b3c; color:white; border-color:#1a6b3c; }
-    .item-btn { padding:5px 12px; border:1px solid #c8e6c9; border-radius:16px; background:white; color:#555; font-size:12px; cursor:pointer; font-family:inherit; transition:all 0.2s; }
-    .item-btn.active { background:#e8f5e9; color:#1a6b3c; border-color:#1a6b3c; font-weight:700; }
+    .auth-btn { display:flex; align-items:center; gap:6px; background:white; color:#2e7d32; border:none; padding:7px 14px; border-radius:20px; font-size:13px; font-weight:700; cursor:pointer; }
     .auth-btn:hover { background:#f1f8e9; }
     .user-photo { width:30px; height:30px; border-radius:50%; border:2px solid white; }
     .user-name { color:white; font-size:13px; font-weight:600; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -96,9 +93,9 @@
             style="background:#1565c0;color:white;border:none;padding:14px 22px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(21,101,192,0.3);">
             🛒 फसल खरीदें
         </button>
-        <button onclick="switchMainTab('shop', document.querySelectorAll('.main-tab')[1])"
+        <button onclick="openForm();switchFormTab('shop-form',document.querySelectorAll('.modal-tab')[1])"
             style="background:#e65100;color:white;border:none;padding:14px 22px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(230,81,0,0.3);">
-            🏪 नज़दीकी दुकान
+            🏪 दुकान जोड़ें
         </button>
     </div>
 
@@ -130,7 +127,7 @@
 
 <div class="main-tabs">
     <div class="main-tab active" onclick="switchMainTab('anaaj',this)">🌾 अनाज मंडी</div>
-    <div class="main-tab" onclick="switchMainTab('shop',this)">🏪 नज़दीकी किसान दुकान</div>
+    <div class="main-tab" onclick="switchMainTab('shop',this)">🏪 कृषि दुकान</div>
     <div class="main-tab sarkari-tab" onclick="switchMainTab('suchna',this)">📢 सरकारी सूचना पट्ट</div>
 </div>
 
@@ -144,8 +141,7 @@
     <button class="btn-post" id="postBtn" onclick="openForm()">+ लिस्टिंग डालें</button>
 </div>
 
-<!-- अनाज + सूचना listings -->
-<div class="main-layout" id="mainListingLayout">
+<div class="main-layout">
     <div class="listings-col"><div id="listingsContainer"></div></div>
     <div class="sidebar">
         <div class="deals-box">
@@ -157,46 +153,6 @@
             <div id="activityFeed"></div>
         </div>
     </div>
-</div>
-
-<!-- नज़दीकी किसान दुकान section -->
-<div id="shopSection" style="display:none; padding:12px; max-width:1100px; margin:0 auto;">
-
-    <!-- Search Box -->
-    <div style="background:white;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid #1a6b3c;">
-        <div style="font-size:15px;font-weight:700;color:#1a6b3c;margin-bottom:12px;">🔍 नज़दीकी दुकान खोजें</div>
-
-        <!-- Category buttons -->
-        <div style="margin-bottom:10px;">
-            <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px;">श्रेणी चुनें</label>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="catBtnRow">
-                <button class="cat-btn active" data-cat="">🌾 सभी</button>
-                <button class="cat-btn" data-cat="खाद">🌿 खाद</button>
-                <button class="cat-btn" data-cat="बीज">🌱 बीज</button>
-                <button class="cat-btn" data-cat="कीटनाशक">💊 कीटनाशक</button>
-                <button class="cat-btn" data-cat="यंत्र">🚜 यंत्र</button>
-                <button class="cat-btn" data-cat="पशु आहार">🐄 पशु आहार</button>
-            </div>
-        </div>
-
-        <!-- Item list — category ke hisaab se -->
-        <div id="itemListRow" style="display:none;margin-bottom:10px;">
-            <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px;">कौन सा item चाहिए? <span style="font-weight:400;color:#aaa">(optional — न चुनें तो सभी दिखेंगे)</span></label>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="itemBtnRow"></div>
-        </div>
-
-        <!-- Text search -->
-        <input type="text" id="shopSearchText" placeholder="या नाम/ब्रांड से खोजें..."
-            style="width:100%;padding:9px 14px;border:1px solid #ddd;border-radius:10px;font-size:13px;outline:none;margin-bottom:10px;">
-
-        <button onclick="runShopSearch()"
-            style="width:100%;padding:12px;background:#1a6b3c;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
-            🔍 दुकान खोजें
-        </button>
-    </div>
-
-    <!-- Results -->
-    <div id="shopCardsContainer"></div>
 </div>
 
 <!-- LOCATION POPUP -->
@@ -232,6 +188,7 @@
         <h2>लिस्टिंग डालें — बिल्कुल मुफ्त!</h2>
         <div class="modal-tabs">
             <button class="modal-tab active" onclick="switchFormTab('anaaj-form',this)">🌾 अनाज</button>
+            <button class="modal-tab" onclick="switchFormTab('shop-form',this)">🏪 दुकान</button>
             <button class="modal-tab" onclick="switchFormTab('suchna-form',this)">📢 सूचना</button>
         </div>
         <div class="success-msg" id="successMsg">✅ सेव हो गया! सभी को दिखेगा।</div>
@@ -378,6 +335,18 @@
         <button class="btn-fb" onclick="submitFeedback()">📨 सुझाव भेजें</button>
     </div>
     <div class="fb-done" id="fbDone">✅ धन्यवाद! आपका सुझाव मिल गया। हम जरूर विचार करेंगे। 🙏</div>
+</div>
+
+<!-- DUKAN REGISTER BANNER -->
+<div style="background:linear-gradient(135deg,#1b5e20,#2e7d32);padding:24px 20px;text-align:center;margin-top:8px;">
+    <div style="font-size:28px;margin-bottom:8px;">🏪</div>
+    <div style="font-size:17px;font-weight:800;color:white;margin-bottom:6px;">अपनी दुकान Gramoo पर Register करें</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.85);margin-bottom:16px;line-height:1.6;">
+        खाद • बीज • कीटनाशक • कृषि यंत्र • पशु आहार<br>हजारों किसानों तक पहुँचें — बिल्कुल मुफ्त
+    </div>
+    <a href="shop.html" style="display:inline-block;background:white;color:#1b5e20;padding:12px 28px;border-radius:24px;font-size:15px;font-weight:800;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+        🚀 अभी Register करें →
+    </a>
 </div>
 
 <!-- FOOTER -->
