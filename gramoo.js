@@ -632,70 +632,86 @@ async function addSuchnaListing(e) {
 function bindEvents() {
 
     // Auth buttons
-    const authBtn = document.getElementById("authBtn");
-    const btnLogout = document.getElementById("btnLogout");
-    const btnMyListings = document.getElementById("btnMyListings");
+    const authBtn            = document.getElementById("authBtn");
+    const btnLogout          = document.getElementById("btnLogout");
+    const btnMyListings      = document.getElementById("btnMyListings");
     const btnCloseMyListings = document.getElementById("btnCloseMyListings");
-    if (authBtn) authBtn.addEventListener("click", googleLogin);
-    if (btnLogout) btnLogout.addEventListener("click", () => signOut(auth));
-    if (btnMyListings) btnMyListings.addEventListener("click", openMyListings);
+    if (authBtn)            authBtn.addEventListener("click", googleLogin);
+    if (btnLogout)          btnLogout.addEventListener("click", () => signOut(auth));
+    if (btnMyListings)      btnMyListings.addEventListener("click", openMyListings);
     if (btnCloseMyListings) btnCloseMyListings.addEventListener("click", closeMyListings);
 
-    // Header + Post bar — form open
-    document.querySelector(".header-btn").addEventListener("click", openForm);
-    DOM.postBtn().addEventListener("click", openForm);
+    // Header btn — null-safe
+    const headerBtn = document.querySelector(".header-btn");
+    if (headerBtn) headerBtn.addEventListener("click", openForm);
 
-    // Main tabs — event delegation
-    document.querySelector(".main-tabs").addEventListener("click", e => {
+    // Post bar
+    const postBtn = DOM.postBtn();
+    if (postBtn) postBtn.addEventListener("click", openForm);
+
+    // Main tabs
+    const mainTabs = document.querySelector(".main-tabs");
+    if (mainTabs) mainTabs.addEventListener("click", e => {
         const tab = e.target.closest(".main-tab");
         if (tab) switchMainTab(tab.dataset.tab, tab);
     });
 
-    // Sub tabs — event delegation
-    DOM.subTabsRow().addEventListener("click", e => {
+    // Sub tabs
+    const subTabsRow = DOM.subTabsRow();
+    if (subTabsRow) subTabsRow.addEventListener("click", e => {
         const tab = e.target.closest(".sub-tab");
         if (tab) switchSubTab(tab.dataset.tab, tab);
     });
 
     // Search & distance
-    DOM.searchInput().addEventListener("input", filterListings);
-    DOM.distanceSelect().addEventListener("change", filterListings);
+    const searchInput   = DOM.searchInput();
+    const distanceSelect = DOM.distanceSelect();
+    if (searchInput)    searchInput.addEventListener("input", filterListings);
+    if (distanceSelect) distanceSelect.addEventListener("change", filterListings);
 
     // Location bar
-    document.querySelector(".btn-location").addEventListener("click", openLocationPopup);
-    document.querySelector(".btn-gps").addEventListener("click", autoLocation);
-    document.querySelector(".btn-manual").addEventListener("click", setManualLocation);
-    DOM.locationPopup().addEventListener("click", e => { if(e.target===DOM.locationPopup()) closeLocationPopup(); });
+    const btnLocation = document.querySelector(".btn-location");
+    const btnGps      = document.querySelector(".btn-gps");
+    const btnManual   = document.querySelector(".btn-manual");
+    const locPopup    = DOM.locationPopup();
+    if (btnLocation) btnLocation.addEventListener("click", openLocationPopup);
+    if (btnGps)      btnGps.addEventListener("click", autoLocation);
+    if (btnManual)   btnManual.addEventListener("click", setManualLocation);
+    if (locPopup)    locPopup.addEventListener("click", e => { if(e.target===locPopup) closeLocationPopup(); });
 
-    // Form modal close
-    DOM.modalOverlay().addEventListener("click", e => { if(e.target===DOM.modalOverlay()) closeForm(); });
-    document.querySelector(".btn-close").addEventListener("click", closeForm);
-
-    // Form tab buttons — event delegation
-    document.querySelector(".modal-tabs").addEventListener("click", e => {
+    // Form modal
+    const modalOverlay = DOM.modalOverlay();
+    const btnClose     = document.querySelector(".btn-close");
+    const modalTabs    = document.querySelector(".modal-tabs");
+    if (modalOverlay) modalOverlay.addEventListener("click", e => { if(e.target===modalOverlay) closeForm(); });
+    if (btnClose)     btnClose.addEventListener("click", closeForm);
+    if (modalTabs)    modalTabs.addEventListener("click", e => {
         const tab = e.target.closest(".modal-tab");
         if (tab) switchFormTab(tab.dataset.form, tab);
     });
 
     // Form submits
-    document.getElementById("anaaj-form").querySelector("form").addEventListener("submit", addAnaajListing);
-    document.getElementById("shop-form").querySelector("form").addEventListener("submit", addShopListing);
-    document.getElementById("suchna-form").querySelector("form").addEventListener("submit", addSuchnaListing);
+    const anaajForm  = document.getElementById("anaaj-form");
+    const shopForm   = document.getElementById("shop-form");
+    const suchnaForm = document.getElementById("suchna-form");
+    if (anaajForm)  anaajForm.querySelector("form")?.addEventListener("submit", addAnaajListing);
+    if (shopForm)   shopForm.querySelector("form")?.addEventListener("submit", addShopListing);
+    if (suchnaForm) suchnaForm.querySelector("form")?.addEventListener("submit", addSuchnaListing);
 
-    // Phone validation — event delegation on modal
-    DOM.modalOverlay().addEventListener("input", e => {
+    // Phone validation
+    if (modalOverlay) modalOverlay.addEventListener("input", e => {
         const inp = e.target;
         if      (inp.id==="fWA")    validatePhone(inp,"fWAErr","fWAOk");
         else if (inp.id==="sWA")    validatePhone(inp,"sWAErr","sWAOk");
         else if (inp.id==="nPhone") validatePhone(inp,"nPhErr","nPhOk");
     });
 
-    // Card buttons — EVENT DELEGATION (no inline onclick!)
-    DOM.listingsContainer().addEventListener("click", e => {
+    // Card buttons — EVENT DELEGATION
+    const listingsCont = DOM.listingsContainer();
+    if (listingsCont) listingsCont.addEventListener("click", e => {
         const btn = e.target.closest("button[data-action]");
         if (!btn) return;
         const action = btn.dataset.action;
-
         if (action==="wa-grain") {
             const {wa, grain, qty, price} = btn.dataset;
             if (wa==="SAMPLE") { alert("यह नमूना डेटा है।"); return; }
@@ -724,10 +740,12 @@ function bindEvents() {
     });
 
     // Missed call
-    document.querySelector(".btn-missed-done").addEventListener("click", closeMissedCall);
-    document.querySelector(".btn-missed-skip").addEventListener("click", closeMissedCall);
+    const missedDone = document.querySelector(".btn-missed-done");
+    const missedSkip = document.querySelector(".btn-missed-skip");
+    if (missedDone) missedDone.addEventListener("click", closeMissedCall);
+    if (missedSkip) missedSkip.addEventListener("click", closeMissedCall);
 
-    // Shop section card buttons
+    // Shop section card buttons (document level delegation)
     document.addEventListener("click", e => {
         const btn = e.target.closest("button[data-action='wa-fullshop']");
         if (!btn) return;
