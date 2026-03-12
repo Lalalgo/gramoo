@@ -618,6 +618,11 @@ function switchFormTab(sec, el) {
 
 // ── 13. Form Open / Close ────────────────────────────────
 function openForm() {
+    // Shop tab active hai to shop.html par redirect
+    if (G.mainTab === "shop") {
+        window.location.href = "shop.html";
+        return;
+    }
     if (!G.currentUser) {
         if (confirm("लिस्टिंग डालने के लिए पहले Login करें।\n\nLogin करना है?")) {
             googleLogin();
@@ -628,9 +633,8 @@ function openForm() {
     DOM.successMsg().style.display      = "none";
     DOM.savingIndicator().style.display = "none";
     const tabs = document.querySelectorAll(".modal-tab");
-    if      (G.mainTab==="suchna") switchFormTab("suchna-form", tabs[2]);
-    else if (G.mainTab==="shop")   switchFormTab("shop-form",   tabs[1]);
-    else                           switchFormTab("anaaj-form",  tabs[0]);
+    if (G.mainTab === "suchna") switchFormTab("suchna-form", tabs[1]);
+    else                        switchFormTab("anaaj-form",  tabs[0]);
 }
 function closeForm() { DOM.modalOverlay().classList.remove("active"); }
 
