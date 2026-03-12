@@ -88,24 +88,51 @@ const sampleSuchna = [
     {id:"n3",name:"कृषि विभाग बुलंदशहर",type:"फसल बीमा",     title:"रबी फसल बीमा — अंतिम तारीख 31 दिसंबर",desc:"PMFBY के तहत रबी फसल का बीमा करवाएं।",                       loc:"बुलंदशहर जिला",phone:"SAMPLE",valid:"31 दिसंबर", urgent:true, createdAt:null,lat:28.40,lng:77.85}
 ];
 
-// ── Demo Shop (hamesha dikhegi) ──────────────────────────
-const DEMO_SHOP = {
-    id: "demo",
-    naam: "रामलाल एग्रो सेंटर",
-    area: "अनूपशहर",
-    district: "बुलंदशहर",
-    phone: "SAMPLE",
-    isDemo: true,
-    lat: 28.40, lng: 77.85,
-    inventory: [
-        { masterId:"dap",    name:"डीएपी (DAP)",         cat:"खाद",      brand:"IFFCO",       pack:"50kg",  price:1350, stock:true  },
-        { masterId:"urea",   name:"यूरिया",               cat:"खाद",      brand:"KRIBHCO",     pack:"45kg",  price:270,  stock:true  },
-        { masterId:"wheat",  name:"गेहूं बीज",             cat:"बीज",      brand:"HD-2967",     pack:"40kg",  price:2400, stock:true  },
-        { masterId:"chlor",  name:"क्लोरपाइरीफॉस",         cat:"कीटनाशक", brand:"Dursban",     pack:"1L",    price:380,  stock:false },
-        { masterId:"cattle", name:"कैटल फीड",              cat:"पशु आहार",brand:"Godrej",       pack:"50kg",  price:1450, stock:true  },
-        { masterId:"knap",   name:"नैपसैक स्प्रेयर",       cat:"यंत्र",   brand:"Neptune",     pack:"16L",   price:1800, stock:true  },
-    ]
-};
+// ── Demo Shops (hamesha dikhenge) ────────────────────────
+const DEMO_SHOPS = [
+    {
+        id:"demo1", naam:"रामलाल एग्रो सेंटर", area:"अनूपशहर", district:"बुलंदशहर",
+        phone:"SAMPLE", isDemo:true, lat:28.40, lng:77.85,
+        inventory:[
+            {masterId:"dap",    nameHi:"डीएपी (DAP)",       cat:"खाद",       brand:"IFFCO",    packSize:"50kg",  price:1350, qty:45, stock:true},
+            {masterId:"urea",   nameHi:"यूरिया",             cat:"खाद",       brand:"KRIBHCO",  packSize:"45kg",  price:270,  qty:80, stock:true},
+            {masterId:"npk",    nameHi:"एनपीके",             cat:"खाद",       brand:"Coromandel",packSize:"50kg", price:1600, qty:20, stock:true},
+            {masterId:"wheat",  nameHi:"गेहूं बीज",           cat:"बीज",       brand:"HD-2967",  packSize:"40kg",  price:2400, qty:15, stock:true},
+            {masterId:"mustard",nameHi:"सरसों बीज",           cat:"बीज",       brand:"Pusa Bold",packSize:"1kg",   price:450,  qty:30, stock:true},
+            {masterId:"chlor",  nameHi:"क्लोरपाइरीफॉस",       cat:"कीटनाशक",  brand:"Dursban",  packSize:"1L",    price:380,  qty:0,  stock:false},
+            {masterId:"knap",   nameHi:"नैपसैक स्प्रेयर",     cat:"यंत्र",    brand:"Neptune",  packSize:"16L",   price:1800, qty:8,  stock:true},
+            {masterId:"cattle", nameHi:"कैटल फीड",            cat:"पशु आहार", brand:"Godrej",   packSize:"50kg",  price:1450, qty:25, stock:true},
+        ]
+    },
+    {
+        id:"demo2", naam:"किसान बीज भण्डार", area:"खुर्जा", district:"बुलंदशहर",
+        phone:"SAMPLE", isDemo:true, lat:28.25, lng:77.85,
+        inventory:[
+            {masterId:"wheat",  nameHi:"गेहूं बीज",           cat:"बीज",       brand:"DBW-187",  packSize:"40kg",  price:2200, qty:30, stock:true},
+            {masterId:"paddy",  nameHi:"धान बीज",             cat:"बीज",       brand:"Pusa Basmati",packSize:"5kg",price:320,  qty:50, stock:true},
+            {masterId:"mustard",nameHi:"सरसों बीज",           cat:"बीज",       brand:"NPJ-93",   packSize:"1kg",   price:420,  qty:40, stock:true},
+            {masterId:"maize",  nameHi:"मक्का बीज",            cat:"बीज",       brand:"Pioneer",  packSize:"5kg",   price:850,  qty:20, stock:true},
+            {masterId:"moong",  nameHi:"मूंग बीज",             cat:"बीज",       brand:"PDM-139",  packSize:"5kg",   price:260,  qty:0,  stock:false},
+            {masterId:"dap",    nameHi:"डीएपी (DAP)",         cat:"खाद",       brand:"IFFCO",    packSize:"50kg",  price:1380, qty:10, stock:true},
+            {masterId:"zinc",   nameHi:"जिंक सल्फेट",          cat:"खाद",       brand:"Aries",    packSize:"1kg",   price:95,   qty:60, stock:true},
+        ]
+    },
+    {
+        id:"demo3", naam:"श्याम कृषि सेवा केंद्र", area:"सियाना", district:"बुलंदशहर",
+        phone:"SAMPLE", isDemo:true, lat:28.35, lng:77.90,
+        inventory:[
+            {masterId:"chlor",  nameHi:"क्लोरपाइरीफॉस",       cat:"कीटनाशक",  brand:"Coroban",  packSize:"1L",    price:360,  qty:25, stock:true},
+            {masterId:"imida",  nameHi:"इमिडाक्लोप्रिड",       cat:"कीटनाशक",  brand:"Confidor", packSize:"250ml", price:480,  qty:15, stock:true},
+            {masterId:"manco",  nameHi:"मैंकोज़ेब",             cat:"कीटनाशक",  brand:"Dithane",  packSize:"1kg",   price:195,  qty:35, stock:true},
+            {masterId:"glyph",  nameHi:"ग्लाइफोसेट",            cat:"कीटनाशक",  brand:"Roundup",  packSize:"1L",    price:320,  qty:20, stock:true},
+            {masterId:"knap",   nameHi:"नैपसैक स्प्रेयर",      cat:"यंत्र",    brand:"Aspee",    packSize:"16L",   price:1650, qty:5,  stock:true},
+            {masterId:"power",  nameHi:"पावर स्प्रेयर",         cat:"यंत्र",    brand:"Kisankraft",packSize:"20L",  price:8500, qty:2,  stock:true},
+            {masterId:"dap",    nameHi:"डीएपी (DAP)",          cat:"खाद",      brand:"Zuari",    packSize:"50kg",  price:1340, qty:30, stock:true},
+            {masterId:"urea",   nameHi:"यूरिया",                cat:"खाद",      brand:"NFL",      packSize:"45kg",  price:265,  qty:50, stock:true},
+        ]
+    }
+];
+const DEMO_SHOP = DEMO_SHOPS[0]; // backward compat
 
 // ── 4. Global State ──────────────────────────────────────
 const G = {
@@ -486,7 +513,7 @@ function runShopSearch() {
     const item = SEARCH.item;
     const dist = parseInt(DOM.distanceSelect().value);
 
-    let shops = [DEMO_SHOP, ...G.allShopsFull];
+    let shops = [...DEMO_SHOPS, ...G.allShopsFull];
 
     // Distance filter
     if (G.userLat) {

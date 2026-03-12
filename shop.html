@@ -402,6 +402,77 @@ body {
     </div>
 </div>
 
+<!-- PENDING APPROVAL SCREEN -->
+<div id="pendingScreen" style="display:none; min-height:100vh; background:linear-gradient(160deg,#1b5e20,#2e7d32); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white;border-radius:24px;padding:36px 28px;width:100%;max-width:400px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+        <div style="font-size:56px;margin-bottom:12px;">⏳</div>
+        <div style="font-size:22px;font-weight:800;color:#e65100;margin-bottom:8px;">Approval Pending</div>
+        <div style="font-size:14px;color:#555;line-height:1.7;margin-bottom:20px;">
+            आपकी दुकान registration request भेज दी गई है।<br>
+            Admin जल्द verify करेगा — आमतौर पर <strong>24 घंटे</strong> में।<br><br>
+            Approve होने के बाद आप यहाँ items add कर सकेंगे।
+        </div>
+        <div id="pendingShopName" style="background:#fff3e0;border-radius:12px;padding:14px;margin-bottom:20px;font-weight:700;color:#e65100;font-size:15px;"></div>
+        <button onclick="signOut(auth)" style="width:100%;padding:12px;background:#f5f5f5;border:1px solid #ddd;border-radius:12px;font-size:14px;cursor:pointer;font-family:inherit;">
+            Logout
+        </button>
+        <p style="font-size:12px;color:#aaa;margin-top:16px;">
+            सहायता के लिए WhatsApp करें: <a href="https://wa.me/91XXXXXXXXXX" style="color:#2e7d32;">Gramoo Support</a>
+        </p>
+    </div>
+</div>
+
+<!-- REGISTRATION FORM SCREEN -->
+<div id="registerScreen" style="display:none; min-height:100vh; background:linear-gradient(160deg,#1b5e20,#2e7d32); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white;border-radius:24px;padding:32px 24px;width:100%;max-width:440px;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+        <div style="text-align:center;margin-bottom:24px;">
+            <div style="font-size:48px;">🏪</div>
+            <div style="font-size:20px;font-weight:800;color:#1b5e20;margin-top:6px;">दुकान Registration</div>
+            <div style="font-size:13px;color:#777;margin-top:4px;">एक बार भरें — Admin verify करेगा</div>
+        </div>
+        <div class="fgroup"><label>दुकान का नाम *</label><input type="text" id="regShopName" placeholder="जैसे: रामलाल एग्रो सेंटर"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div class="fgroup" style="flex:1;min-width:140px"><label>जिला *</label><input type="text" id="regDistrict" placeholder="बुलंदशहर"></div>
+            <div class="fgroup" style="flex:1;min-width:140px"><label>क्षेत्र/गांव *</label><input type="text" id="regArea" placeholder="अनूपशहर"></div>
+        </div>
+        <div class="fgroup">
+            <label>WhatsApp नंबर *</label>
+            <div class="phone-wrap">
+                <span class="phone-prefix">+91</span>
+                <input type="tel" id="regPhone" placeholder="10 अंक" maxlength="10" onkeypress="return event.charCode>=48&&event.charCode<=57">
+            </div>
+        </div>
+        <div class="fgroup"><label>दुकान Category *</label>
+            <select id="regCategory">
+                <option value="general">🌾 General Agri Store</option>
+                <option value="fertilizer">🌿 खाद भण्डार</option>
+                <option value="seeds">🌱 बीज भण्डार</option>
+                <option value="pesticide">💊 कीटनाशक Store</option>
+                <option value="equipment">🚜 कृषि यंत्र</option>
+                <option value="animal">🐄 पशु आहार Store</option>
+            </select>
+        </div>
+        <div class="fgroup">
+            <label>📍 दुकान की GPS Location *</label>
+            <input type="hidden" id="regLat"><input type="hidden" id="regLng">
+            <div id="regGpsStatus" style="display:none;background:#e8f5e9;border-radius:8px;padding:8px 12px;font-size:12px;color:#2e7d32;margin-bottom:8px;"></div>
+            <button type="button" id="btnRegGps" onclick="getGpsForReg()"
+                style="width:100%;padding:10px;background:#1565c0;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">
+                📡 GPS से Location लें (जरूरी)
+            </button>
+        </div>
+        <div class="fgroup"><label>दुकान का पूरा पता</label><textarea id="regAddress" rows="2" placeholder="जैसे: मुख्य बाजार, अनूपशहर..."></textarea></div>
+        <button onclick="submitRegistration()"
+            style="width:100%;padding:14px;background:#1b5e20;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;">
+            📨 Registration Request भेजें
+        </button>
+        <button onclick="signOut(auth)"
+            style="width:100%;padding:10px;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;font-family:inherit;margin-top:10px;">
+            Logout
+        </button>
+    </div>
+</div>
+
 <!-- MAIN APP -->
 <div id="mainApp">
 
@@ -423,8 +494,10 @@ body {
         <button class="nav-tab active" data-tab="dashboard">📊 Dashboard</button>
         <button class="nav-tab" data-tab="inventory">📦 Inventory</button>
         <button class="nav-tab" data-tab="add-items">➕ Items जोड़ें</button>
+        <button class="nav-tab" data-tab="mandi">🤝 किसान Demand</button>
+        <button class="nav-tab" data-tab="prices">💰 Price Compare</button>
         <button class="nav-tab" data-tab="requests">📋 Requests</button>
-        <button class="nav-tab" data-tab="profile">🏪 दुकान Profile</button>
+        <button class="nav-tab" data-tab="profile">🏪 Profile</button>
     </div>
 
     <div class="content">
@@ -520,6 +593,32 @@ body {
                 </div>
                 <div class="req-done" id="reqDone">✅ Request भेज दी! Admin जल्द देखेगा।</div>
             </div>
+        </div>
+
+        <!-- ── MANDI BUYER CONNECTION ── -->
+        <div class="tab-sec" id="tab-mandi">
+            <div class="sec-title">🤝 किसान Demand — नज़दीकी ज़रूरतें</div>
+            <div style="background:#fff3e0;border-radius:12px;padding:14px;margin-bottom:16px;border-left:4px solid #e65100;">
+                <div style="font-size:13px;color:#e65100;font-weight:700;">📢 इस क्षेत्र के किसानों की ज़रूरतें</div>
+                <div style="font-size:12px;color:#777;margin-top:4px;">जो किसान कुछ खरीदना चाहते हैं — उनकी demand यहाँ दिखती है</div>
+            </div>
+            <div id="mandiDemandList"></div>
+        </div>
+
+        <!-- ── PRICE COMPARISON ── -->
+        <div class="tab-sec" id="tab-prices">
+            <div class="sec-title">💰 नज़दीकी दुकानों के भाव</div>
+            <div style="background:#e3f2fd;border-radius:12px;padding:14px;margin-bottom:16px;border-left:4px solid #1565c0;">
+                <div style="font-size:13px;color:#1565c0;font-weight:700;">📊 Same item — अलग-अलग दुकानों का भाव</div>
+                <div style="font-size:12px;color:#777;margin-top:4px;">देखें कि आपका भाव बाजार में कहाँ है</div>
+            </div>
+            <div style="margin-bottom:14px;">
+                <select id="priceCompareItem" onchange="loadPriceComparison()"
+                    style="width:100%;padding:10px 14px;border:1px solid #c8e6c9;border-radius:10px;font-size:14px;font-family:inherit;">
+                    <option value="">— Item चुनें —</option>
+                </select>
+            </div>
+            <div id="priceCompareResult"></div>
         </div>
 
         <!-- ── REQUESTS ── -->
@@ -649,7 +748,7 @@ body {
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc,
+import { getFirestore, collection, collectionGroup, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
          deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -747,21 +846,106 @@ onAuthStateChanged(auth, async user => {
 
     if (user) {
         currentUser = user;
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainApp').style.display     = 'block';
-        const photo = document.getElementById('userPhoto');
-        photo.src = user.photoURL || '';
-        photo.style.display = user.photoURL ? 'block' : 'none';
-        document.getElementById('userName').textContent = user.displayName ? user.displayName.split(' ')[0] : 'User';
-        await loadShopData();
-        loadInventory();
-        loadRequests();
+        // Check registration status in shopRequests
+        const regSnap = await getDoc(doc(db, 'shopRequests', user.uid));
+        const shopSnap = await getDoc(doc(db, 'shops', user.uid));
+
+        if (shopSnap.exists() && shopSnap.data().status === 'approved') {
+            // Fully approved — show main portal
+            showMainApp(user);
+        } else if (regSnap.exists() && regSnap.data().status === 'pending') {
+            // Registration pending
+            showPendingScreen(regSnap.data().shopName);
+        } else if (regSnap.exists() && regSnap.data().status === 'rejected') {
+            // Rejected — let them re-register
+            showRegisterScreen();
+            showToast('⚠️ पिछली request reject हुई थी। फिर से apply करें।');
+        } else if (shopSnap.exists()) {
+            // Old shop without status field — approved
+            showMainApp(user);
+        } else {
+            // New user — show registration form
+            showRegisterScreen();
+        }
     } else {
         currentUser = null;
+        hideAll();
         document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('mainApp').style.display     = 'none';
     }
 });
+
+function hideAll() {
+    ['loginScreen','pendingScreen','registerScreen','mainApp'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
+
+function showPendingScreen(naam) {
+    hideAll();
+    const ps = document.getElementById('pendingScreen');
+    ps.style.display = 'flex';
+    document.getElementById('pendingShopName').textContent = '🏪 ' + (naam || 'आपकी दुकान');
+}
+
+function showRegisterScreen() {
+    hideAll();
+    document.getElementById('registerScreen').style.display = 'flex';
+}
+
+function showMainApp(user) {
+    hideAll();
+    document.getElementById('mainApp').style.display = 'block';
+    const photo = document.getElementById('userPhoto');
+    photo.src = user.photoURL || '';
+    photo.style.display = user.photoURL ? 'block' : 'none';
+    document.getElementById('userName').textContent = user.displayName ? user.displayName.split(' ')[0] : 'User';
+    loadShopData();
+    loadInventory();
+    loadRequests();
+    loadMandiDemands();
+    populatePriceCompareDropdown();
+}
+
+// ── Registration Submit ──
+window.submitRegistration = async function() {
+    const naam  = document.getElementById('regShopName').value.trim();
+    const dist  = document.getElementById('regDistrict').value.trim();
+    const area  = document.getElementById('regArea').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const lat   = parseFloat(document.getElementById('regLat').value);
+    const lng   = parseFloat(document.getElementById('regLng').value);
+    const addr  = document.getElementById('regAddress').value.trim();
+    const cat   = document.getElementById('regCategory').value;
+    if (!naam||!dist||!area||!phone) { showToast('❌ सभी * fields भरें!'); return; }
+    if (phone.length!==10||!['6','7','8','9'].includes(phone[0])) { showToast('❌ सही नंबर डालें!'); return; }
+    if (!lat||!lng) { showToast('⚠️ GPS Location जरूरी है!'); return; }
+    try {
+        await setDoc(doc(db,'shopRequests',currentUser.uid), {
+            uid: currentUser.uid, shopName: naam, district: dist, area,
+            phone, lat, lng, address: addr, category: cat,
+            userEmail: currentUser.email, userName: currentUser.displayName,
+            status: 'pending', createdAt: serverTimestamp()
+        });
+        showPendingScreen(naam);
+    } catch(e) { showToast('❌ Error: ' + e.message); }
+};
+
+window.getGpsForReg = function() {
+    const btn = document.getElementById('btnRegGps');
+    const status = document.getElementById('regGpsStatus');
+    btn.textContent = '📡 Location मिल रही है...'; btn.disabled = true;
+    navigator.geolocation.getCurrentPosition(p => {
+        document.getElementById('regLat').value = p.coords.latitude;
+        document.getElementById('regLng').value = p.coords.longitude;
+        status.style.display = 'block';
+        status.textContent = `✅ Location मिल गई! (${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)})`;
+        btn.textContent = '✅ Location मिल गई'; btn.style.background = '#2e7d32'; btn.disabled = false;
+    }, () => {
+        showToast('❌ GPS नहीं मिला। Browser में Location allow करें।');
+        btn.textContent = '📡 फिर से Try करें'; btn.disabled = false;
+    });
+};
 
 // ── Load Shop ──
 async function loadShopData() {
@@ -1051,7 +1235,110 @@ window.sendItemRequest = async function() {
     } catch(e) { showToast('❌ Error: ' + e.message); }
 };
 
-// ── GPS Functions ──────────────────────────────────────
+// ── Mandi Buyer Demand ───────────────────────────────────
+function loadMandiDemands() {
+    const el = document.getElementById('mandiDemandList');
+    if (!el || !shopData) return;
+    // Listen to buy listings from same district
+    onSnapshot(
+        query(collection(db,'buy'), where('district','==', shopData.district||''), orderBy('createdAt','desc')),
+        snap => {
+            const demands = snap.docs.map(d => ({id:d.id,...d.data()})).slice(0,20);
+            if (!demands.length) {
+                el.innerHTML = `<div style="text-align:center;padding:40px;color:#aaa;">
+                    <div style="font-size:40px;">📭</div>
+                    <p style="margin-top:8px;">अभी आपके जिले में कोई demand नहीं है</p></div>`;
+                return;
+            }
+            el.innerHTML = demands.map(d => `
+                <div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #e8f5e9;border-left:4px solid #1a6b3c;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+                        <div>
+                            <div style="font-weight:700;font-size:14px;">🛒 ${d.grain||d.item||'अनाज'}</div>
+                            <div style="font-size:12px;color:#777;margin-top:3px;">
+                                📍 ${d.area||''}, ${d.district||''} &nbsp;•&nbsp; 📦 ${d.qty||'?'} KG चाहिए
+                                ${d.price ? `&nbsp;•&nbsp; ₹${d.price}/KG` : ''}
+                            </div>
+                        </div>
+                        ${d.phone && d.phone!=='SAMPLE' ? `
+                        <a href="https://wa.me/91${d.phone}?text=${encodeURIComponent(`नमस्ते! Gramoo पर आपकी ${d.grain||'item'} की demand देखी। हमारे पास उपलब्ध है।`)}"
+                            target="_blank"
+                            style="background:#25d366;color:white;padding:7px 14px;border-radius:18px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">
+                            💬 Reply करें
+                        </a>` : ''}
+                    </div>
+                </div>`).join('');
+        }, () => {
+            el.innerHTML = `<div style="text-align:center;padding:30px;color:#aaa;font-size:13px;">Demands load नहीं हो सकीं।</div>`;
+        }
+    );
+}
+
+// ── Price Comparison ─────────────────────────────────────
+function populatePriceCompareDropdown() {
+    const sel = document.getElementById('priceCompareItem');
+    if (!sel) return;
+    const opts = MASTER.map(m => `<option value="${m.id}">${m.hi} (${m.en})</option>`).join('');
+    sel.innerHTML = '<option value="">— Item चुनें —</option>' + opts;
+}
+
+window.loadPriceComparison = async function() {
+    const masterId = document.getElementById('priceCompareItem').value;
+    const el = document.getElementById('priceCompareResult');
+    if (!masterId) { el.innerHTML = ''; return; }
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:#aaa;">⏳ Load हो रहा है...</div>`;
+
+    const master = MASTER.find(m => m.id === masterId);
+    // Get all shops' inventory for this item
+    try {
+        // We query each shop's subcollection - simplified: query shopItems collection
+        const snap = await getDocs(query(
+            collectionGroup(db, 'inventory'),
+            where('masterId','==', masterId),
+            where('stock','==', true),
+            orderBy('price','asc')
+        ));
+        const results = snap.docs.map(d => ({...d.data(), shopId: d.ref.parent.parent.id}));
+
+        if (!results.length) {
+            el.innerHTML = `<div style="text-align:center;padding:30px;color:#aaa;">
+                <div style="font-size:36px;">📊</div>
+                <p style="margin-top:8px;">अभी कोई दूसरी दुकान यह item नहीं बेच रही</p></div>`;
+            return;
+        }
+
+        const myPrice = results.find(r => r.shopId === currentUser.uid)?.price;
+
+        el.innerHTML = `
+            <div style="font-size:14px;font-weight:700;color:#1a6b3c;margin-bottom:10px;">
+                🌿 ${master.hi} — ${results.length} दुकानों पर उपलब्ध
+            </div>
+            ${results.map((r, i) => {
+                const isMe = r.shopId === currentUser.uid;
+                const isCheapest = i === 0;
+                return `
+                <div style="background:${isMe?'#e8f5e9':'white'};border-radius:10px;padding:12px 14px;
+                    margin-bottom:8px;border:2px solid ${isMe?'#1a6b3c':isCheapest?'#ffd54f':'#e0e0e0'};
+                    display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                    <div>
+                        <span style="font-size:12px;font-weight:600;color:#555;">${r.brand||''} • ${r.packSize||''}</span>
+                        ${isMe ? '<span style="font-size:11px;background:#1a6b3c;color:white;padding:2px 8px;border-radius:6px;margin-left:6px;">आपकी दुकान</span>' : ''}
+                        ${isCheapest && !isMe ? '<span style="font-size:11px;background:#f9a825;color:white;padding:2px 8px;border-radius:6px;margin-left:6px;">सबसे सस्ता</span>' : ''}
+                    </div>
+                    <div style="font-size:20px;font-weight:800;color:${isCheapest?'#2e7d32':'#333'};">₹${r.price}</div>
+                </div>`;
+            }).join('')}
+            ${myPrice ? `
+            <div style="background:#fff3e0;border-radius:10px;padding:12px;margin-top:8px;font-size:13px;color:#e65100;">
+                💡 आपका भाव ₹${myPrice} है — सबसे सस्ता ₹${results[0].price}
+                ${myPrice > results[0].price ? ` (₹${myPrice-results[0].price} ज़्यादा)` : ' ✅ आप सबसे सस्ते हैं!'}
+            </div>` : ''}`;
+    } catch(e) {
+        el.innerHTML = `<div style="text-align:center;padding:20px;color:#aaa;font-size:12px;">
+            Price comparison के लिए Firestore indexing चाहिए।<br>
+            Admin से collectionGroup index setup करवाएं।</div>`;
+    }
+};
 window.getGpsSetup = function() {
     const btn = document.getElementById('btnGetGpsSetup');
     const status = document.getElementById('gpsStatusSetup');

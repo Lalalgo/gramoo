@@ -37,10 +37,12 @@
         .btn-logout:hover { background:rgba(255,255,255,0.3); }
 
         /* NAV */
-        .nav-tabs { background:white; display:flex; gap:4px; padding:8px 16px; border-bottom:2px solid var(--border); overflow-x:auto; }
-        .nav-tab { padding:8px 16px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500; white-space:nowrap; color:var(--muted); border:none; background:none; transition:all 0.2s; }
+        .nav-tabs { background:white; display:flex; gap:4px; padding:8px 16px; border-bottom:2px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+        .nav-tabs::-webkit-scrollbar { display:none; }
+        .nav-tab { padding:8px 16px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500; white-space:nowrap; color:var(--muted); border:none; background:none; transition:all 0.2s; position:relative; }
         .nav-tab.active { background:var(--green); color:white; }
         .nav-tab:hover:not(.active) { background:var(--bg); color:var(--green); }
+        .nav-badge { position:absolute; top:4px; right:4px; background:#c62828; color:white; border-radius:50%; width:18px; height:18px; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
 
         /* CONTENT */
         .content { padding:20px; max-width:1100px; margin:0 auto; }
@@ -49,12 +51,14 @@
 
         /* STATS */
         .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; margin-bottom:24px; }
-        .stat-card { background:white; border-radius:12px; padding:20px; text-align:center; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+        .stat-card { background:white; border-radius:12px; padding:20px; text-align:center; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05); cursor:pointer; transition:all 0.2s; }
+        .stat-card:hover { transform:translateY(-2px); box-shadow:0 4px 16px rgba(0,0,0,0.1); }
         .stat-card .num { font-size:32px; font-weight:700; color:var(--green); }
         .stat-card .lbl { font-size:13px; color:var(--muted); margin-top:4px; }
+        .stat-card.alert .num { color:var(--orange); }
 
         /* SEC TITLE */
-        .sec-title { font-size:18px; font-weight:700; color:var(--green); margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid var(--border); display:flex; align-items:center; gap:8px; }
+        .sec-title { font-size:18px; font-weight:700; color:var(--green); margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px; }
 
         /* TABLE */
         .table-wrap { overflow-x:auto; }
@@ -65,13 +69,38 @@
         tr:hover td { background:var(--bg); }
 
         /* BUTTONS */
-        .btn-del { background:#ffebee; color:var(--red); border:1px solid #ffcdd2; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; }
+        .btn-del     { background:#ffebee; color:var(--red);   border:1px solid #ffcdd2; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; }
         .btn-del:hover { background:#ffcdd2; }
-        .btn-edit { background:#e3f2fd; color:var(--blue); border:1px solid #bbdefb; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
+        .btn-edit    { background:#e3f2fd; color:var(--blue);  border:1px solid #bbdefb; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
         .btn-edit:hover { background:#bbdefb; }
-        .btn-approve { background:#e8f5e9; color:var(--green); border:1px solid var(--border); padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
-        .btn-green { background:var(--green); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; }
+        .btn-approve { background:#e8f5e9; color:var(--green); border:1px solid var(--border); padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
+        .btn-approve:hover { background:#c8e6c9; }
+        .btn-reject  { background:#fff3e0; color:var(--orange); border:1px solid #ffe0b2; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
+        .btn-reject:hover { background:#ffe0b2; }
+        .btn-green   { background:var(--green); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; }
         .btn-green:hover { background:var(--green-light); }
+
+        /* SHOP REQUESTS */
+        .reg-card {
+            background:white; border-radius:14px; padding:18px; margin-bottom:14px;
+            border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05);
+            border-left:4px solid #ff9800;
+        }
+        .reg-card.approved { border-left-color:var(--green); }
+        .reg-card.rejected { border-left-color:var(--red); opacity:0.7; }
+        .reg-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+        .reg-shop-name { font-size:17px; font-weight:800; color:var(--green); }
+        .reg-meta { font-size:12px; color:var(--muted); margin-top:4px; line-height:1.8; }
+        .reg-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+        .reg-filter-tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+        .reg-filter-tab { padding:7px 16px; border-radius:20px; border:1px solid var(--border); background:white; color:var(--muted); font-size:13px; cursor:pointer; font-family:inherit; }
+        .reg-filter-tab.active { background:var(--green); color:white; border-color:var(--green); }
+
+        /* REJECT MODAL */
+        .reject-modal { background:white; border-radius:16px; padding:28px; width:100%; max-width:420px; }
+        .reject-modal h3 { font-size:16px; color:var(--red); margin-bottom:16px; }
+        .reject-modal textarea { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; min-height:80px; resize:vertical; }
+        .reject-modal textarea:focus { outline:none; border-color:var(--red); }
 
         /* CATEGORY */
         .cat-section { background:white; border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid var(--border); }
@@ -124,10 +153,12 @@
         .today-card .t-lbl { font-size:12px; color:var(--muted); }
 
         /* BADGE */
-        .badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; }
-        .badge-sell { background:#e8f5e9; color:var(--green); }
-        .badge-buy  { background:#e3f2fd; color:var(--blue); }
-        .badge-pending { background:#fff8e1; color:#f57f17; }
+        .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+        .badge-sell     { background:#e8f5e9; color:var(--green); }
+        .badge-buy      { background:#e3f2fd; color:var(--blue); }
+        .badge-pending  { background:#fff8e1; color:#f57f17; border:1px solid #ffe082; }
+        .badge-approved { background:#e8f5e9; color:var(--green); border:1px solid var(--border); }
+        .badge-rejected { background:#ffebee; color:var(--red); border:1px solid #ffcdd2; }
         .badge-resolved { background:#e8f5e9; color:var(--green); }
 
         .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
@@ -136,6 +167,8 @@
         .filter-bar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
         .filter-bar input, .filter-bar select { padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:white; }
         .filter-bar input { flex:1; min-width:180px; }
+        .map-link { color:var(--blue); font-size:12px; text-decoration:none; }
+        .map-link:hover { text-decoration:underline; }
         @media (max-width:600px) { .content{padding:12px;} .login-box{width:90%;padding:32px 20px;} th,td{padding:8px 10px;} }
     </style>
 </head>
@@ -159,9 +192,10 @@
 
     <div class="nav-tabs">
         <button class="nav-tab active" data-sec="dashboard">📊 Dashboard</button>
+        <button class="nav-tab" data-sec="shops">🏪 Dukan Requests <span class="nav-badge" id="shopBadge" style="display:none">0</span></button>
         <button class="nav-tab" data-sec="listings">📋 Listings</button>
         <button class="nav-tab" data-sec="categories">🏷️ Categories</button>
-        <button class="nav-tab" data-sec="settings">⚙️ Site Settings</button>
+        <button class="nav-tab" data-sec="settings">⚙️ Settings</button>
         <button class="nav-tab" data-sec="feedback">💬 Feedback</button>
         <button class="nav-tab" data-sec="reports">🚨 Reports</button>
         <button class="nav-tab" data-sec="traffic">📈 Traffic</button>
@@ -172,6 +206,14 @@
         <!-- DASHBOARD -->
         <div class="section active" id="sec-dashboard">
             <div class="stats-grid">
+                <div class="stat-card" onclick="goTo('shops')">
+                    <div class="num alert" id="dPendingShops">—</div>
+                    <div class="lbl">⏳ Pending Dukan</div>
+                </div>
+                <div class="stat-card">
+                    <div class="num" id="dApprovedShops">—</div>
+                    <div class="lbl">✅ Approved Dukan</div>
+                </div>
                 <div class="stat-card"><div class="num" id="dTotalSell">—</div><div class="lbl">🌾 Sell Listings</div></div>
                 <div class="stat-card"><div class="num" id="dTotalBuy">—</div><div class="lbl">🛒 Buy Listings</div></div>
                 <div class="stat-card"><div class="num" id="dTotalShop">—</div><div class="lbl">🏪 Shop Listings</div></div>
@@ -179,8 +221,35 @@
                 <div class="stat-card"><div class="num" id="dTotalFeedback">—</div><div class="lbl">💬 Feedback</div></div>
                 <div class="stat-card"><div class="num" id="dTotalReports">—</div><div class="lbl">🚨 Pending Reports</div></div>
             </div>
+
+            <!-- Pending requests alert -->
+            <div id="pendingAlert" style="display:none;background:#fff3e0;border:2px solid #ff9800;border-radius:12px;padding:16px;margin-bottom:20px;">
+                <div style="font-size:15px;font-weight:700;color:#e65100;margin-bottom:4px;">⚠️ Dukan Registration Pending!</div>
+                <div id="pendingAlertText" style="font-size:13px;color:#555;margin-bottom:10px;"></div>
+                <button class="btn-approve" onclick="goTo('shops')" style="font-size:13px;padding:7px 16px;">
+                    🏪 Requests Dekhein →
+                </button>
+            </div>
+
             <div class="sec-title">🕐 Aaj Ki Nayi Listings</div>
             <div id="recentListings"><div class="loading">Load ho raha hai...</div></div>
+        </div>
+
+        <!-- SHOP REGISTRATION REQUESTS -->
+        <div class="section" id="sec-shops">
+            <div class="sec-title">
+                🏪 Dukan Registration Requests
+                <span id="shopCount" style="font-size:13px;font-weight:400;color:var(--muted);"></span>
+            </div>
+
+            <div class="reg-filter-tabs">
+                <button class="reg-filter-tab active" data-filter="pending"  onclick="filterShopReqs('pending',this)">⏳ Pending</button>
+                <button class="reg-filter-tab"        data-filter="approved" onclick="filterShopReqs('approved',this)">✅ Approved</button>
+                <button class="reg-filter-tab"        data-filter="rejected" onclick="filterShopReqs('rejected',this)">❌ Rejected</button>
+                <button class="reg-filter-tab"        data-filter="all"      onclick="filterShopReqs('all',this)">📋 Sabhi</button>
+            </div>
+
+            <div id="shopRequestsList"><div class="loading">Load ho raha hai...</div></div>
         </div>
 
         <!-- LISTINGS -->
@@ -244,8 +313,8 @@
                 </div>
                 <div class="toggle-row">
                     <div class="toggle-info">
-                        <h4>🏪 Krishi Dukan</h4>
-                        <p>Khad, beej, yantra ki dukan listings tab</p>
+                        <h4>🏪 Naz̤diki Kisan Dukan</h4>
+                        <p>Registered dukaanon ki listing tab</p>
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="toggleShop">
@@ -264,7 +333,7 @@
                 </div>
             </div>
             <div class="settings-note">
-                ⚠️ Tab band karne par woh tab <b>users ko nahi dikhega</b> aur usmein listing nahi di ja sakegi. Baad mein kabhi bhi on kar sakte hain.
+                ⚠️ Tab band karne par woh tab <b>users ko nahi dikhega</b>. Baad mein kabhi bhi on kar sakte hain.
             </div>
         </div>
 
@@ -294,7 +363,7 @@
             <div class="traffic-note">
                 <div style="font-size:48px;margin-bottom:12px">📊</div>
                 <h3 style="margin-bottom:8px">Google Analytics — Visitor Data</h3>
-                <p style="color:#6a7b6a;font-size:14px;margin-bottom:16px">Kitne log aaye, kahan se aaye, kitni der ruke — sab Google Analytics mein dikhega.</p>
+                <p style="color:#6a7b6a;font-size:14px;margin-bottom:16px">Kitne log aaye, kahan se aaye — sab Google Analytics mein dikhega.</p>
                 <a href="https://analytics.google.com" target="_blank"
                    style="display:inline-block;background:#2e7d32;color:white;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">
                     📊 Google Analytics Kholo
@@ -323,12 +392,31 @@
     </div>
 </div>
 
+<!-- REJECT MODAL -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="reject-modal">
+        <h3>❌ Request Reject Karo</h3>
+        <p style="font-size:13px;color:#555;margin-bottom:14px;">Reject karne ka karan likho — dukandaar ko WhatsApp pe bata sakte ho.</p>
+        <input type="hidden" id="rejectUid">
+        <div class="fgroup">
+            <label>Reject Karan (optional)</label>
+            <textarea id="rejectReason" placeholder="Jaise: Document sahi nahi, location galat hai..."></textarea>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
+            <button style="flex:2;padding:10px;background:#c62828;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;" onclick="confirmReject()">
+                ❌ Reject Karo
+            </button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, getDocs, getDoc, doc, deleteDoc, updateDoc,
-         addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc }
+         addDoc, onSnapshot, query, orderBy, where, serverTimestamp, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const ADMIN_EMAIL = "kr.deepak2509@gmail.com";
@@ -378,10 +466,21 @@ document.querySelectorAll(".nav-tab").forEach(tab => {
     });
 });
 
-const DATA = { sell:[], buy:[], shop:[], suchna:[], reports:[], categories:[], feedback:[] };
+window.goTo = function(sec) {
+    document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    const tab = document.querySelector(`.nav-tab[data-sec="${sec}"]`);
+    if (tab) tab.classList.add("active");
+    const el = document.getElementById("sec-" + sec);
+    if (el) el.classList.add("active");
+};
+
+const DATA = { sell:[], buy:[], shop:[], suchna:[], reports:[], categories:[], feedback:[], shopReqs:[] };
+let shopReqFilter = "pending";
 
 function loadAll() {
     loadListeners();
+    loadShopRequests();
     loadCategories();
     loadReports();
     loadFeedback();
@@ -390,7 +489,7 @@ function loadAll() {
     document.getElementById("listingType").addEventListener("change", renderListingsTable);
 }
 
-// ── REALTIME ──
+// ── REALTIME LISTENERS ──
 function loadListeners() {
     ["sell","buy","shop","suchna"].forEach(col => {
         onSnapshot(query(collection(db, col), orderBy("createdAt","desc")), snap => {
@@ -424,6 +523,156 @@ function updateDashboard() {
     </table></div>`;
 }
 
+// ── SHOP REGISTRATION REQUESTS ─────────────────────────
+function loadShopRequests() {
+    onSnapshot(query(collection(db,"shopRequests"), orderBy("createdAt","desc")), snap => {
+        DATA.shopReqs = snap.docs.map(d => ({id:d.id,...d.data()}));
+        updateShopBadge();
+        renderShopRequests();
+    });
+}
+
+function updateShopBadge() {
+    const pending = DATA.shopReqs.filter(r => r.status === "pending").length;
+    const badge   = document.getElementById("shopBadge");
+    const dPend   = document.getElementById("dPendingShops");
+    const dAppr   = document.getElementById("dApprovedShops");
+    const alert   = document.getElementById("pendingAlert");
+    const alertTx = document.getElementById("pendingAlertText");
+
+    dPend.textContent = pending;
+    dAppr.textContent = DATA.shopReqs.filter(r => r.status === "approved").length;
+
+    if (pending > 0) {
+        badge.style.display = "flex";
+        badge.textContent   = pending;
+        alert.style.display = "block";
+        alertTx.textContent = `${pending} dukaan registration request${pending>1?"en":""} approve karna baaki hai.`;
+    } else {
+        badge.style.display = "none";
+        alert.style.display = "none";
+    }
+}
+
+window.filterShopReqs = function(filter, el) {
+    shopReqFilter = filter;
+    document.querySelectorAll(".reg-filter-tab").forEach(b => b.classList.remove("active"));
+    el.classList.add("active");
+    renderShopRequests();
+};
+
+function renderShopRequests() {
+    const el = document.getElementById("shopRequestsList");
+    let list = DATA.shopReqs;
+    if (shopReqFilter !== "all") list = list.filter(r => (r.status||"pending") === shopReqFilter);
+
+    document.getElementById("shopCount").textContent =
+        `(${list.length} ${shopReqFilter === "all" ? "kul" : shopReqFilter})`;
+
+    if (!list.length) {
+        el.innerHTML = `<div class="empty"><div>${shopReqFilter==="pending"?"⏳":"✅"}</div>
+            <p>${shopReqFilter==="pending"?"Koi pending request nahi!":shopReqFilter==="approved"?"Koi approved dukan nahi":"Koi rejected request nahi"}</p></div>`;
+        return;
+    }
+
+    el.innerHTML = list.map(r => {
+        const status = r.status || "pending";
+        const mapLink = r.lat && r.lng
+            ? `<a href="https://maps.google.com/?q=${r.lat},${r.lng}" target="_blank" class="map-link">📍 Map pe dekho</a>`
+            : "📍 Location nahi";
+        return `
+        <div class="reg-card ${status}" id="regcard-${r.uid||r.id}">
+            <div class="reg-card-top">
+                <div>
+                    <div class="reg-shop-name">🏪 ${r.shopName||"—"}</div>
+                    <div class="reg-meta">
+                        👤 ${r.userName||"—"} &nbsp;•&nbsp; 📧 ${r.userEmail||"—"}<br>
+                        📍 ${r.area||"—"}, ${r.district||"—"}<br>
+                        📱 +91 ${r.phone||"—"} &nbsp;•&nbsp; 🏷️ ${r.category||"general"}<br>
+                        ${r.address ? `🏠 ${r.address}<br>` : ""}
+                        ${mapLink} &nbsp;•&nbsp; 🕐 ${timeAgo(r.createdAt)}
+                    </div>
+                </div>
+                <span class="badge badge-${status}">
+                    ${status==="pending"?"⏳ Pending":status==="approved"?"✅ Approved":"❌ Rejected"}
+                </span>
+            </div>
+            ${r.rejectReason ? `<div style="background:#ffebee;border-radius:8px;padding:10px;font-size:12px;color:#c62828;margin-bottom:10px;">❌ Reject Karan: ${r.rejectReason}</div>` : ""}
+            <div class="reg-actions">
+                ${status === "pending" ? `
+                    <button class="btn-approve" onclick="approveShop('${r.uid||r.id}','${(r.shopName||"").replace(/'/g,"\\'")}','${r.phone||""}','${r.district||""}','${r.area||""}','${r.lat||""}','${r.lng||""}','${r.category||"general"}')">
+                        ✅ Approve करें
+                    </button>
+                    <button class="btn-reject" onclick="openRejectModal('${r.uid||r.id}')">
+                        ❌ Reject करें
+                    </button>
+                ` : ""}
+                ${status === "approved" ? `
+                    <button class="btn-reject" onclick="openRejectModal('${r.uid||r.id}')">❌ Revoke करें</button>
+                ` : ""}
+                ${r.phone ? `
+                    <a href="https://wa.me/91${r.phone}?text=${encodeURIComponent(`नमस्ते! आपकी Gramoo दुकान registration के बारे में बात करनी है।`)}"
+                        target="_blank"
+                        style="padding:5px 12px;background:#e8f5f0;color:#128c7e;border:1px solid #b2dfdb;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;">
+                        💬 WhatsApp
+                    </a>
+                ` : ""}
+                <button class="btn-del" onclick="deleteShopReq('${r.uid||r.id}','${(r.shopName||"").replace(/'/g,"\\'")}')">🗑️ Delete</button>
+            </div>
+        </div>`;
+    }).join("");
+}
+
+window.approveShop = async function(uid, naam, phone, district, area, lat, lng, category) {
+    if (!confirm(`"${naam}" ko APPROVE karna chahte ho?\n\nYeh dukaan ab Gramoo par live ho jaayegi.`)) return;
+    try {
+        // 1. shopRequests mein status update
+        await updateDoc(doc(db, "shopRequests", uid), {
+            status: "approved", approvedAt: serverTimestamp()
+        });
+        // 2. shops collection mein bhi approved shop create karo
+        await setDoc(doc(db, "shops", uid), {
+            uid, naam, phone, district, area,
+            lat: parseFloat(lat)||null, lng: parseFloat(lng)||null,
+            category, status: "approved",
+            approvedAt: serverTimestamp()
+        }, { merge: true });
+        alert(`✅ "${naam}" approve ho gayi!\nAbhi se Gramoo par dikhegi.`);
+    } catch(e) { alert("Error: " + e.message); }
+};
+
+window.openRejectModal = function(uid) {
+    document.getElementById("rejectUid").value = uid;
+    document.getElementById("rejectReason").value = "";
+    document.getElementById("rejectModal").classList.add("active");
+};
+window.closeRejectModal = function() {
+    document.getElementById("rejectModal").classList.remove("active");
+};
+window.confirmReject = async function() {
+    const uid    = document.getElementById("rejectUid").value;
+    const reason = document.getElementById("rejectReason").value.trim();
+    try {
+        await updateDoc(doc(db, "shopRequests", uid), {
+            status: "rejected",
+            rejectReason: reason || "Admin ne reject kiya",
+            rejectedAt: serverTimestamp()
+        });
+        // shops collection se bhi hata do agar tha
+        await updateDoc(doc(db, "shops", uid), { status: "rejected" }).catch(()=>{});
+        closeRejectModal();
+        alert("Request reject ho gayi.");
+    } catch(e) { alert("Error: " + e.message); }
+};
+
+window.deleteShopReq = async function(uid, naam) {
+    if (!confirm(`"${naam}" ki request permanently delete karna chahte ho?`)) return;
+    try {
+        await deleteDoc(doc(db, "shopRequests", uid));
+        alert("✅ Delete ho gayi!");
+    } catch(e) { alert("Error: " + e.message); }
+};
+
 // ── LISTINGS ──
 function renderListingsTable() {
     const search = document.getElementById("listingSearch").value.toLowerCase();
@@ -443,7 +692,7 @@ function renderListingsTable() {
             <td>${i.loc||"—"}</td><td>${timeAgo(i.createdAt)}</td>
             <td>
                 <button class="btn-edit" onclick="openEdit('${type}','${i.id}')">✏️</button>
-                <button class="btn-del" onclick="delListing('${type}','${i.id}','${(i.name||i.title||"").replace(/'/g,"\\'")}')">🗑️</button>
+                <button class="btn-del"  onclick="delListing('${type}','${i.id}','${(i.name||i.title||"").replace(/'/g,"\\'")}')">🗑️</button>
             </td>
         </tr>`).join("")}
     </table>`;
@@ -472,7 +721,7 @@ window.openEdit = async (col, id) => {
     document.getElementById("editModal").classList.add("active");
 };
 window.closeEdit = () => document.getElementById("editModal").classList.remove("active");
-window.saveEdit = async () => {
+window.saveEdit  = async () => {
     const id=document.getElementById("editId").value, col=document.getElementById("editCollection").value;
     const fields=["name","grain","cat","product","title","qty","price","loc","desc","type"];
     const updates={};
@@ -496,7 +745,7 @@ function renderCategories() {
         el.innerHTML = cats.length
             ? cats.map(c=>`<div class="cat-tag">
                 <span>${c.name}</span>
-                <span class="del-cat" title="Delete karo" onclick="deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">×</span>
+                <span class="del-cat" onclick="deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">×</span>
               </div>`).join("")
             : '<span style="color:#aaa;font-size:13px">Koi category nahi</span>';
     });
@@ -525,17 +774,17 @@ async function loadSettings() {
         document.getElementById("toggleShop").checked   = d.shop   === true;
         document.getElementById("toggleSuchna").checked = d.suchna === true;
         if (!snap.exists()) await setDoc(doc(db,"settings","tabs"),{shop:false,suchna:false});
-    } catch(e) { console.log("Settings load error:", e.message); }
+    } catch(e) { console.log("Settings error:", e.message); }
 
     document.getElementById("toggleShop").addEventListener("change", async (e) => {
         const suchna = document.getElementById("toggleSuchna").checked;
         await setDoc(doc(db,"settings","tabs"),{shop:e.target.checked,suchna});
-        alert(e.target.checked ? "✅ Krishi Dukan tab ON ho gayi! Site par dikh rahi hai." : "⛔ Krishi Dukan tab BAND ho gayi! Site par nahi dikhegi.");
+        alert(e.target.checked ? "✅ Dukan tab ON!" : "⛔ Dukan tab BAND!");
     });
     document.getElementById("toggleSuchna").addEventListener("change", async (e) => {
         const shop = document.getElementById("toggleShop").checked;
         await setDoc(doc(db,"settings","tabs"),{shop,suchna:e.target.checked});
-        alert(e.target.checked ? "✅ Sarkari Suchna tab ON ho gayi! Site par dikh rahi hai." : "⛔ Sarkari Suchna tab BAND ho gayi! Site par nahi dikhegi.");
+        alert(e.target.checked ? "✅ Suchna tab ON!" : "⛔ Suchna tab BAND!");
     });
 }
 
