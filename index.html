@@ -127,7 +127,7 @@
 
 <div class="main-tabs">
     <div class="main-tab active" onclick="switchMainTab('anaaj',this)">🌾 अनाज मंडी</div>
-    <div class="main-tab" onclick="switchMainTab('shop',this)">🏪 कृषि दुकान</div>
+    <div class="main-tab" onclick="switchMainTab('shop',this)">🏪 नज़दीकी किसान दुकान</div>
     <div class="main-tab sarkari-tab" onclick="switchMainTab('suchna',this)">📢 सरकारी सूचना पट्ट</div>
 </div>
 
@@ -141,7 +141,8 @@
     <button class="btn-post" id="postBtn" onclick="openForm()">+ लिस्टिंग डालें</button>
 </div>
 
-<div class="main-layout">
+<!-- अनाज + सूचना listings -->
+<div class="main-layout" id="mainListingLayout">
     <div class="listings-col"><div id="listingsContainer"></div></div>
     <div class="sidebar">
         <div class="deals-box">
@@ -152,6 +153,39 @@
             <div class="box-title">🔔 हाल की गतिविधि</div>
             <div id="activityFeed"></div>
         </div>
+    </div>
+</div>
+
+<!-- नज़दीकी किसान दुकान section -->
+<div id="shopSection" style="display:none; padding:12px; max-width:1100px; margin:0 auto;">
+
+    <!-- Search bar -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <input type="text" id="shopSearch" placeholder="🔍 दुकान, खाद, बीज खोजें..."
+            oninput="filterShops()"
+            style="flex:1;min-width:200px;padding:10px 14px;border:2px solid #1a6b3c;border-radius:20px;font-size:14px;outline:none;">
+        <select id="shopCatFilter" onchange="filterShops()"
+            style="padding:10px 12px;border:2px solid #1a6b3c;border-radius:20px;font-size:13px;background:white;outline:none;">
+            <option value="">सभी श्रेणी</option>
+            <option value="खाद">🌿 खाद</option>
+            <option value="बीज">🌱 बीज</option>
+            <option value="कीटनाशक">💊 कीटनाशक</option>
+            <option value="यंत्र">🚜 यंत्र</option>
+            <option value="पशु आहार">🐄 पशु आहार</option>
+        </select>
+    </div>
+
+    <!-- दुकान cards grid -->
+    <div id="shopCardsContainer"></div>
+
+    <!-- अपनी दुकान जोड़ें CTA -->
+    <div style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:16px;padding:20px;margin-top:16px;text-align:center;border:2px dashed #1a6b3c;">
+        <div style="font-size:32px;margin-bottom:8px;">🏪</div>
+        <div style="font-size:16px;font-weight:700;color:#1a6b3c;margin-bottom:4px;">क्या आपकी कृषि दुकान है?</div>
+        <div style="font-size:13px;color:#555;margin-bottom:14px;">Gramoo पर मुफ्त में अपनी दुकान जोड़ें — हजारों किसानों तक पहुँचें</div>
+        <a href="shop.html" style="display:inline-block;background:#1a6b3c;color:white;padding:11px 24px;border-radius:20px;font-size:14px;font-weight:700;text-decoration:none;">
+            🚀 अपनी दुकान जोड़ें — मुफ्त
+        </a>
     </div>
 </div>
 

@@ -88,13 +88,33 @@ const sampleSuchna = [
     {id:"n3",name:"कृषि विभाग बुलंदशहर",type:"फसल बीमा",     title:"रबी फसल बीमा — अंतिम तारीख 31 दिसंबर",desc:"PMFBY के तहत रबी फसल का बीमा करवाएं।",                       loc:"बुलंदशहर जिला",phone:"SAMPLE",valid:"31 दिसंबर", urgent:true, createdAt:null,lat:28.40,lng:77.85}
 ];
 
+// ── Demo Shop (hamesha dikhegi) ──────────────────────────
+const DEMO_SHOP = {
+    id: "demo",
+    naam: "रामलाल एग्रो सेंटर",
+    area: "अनूपशहर",
+    district: "बुलंदशहर",
+    phone: "SAMPLE",
+    isDemo: true,
+    lat: 28.40, lng: 77.85,
+    inventory: [
+        { masterId:"dap",    name:"डीएपी (DAP)",         cat:"खाद",      brand:"IFFCO",       pack:"50kg",  price:1350, stock:true  },
+        { masterId:"urea",   name:"यूरिया",               cat:"खाद",      brand:"KRIBHCO",     pack:"45kg",  price:270,  stock:true  },
+        { masterId:"wheat",  name:"गेहूं बीज",             cat:"बीज",      brand:"HD-2967",     pack:"40kg",  price:2400, stock:true  },
+        { masterId:"chlor",  name:"क्लोरपाइरीफॉस",         cat:"कीटनाशक", brand:"Dursban",     pack:"1L",    price:380,  stock:false },
+        { masterId:"cattle", name:"कैटल फीड",              cat:"पशु आहार",brand:"Godrej",       pack:"50kg",  price:1450, stock:true  },
+        { masterId:"knap",   name:"नैपसैक स्प्रेयर",       cat:"यंत्र",   brand:"Neptune",     pack:"16L",   price:1800, stock:true  },
+    ]
+};
+
 // ── 4. Global State ──────────────────────────────────────
 const G = {
     currentUser: null,
     mainTab:"anaaj", subTab:"becho",
     userLat:null, userLng:null, userLocName:"सभी क्षेत्र",
     allSell:[...sampleSell], allBuy:[...sampleBuy],
-    allShop:[...sampleShop], allSuchna:[...sampleSuchna]
+    allShop:[...sampleShop], allSuchna:[...sampleSuchna],
+    allShopsFull: [] // approved shops from Firebase
 };
 window._G = G; // debug ke liye
 
@@ -325,13 +345,146 @@ function switchMainTab(tab, el) {
     G.mainTab = tab;
     document.querySelectorAll(".main-tab").forEach(t => t.classList.remove("active"));
     el.classList.add("active");
+
+    const isShop = tab === "shop";
+    const mainLayout   = document.getElementById("mainListingLayout");
+    const shopSection  = document.getElementById("shopSection");
+    const postBarEl    = document.querySelector(".post-bar");
+
+    if (mainLayout)  mainLayout.style.display  = isShop ? "none" : "";
+    if (shopSection) shopSection.style.display = isShop ? "block" : "none";
+    if (postBarEl)   postBarEl.style.display   = isShop ? "none" : "";
+
     DOM.subTabsRow().style.display = tab==="anaaj" ? "flex" : "none";
+
+    if (isShop) {
+        renderShopSection();
+        return;
+    }
+
     const pb  = DOM.postBarText(), btn = DOM.postBtn();
-    if      (tab==="suchna") { pb.innerHTML='सरकारी सूचना देनी है? <b>मुफ्त में प्रकाशित करें!</b>'; btn.className="btn-post blue"; }
-    else if (tab==="shop")   { pb.innerHTML='कृषि उत्पाद बेचते हैं? <b>मुफ्त में दुकान लिस्ट करें!</b>'; btn.className="btn-post"; }
-    else                     { pb.innerHTML='आपके पास अनाज है? <b>मुफ्त में लिस्टिंग दें!</b>';           btn.className="btn-post"; }
+    if (tab==="suchna") { pb.innerHTML='सरकारी सूचना देनी है? <b>मुफ्त में प्रकाशित करें!</b>'; btn.className="btn-post blue"; }
+    else                { pb.innerHTML='आपके पास अनाज है? <b>मुफ्त में लिस्टिंग दें!</b>';       btn.className="btn-post"; }
     filterListings();
 }
+// ── Shop Section Render ───────────────────────────────────
+const catIcons = {'खाद':'🌿','बीज':'🌱','कीटनाशक':'💊','यंत्र':'🚜','पशु आहार':'🐄','अन्य':'🧪'};
+
+function renderShopCard(shop) {
+    const dist = (G.userLat && shop.lat)
+        ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,shop.lat,shop.lng))} किमी</span>` : "";
+
+    const invItems = (shop.inventory || []).slice(0, 6);
+    const invHtml = invItems.map(item => `
+        <div style="display:flex;align-items:center;justify-content:space-between;
+            padding:7px 10px;border-radius:8px;background:${item.stock?"#f9f9f9":"#fafafa"};
+            border:1px solid ${item.stock?"#e0e0e0":"#f0f0f0"};opacity:${item.stock?1:0.55};">
+            <div>
+                <span style="font-size:13px;">${catIcons[item.cat]||"🌾"}</span>
+                <span style="font-size:13px;font-weight:600;margin-left:4px;">${item.name}</span>
+                <span style="font-size:11px;color:#888;margin-left:4px;">${item.brand||""} ${item.pack||""}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:13px;font-weight:700;color:#1a6b3c;">₹${item.price}</span>
+                <span style="font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600;
+                    background:${item.stock?"#e8f5e9":"#ffebee"};
+                    color:${item.stock?"#2e7d32":"#c62828"};">
+                    ${item.stock?"✅ है":"❌ नहीं"}
+                </span>
+            </div>
+        </div>`).join("");
+
+    const demoTag = shop.isDemo
+        ? `<span style="background:#fff3e0;color:#e65100;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700;margin-left:6px;">DEMO</span>` : "";
+    const waBtn = shop.isDemo
+        ? `<span style="font-size:11px;color:#aaa">नमूना दुकान</span>`
+        : `<a href="shop.html?uid=${shop.id}" style="background:#1a6b3c;color:white;padding:8px 16px;border-radius:18px;font-size:12px;font-weight:700;text-decoration:none;">🏪 दुकान देखें</a>
+           <button class="btn-wa" data-action="wa-fullshop" data-phone="${shop.phone}" data-naam="${shop.naam}" style="font-size:12px;">💬 WhatsApp</button>`;
+
+    return `
+    <div style="background:white;border-radius:14px;padding:16px;margin-bottom:12px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:4px solid #1a6b3c;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+            <div>
+                <div style="font-size:16px;font-weight:800;color:#1a6b3c;">
+                    🏪 ${shop.naam}${demoTag}
+                </div>
+                <div style="font-size:12px;color:#777;margin-top:3px;">
+                    📍 ${shop.area}, ${shop.district} ${dist}
+                </div>
+            </div>
+            <span style="background:#e8f5e9;color:#2e7d32;font-size:11px;padding:3px 10px;
+                border-radius:10px;font-weight:700;flex-shrink:0;">● Live</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
+            ${invHtml || '<p style="text-align:center;color:#aaa;font-size:12px;padding:12px;">कोई item नहीं</p>'}
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;">
+            ${waBtn}
+        </div>
+    </div>`;
+}
+
+function renderShopSection() {
+    const search   = (document.getElementById("shopSearch") || {}).value?.toLowerCase() || "";
+    const catFilter = (document.getElementById("shopCatFilter") || {}).value || "";
+    const container = document.getElementById("shopCardsContainer");
+    if (!container) return;
+
+    // Firebase shops + demo shop hamesha
+    let shops = [DEMO_SHOP, ...G.allShopsFull];
+
+    // Distance filter
+    const dist = parseInt(DOM.distanceSelect().value);
+    shops = shops.filter(s => {
+        if (!G.userLat || !s.lat) return true;
+        return getDist(G.userLat, G.userLng, s.lat, s.lng) <= dist;
+    });
+
+    // Search filter
+    if (search) {
+        shops = shops.filter(s => {
+            const hay = JSON.stringify(s).toLowerCase();
+            return hay.includes(search);
+        });
+    }
+
+    // Category filter
+    if (catFilter) {
+        shops = shops.filter(s =>
+            (s.inventory || []).some(i => i.cat === catFilter && i.stock)
+        );
+    }
+
+    if (!shops.length) {
+        container.innerHTML = `<div class="no-results"><div>🏪</div><p>इस क्षेत्र में कोई दुकान नहीं मिली</p><p style="font-size:12px;margin-top:6px;">दूरी बढ़ाएं या फिल्टर हटाएं</p></div>`;
+        return;
+    }
+    container.innerHTML = shops.map(renderShopCard).join("");
+}
+
+window.filterShops = renderShopSection;
+
+// ── Load Approved Shops from Firebase ───────────────────
+function startShopListener() {
+    onSnapshot(
+        query(collection(db, "shops"), orderBy("createdAt", "desc")),
+        snap => {
+            const arr = [];
+            snap.forEach(d => {
+                const data = d.data();
+                // Only approved shops show on main page
+                if (data.status === "approved" || data.naam) {
+                    arr.push({ id: d.id, ...data });
+                }
+            });
+            G.allShopsFull = arr;
+            if (G.mainTab === "shop") renderShopSection();
+        },
+        () => { G.allShopsFull = []; }
+    );
+}
+
 function switchSubTab(tab, el) {
     G.subTab = tab;
     document.querySelectorAll(".sub-tab").forEach(t => t.classList.remove("active"));
@@ -558,6 +711,11 @@ function bindEvents() {
             if (ph==="SAMPLE") { alert("यह नमूना डेटा है।"); return; }
             window.open(`https://wa.me/91${decPhone(ph)}?text=${encodeURIComponent(`नमस्ते! Gramoo पर "${title}" देखी। जानकारी दें।`)}`, "_blank");
         }
+        else if (action==="wa-fullshop") {
+            const {phone, naam} = btn.dataset;
+            if (!phone || phone==="SAMPLE") { alert("यह नमूना दुकान है।"); return; }
+            window.open(`https://wa.me/91${decPhone(phone)}?text=${encodeURIComponent(`नमस्ते! Gramoo पर आपकी दुकान "${naam}" देखी। उपलब्ध stock जानना था।`)}`, "_blank");
+        }
         else if (action==="call") {
             const {ph} = btn.dataset;
             if (ph==="SAMPLE") return;
@@ -568,6 +726,15 @@ function bindEvents() {
     // Missed call
     document.querySelector(".btn-missed-done").addEventListener("click", closeMissedCall);
     document.querySelector(".btn-missed-skip").addEventListener("click", closeMissedCall);
+
+    // Shop section card buttons
+    document.addEventListener("click", e => {
+        const btn = e.target.closest("button[data-action='wa-fullshop']");
+        if (!btn) return;
+        const {phone, naam} = btn.dataset;
+        if (!phone || phone==="SAMPLE") { alert("यह नमूना दुकान है।"); return; }
+        window.open(`https://wa.me/91${decPhone(phone)}?text=${encodeURIComponent(`नमस्ते! Gramoo पर आपकी दुकान "${naam}" देखी। उपलब्ध stock जानना था।`)}`, "_blank");
+    });
 }
 
 // ── 19. Firebase Listeners ───────────────────────────────
@@ -605,6 +772,7 @@ function startListeners() {
     });
 
     setTimeout(() => DOM.loadingScreen().classList.add("hide"), 2000);
+    startShopListener();
 }
 
 
