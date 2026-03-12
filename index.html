@@ -75,8 +75,32 @@
 </div>
 
 <div class="hero">
-    <h1>अनाज खरीदें बेचें — सरकारी सूचना देखें</h1>
-    <p>5 किलो हो या 500 क्विंटल — खाद, बीज, सरकारी योजना — सब एक जगह</p>
+    <!-- Tagline -->
+    <div style="text-align:center;padding:10px 16px 0;">
+        <h1 style="font-size:clamp(22px,5vw,38px);font-weight:800;color:#1b5e20;line-height:1.2;margin-bottom:8px;">
+            किसानों के लिए मुफ्त ऑनलाइन मंडी
+        </h1>
+        <p style="font-size:clamp(14px,3vw,18px);color:#2e7d32;font-weight:600;margin-bottom:20px;">
+            बिना दलाल — सीधे खरीददार से संपर्क
+        </p>
+    </div>
+
+    <!-- 3 Action Buttons -->
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding:0 16px 20px;">
+        <button onclick="openForm();switchFormTab('anaaj-form',document.querySelector('.modal-tab'))"
+            style="background:#2e7d32;color:white;border:none;padding:14px 22px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(46,125,50,0.3);">
+            🌾 फसल बेचें
+        </button>
+        <button onclick="openForm();switchFormTab('anaaj-form',document.querySelector('.modal-tab'))"
+            style="background:#1565c0;color:white;border:none;padding:14px 22px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(21,101,192,0.3);">
+            🛒 फसल खरीदें
+        </button>
+        <button onclick="openForm();switchFormTab('shop-form',document.querySelectorAll('.modal-tab')[1])"
+            style="background:#e65100;color:white;border:none;padding:14px 22px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(230,81,0,0.3);">
+            🏪 दुकान जोड़ें
+        </button>
+    </div>
+
     <div class="hero-stats">
         <div class="stat"><div class="stat-num" id="totalListings">0</div><div class="stat-label">लिस्टिंग्स</div></div>
         <div class="stat"><div class="stat-num" id="totalDeals">47+</div><div class="stat-label">सफल सौदे</div></div>
