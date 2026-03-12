@@ -660,14 +660,12 @@ window.submitFeedback = async function() {
     var text = document.getElementById("fbText").value.trim();
     var name = document.getElementById("fbName").value.trim();
     var loc  = document.getElementById("fbLoc").value.trim();
-    if (!G_fbRating) { alert("कृपया रेटिंग दें!"); return; }
-    if (!text) { alert("कृपया अपना अनुभव लिखें!"); return; }
+    if (!text) { alert("कृपया सुझाव लिखें!"); return; }
     try {
         await addDoc(collection(db, "feedback"), {
-            rating: G_fbRating,
-            text:   text,
-            name:   name || "Anonymous",
-            loc:    loc  || "—",
+            text:      text,
+            name:      name || "Anonymous",
+            loc:       loc  || "—",
             createdAt: serverTimestamp()
         });
         document.getElementById("fbFormBox").style.display = "none";
