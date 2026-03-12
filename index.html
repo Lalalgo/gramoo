@@ -6,7 +6,10 @@
     <title>Gramoo - बिना दलाल — सीधा खरीदो बेचो</title>
     <link rel="stylesheet" href="style.css">
 <style>
-    .auth-btn { display:flex; align-items:center; gap:6px; background:white; color:#2e7d32; border:none; padding:7px 14px; border-radius:20px; font-size:13px; font-weight:700; cursor:pointer; }
+    .cat-btn { padding:7px 13px; border:1px solid #c8e6c9; border-radius:20px; background:white; color:#2e7d32; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+    .cat-btn.active { background:#1a6b3c; color:white; border-color:#1a6b3c; }
+    .item-btn { padding:5px 12px; border:1px solid #c8e6c9; border-radius:16px; background:white; color:#555; font-size:12px; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+    .item-btn.active { background:#e8f5e9; color:#1a6b3c; border-color:#1a6b3c; font-weight:700; }
     .auth-btn:hover { background:#f1f8e9; }
     .user-photo { width:30px; height:30px; border-radius:50%; border:2px solid white; }
     .user-name { color:white; font-size:13px; font-weight:600; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -159,25 +162,41 @@
 <!-- नज़दीकी किसान दुकान section -->
 <div id="shopSection" style="display:none; padding:12px; max-width:1100px; margin:0 auto;">
 
-    <!-- Search bar -->
-    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-        <input type="text" id="shopSearch" placeholder="🔍 दुकान, खाद, बीज खोजें..."
-            oninput="filterShops()"
-            style="flex:1;min-width:200px;padding:10px 14px;border:2px solid #1a6b3c;border-radius:20px;font-size:14px;outline:none;">
-        <select id="shopCatFilter" onchange="filterShops()"
-            style="padding:10px 12px;border:2px solid #1a6b3c;border-radius:20px;font-size:13px;background:white;outline:none;">
-            <option value="">सभी श्रेणी</option>
-            <option value="खाद">🌿 खाद</option>
-            <option value="बीज">🌱 बीज</option>
-            <option value="कीटनाशक">💊 कीटनाशक</option>
-            <option value="यंत्र">🚜 यंत्र</option>
-            <option value="पशु आहार">🐄 पशु आहार</option>
-        </select>
+    <!-- Search Box -->
+    <div style="background:white;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid #1a6b3c;">
+        <div style="font-size:15px;font-weight:700;color:#1a6b3c;margin-bottom:12px;">🔍 नज़दीकी दुकान खोजें</div>
+
+        <!-- Category buttons -->
+        <div style="margin-bottom:10px;">
+            <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px;">श्रेणी चुनें</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="catBtnRow">
+                <button class="cat-btn active" data-cat="">🌾 सभी</button>
+                <button class="cat-btn" data-cat="खाद">🌿 खाद</button>
+                <button class="cat-btn" data-cat="बीज">🌱 बीज</button>
+                <button class="cat-btn" data-cat="कीटनाशक">💊 कीटनाशक</button>
+                <button class="cat-btn" data-cat="यंत्र">🚜 यंत्र</button>
+                <button class="cat-btn" data-cat="पशु आहार">🐄 पशु आहार</button>
+            </div>
+        </div>
+
+        <!-- Item list — category ke hisaab se -->
+        <div id="itemListRow" style="display:none;margin-bottom:10px;">
+            <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px;">कौन सा item चाहिए? <span style="font-weight:400;color:#aaa">(optional — न चुनें तो सभी दिखेंगे)</span></label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="itemBtnRow"></div>
+        </div>
+
+        <!-- Text search -->
+        <input type="text" id="shopSearchText" placeholder="या नाम/ब्रांड से खोजें..."
+            style="width:100%;padding:9px 14px;border:1px solid #ddd;border-radius:10px;font-size:13px;outline:none;margin-bottom:10px;">
+
+        <button onclick="runShopSearch()"
+            style="width:100%;padding:12px;background:#1a6b3c;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
+            🔍 दुकान खोजें
+        </button>
     </div>
 
-    <!-- दुकान cards grid -->
+    <!-- Results -->
     <div id="shopCardsContainer"></div>
-
 </div>
 
 <!-- LOCATION POPUP -->

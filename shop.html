@@ -489,6 +489,12 @@ body {
                             <input type="number" id="cfgPrice" placeholder="जैसे: 1350" min="1">
                         </div>
                         <div class="cfg-group">
+                            <label>उपलब्ध मात्रा</label>
+                            <input type="number" id="cfgQty" placeholder="जैसे: 50 (bags/kg)" min="0">
+                        </div>
+                    </div>
+                    <div class="cfg-row">
+                        <div class="cfg-group">
                             <label>Stock Status</label>
                             <select id="cfgStock">
                                 <option value="true">✅ Available है</option>
@@ -539,6 +545,16 @@ body {
                     </div>
                 </div>
                 <div class="fgroup"><label>दुकान का पता</label><textarea id="pAddress" rows="2" placeholder="पूरा पता लिखें..."></textarea></div>
+                <div class="fgroup">
+                    <label>📍 Location Update करें (GPS)</label>
+                    <div id="gpsStatusProfile" style="background:#f1f8e9;border:1px solid #c8e6c9;border-radius:10px;padding:10px 14px;font-size:13px;color:#2e7d32;margin-bottom:8px;display:none;"></div>
+                    <input type="hidden" id="pLat">
+                    <input type="hidden" id="pLng">
+                    <button type="button" onclick="getGpsProfile()"
+                        style="width:100%;padding:10px;background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">
+                        📡 GPS से Location Update करें
+                    </button>
+                </div>
                 <div class="fgroup"><label>दुकान की Category</label>
                     <select id="pCategory">
                         <option value="general">🌾 General Agri Store</option>
@@ -585,6 +601,20 @@ body {
                 <option value="animal">🐄 Pashu Aahar Store</option>
             </select>
         </div>
+        <!-- GPS Location -->
+        <div class="fgroup">
+            <label>📍 दुकान की Location (GPS) *</label>
+            <div id="gpsStatusSetup" style="background:#f1f8e9;border:1px solid #c8e6c9;border-radius:10px;padding:10px 14px;font-size:13px;color:#2e7d32;margin-bottom:8px;display:none;">
+                ✅ Location मिल गई!
+            </div>
+            <input type="hidden" id="mLat">
+            <input type="hidden" id="mLng">
+            <button type="button" id="btnGetGpsSetup" onclick="getGpsSetup()"
+                style="width:100%;padding:11px;background:#1565c0;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">
+                📡 GPS से Location लें (जरूरी)
+            </button>
+            <div style="font-size:11px;color:#888;margin-top:5px;">⚠️ दुकान की सही जगह सेव होगी — किसान नज़दीकी दुकान देख सकेंगे</div>
+        </div>
         <div class="modal-btns">
             <button class="btn-cancel" onclick="closeSetupModal()">बाद में</button>
             <button class="btn-save" onclick="saveShopSetup()">✅ दुकान बनाएं</button>
@@ -597,6 +627,11 @@ body {
     <div class="price-modal">
         <h3 id="priceModalTitle">कीमत Update करें</h3>
         <input type="number" class="price-input-big" id="priceInput" placeholder="₹0">
+        <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:700;color:#5a7a5a;display:block;margin-bottom:6px;">उपलब्ध मात्रा (bags/kg)</label>
+            <input type="number" id="qtyInput" placeholder="जैसे: 50" min="0"
+                style="width:100%;padding:10px 14px;border:1px solid #c8e6c9;border-radius:10px;font-size:16px;font-family:inherit;">
+        </div>
         <div style="display:flex;gap:8px;margin-bottom:12px;">
             <button class="btn-toggle-stock in" id="priceStockBtn" onclick="togglePriceStock()">✅ In Stock</button>
         </div>
@@ -797,6 +832,7 @@ function renderInventory() {
 
 function renderInvCard(item) {
     const master = MASTER.find(m => m.id === item.masterId) || {};
+    const qtyText = item.qty ? `<span class="inv-tag">🏷️ ${item.qty} ${item.packSize} उपलब्ध</span>` : '';
     return `<div class="inv-card ${!item.stock?'out-of-stock':''}">
         <div class="inv-top">
             <div>
@@ -808,11 +844,12 @@ function renderInvCard(item) {
         <div class="inv-details">
             <span class="inv-brand">${item.brand}</span>
             <span class="inv-tag">📦 ${item.packSize}</span>
+            ${qtyText}
         </div>
         <div class="inv-price-row">
             <div class="inv-price">₹${item.price}<span> / ${item.packSize}</span></div>
             <div class="inv-actions">
-                <button class="btn-edit-price" onclick="openPriceModal('${item.id}','${item.nameHi||item.nameEn}',${item.price},${item.stock})">✏️ Price</button>
+                <button class="btn-edit-price" onclick="openPriceModal('${item.id}','${item.nameHi||item.nameEn}',${item.price},${item.stock},${item.qty||0})">✏️ Edit</button>
                 <button class="btn-toggle-stock ${item.stock?'in':'out'}" onclick="toggleStock('${item.id}',${item.stock})">
                     ${item.stock?'✅ है':'❌ नहीं'}
                 </button>
@@ -894,6 +931,7 @@ window.addItemToInventory = async function() {
             brand:    document.getElementById('cfgBrand').value,
             packSize: document.getElementById('cfgPack').value,
             price,
+            qty:      parseInt(document.getElementById('cfgQty').value) || 0,
             stock:    document.getElementById('cfgStock').value === 'true',
             addedAt:  serverTimestamp()
         });
@@ -904,11 +942,12 @@ window.addItemToInventory = async function() {
 };
 
 // ── Price Modal ──
-window.openPriceModal = function(itemId, name, price, stock) {
+window.openPriceModal = function(itemId, name, price, stock, qty) {
     editingItemId = itemId;
     editingStock  = stock;
-    document.getElementById('priceModalTitle').textContent = name + ' — कीमत Update करें';
+    document.getElementById('priceModalTitle').textContent = name + ' — Update करें';
     document.getElementById('priceInput').value = price;
+    document.getElementById('qtyInput').value   = qty || 0;
     const btn = document.getElementById('priceStockBtn');
     btn.textContent = stock ? '✅ In Stock' : '❌ Out of Stock';
     btn.className   = 'btn-toggle-stock ' + (stock ? 'in' : 'out');
@@ -929,13 +968,14 @@ window.closePriceModal = function() {
 
 window.savePriceUpdate = async function() {
     const price = parseInt(document.getElementById('priceInput').value);
+    const qty   = parseInt(document.getElementById('qtyInput').value) || 0;
     if (!price || price < 1) { showToast('❌ कीमत डालें!'); return; }
     try {
         await updateDoc(doc(db,'shops',currentUser.uid,'inventory',editingItemId), {
-            price, stock: editingStock, updatedAt: serverTimestamp()
+            price, qty, stock: editingStock, updatedAt: serverTimestamp()
         });
         closePriceModal();
-        showToast('✅ Price update हो गई!');
+        showToast('✅ Update हो गई!');
     } catch(e) { showToast('❌ Error: ' + e.message); }
 };
 
@@ -1011,6 +1051,47 @@ window.sendItemRequest = async function() {
     } catch(e) { showToast('❌ Error: ' + e.message); }
 };
 
+// ── GPS Functions ──────────────────────────────────────
+window.getGpsSetup = function() {
+    const btn = document.getElementById('btnGetGpsSetup');
+    const status = document.getElementById('gpsStatusSetup');
+    btn.textContent = '📡 Location मिल रही है...';
+    btn.disabled = true;
+    navigator.geolocation.getCurrentPosition(
+        p => {
+            document.getElementById('mLat').value = p.coords.latitude;
+            document.getElementById('mLng').value = p.coords.longitude;
+            status.style.display = 'block';
+            status.textContent = `✅ Location मिल गई! (${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)})`;
+            btn.textContent = '✅ Location मिल गई — फिर से लें';
+            btn.style.background = '#2e7d32';
+            btn.disabled = false;
+        },
+        () => {
+            showToast('❌ GPS नहीं मिला। Browser में Location allow करें।');
+            btn.textContent = '📡 फिर से Try करें';
+            btn.disabled = false;
+        }
+    );
+};
+
+window.getGpsProfile = function() {
+    const status = document.getElementById('gpsStatusProfile');
+    status.style.display = 'block';
+    status.textContent = '📡 Location मिल रही है...';
+    navigator.geolocation.getCurrentPosition(
+        p => {
+            document.getElementById('pLat').value = p.coords.latitude;
+            document.getElementById('pLng').value = p.coords.longitude;
+            status.textContent = `✅ Location मिल गई! (${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)})`;
+        },
+        () => {
+            status.textContent = '❌ GPS नहीं मिला।';
+            showToast('Browser में Location allow करें।');
+        }
+    );
+};
+
 // ── Shop Setup Modal ──
 window.openSetupModal = function() {
     document.getElementById('setupModal').classList.add('active');
@@ -1023,16 +1104,20 @@ window.saveShopSetup = async function() {
     const dist  = document.getElementById('mDistrict').value.trim();
     const area  = document.getElementById('mArea').value.trim();
     const phone = document.getElementById('mPhone').value.trim();
+    const lat   = parseFloat(document.getElementById('mLat').value);
+    const lng   = parseFloat(document.getElementById('mLng').value);
     if (!naam||!dist||!area||!phone) { showToast('❌ सभी * fields भरें!'); return; }
     if (phone.length!==10||!['6','7','8','9'].includes(phone[0])) { showToast('❌ सही नंबर डालें!'); return; }
+    if (!lat || !lng) { showToast('⚠️ पहले GPS से Location लें!'); return; }
     try {
         await setDoc(doc(db,'shops',currentUser.uid), {
             naam, district:dist, area, phone,
             category: document.getElementById('mCategory').value,
+            lat, lng,
             uid: currentUser.uid,
             createdAt: serverTimestamp()
         });
-        shopData = { naam, district:dist, area, phone };
+        shopData = { naam, district:dist, area, phone, lat, lng };
         closeSetupModal();
         renderDashboardTop();
         showToast('✅ दुकान setup हो गई!');
@@ -1047,18 +1132,23 @@ window.saveShopProfile = async function() {
     const phone = document.getElementById('pPhone').value.trim();
     if (!naam||!dist||!area||!phone) { showToast('❌ सभी * fields भरें!'); return; }
     if (phone.length!==10||!['6','7','8','9'].includes(phone[0])) { showToast('❌ सही नंबर डालें!'); return; }
+    const updateData = {
+        naam, district:dist, area, phone,
+        category:  document.getElementById('pCategory').value,
+        address:   document.getElementById('pAddress').value.trim(),
+        uid: currentUser.uid,
+        updatedAt: serverTimestamp()
+    };
+    const pLat = parseFloat(document.getElementById('pLat').value);
+    const pLng = parseFloat(document.getElementById('pLng').value);
+    if (pLat && pLng) { updateData.lat = pLat; updateData.lng = pLng; }
     try {
-        await setDoc(doc(db,'shops',currentUser.uid), {
-            naam, district:dist, area, phone,
-            category:  document.getElementById('pCategory').value,
-            address:   document.getElementById('pAddress').value.trim(),
-            uid: currentUser.uid,
-            updatedAt: serverTimestamp()
-        }, {merge:true});
+        await setDoc(doc(db,'shops',currentUser.uid), updateData, {merge:true});
         shopData = {...shopData, naam, district:dist, area, phone};
         renderDashboardTop();
         showToast('✅ Profile save हो गई!');
     } catch(e) { showToast('❌ Error: ' + e.message); }
+};
 };
 
 function fillProfileForm() {
