@@ -681,13 +681,7 @@ window.submitFeedback = async function() {
 // ── Google Auth ───────────────────────────────────────────
 async function googleLogin() {
     try {
-        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-        if (isMobile) {
-            await signInWithPopup(auth, provider);
-        } else {
-            const { signInWithRedirect } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-            await signInWithRedirect(auth, provider);
-        }
+        await signInWithPopup(auth, provider);
     } catch(e) {
         const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
         if (!ignore.includes(e.code)) alert("Login failed: " + e.message);
