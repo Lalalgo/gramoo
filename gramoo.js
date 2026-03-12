@@ -373,16 +373,45 @@ function switchMainTab(tab, el) {
     document.querySelectorAll(".main-tab").forEach(t => t.classList.remove("active"));
     el.classList.add("active");
 
-    const isShop = tab === "shop";
-    const mainLayout   = document.getElementById("mainListingLayout");
-    const shopSection  = document.getElementById("shopSection");
-    const postBarEl    = document.querySelector(".post-bar");
+    const isShop   = tab === "shop";
+    const isSuchna = tab === "suchna";
+
+    // Elements to hide/show
+    const mainLayout  = document.getElementById("mainListingLayout") || document.querySelector(".main-layout");
+    const shopSection = document.getElementById("shopSection");
+    const postBarEl   = document.querySelector(".post-bar");
+    const heroEl      = document.querySelector(".hero");
+    const mainTabsEl  = document.querySelector(".main-tabs");
+    const subTabsEl   = DOM.subTabsRow();
 
     if (mainLayout)  mainLayout.style.display  = isShop ? "none" : "";
     if (shopSection) shopSection.style.display = isShop ? "block" : "none";
     if (postBarEl)   postBarEl.style.display   = isShop ? "none" : "";
+    if (heroEl)      heroEl.style.display      = isShop ? "none" : "";
+    if (mainTabsEl)  mainTabsEl.style.display  = isShop ? "none" : "";
 
-    DOM.subTabsRow().style.display = tab==="anaaj" ? "flex" : "none";
+    // Back bar — shop mode mein dikhao
+    let backBar = document.getElementById("shopBackBar");
+    if (isShop) {
+        if (!backBar) {
+            backBar = document.createElement("div");
+            backBar.id = "shopBackBar";
+            backBar.style.cssText = "background:#1b5e20;padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:99;";
+            backBar.innerHTML = `<button onclick="switchMainTab('anaaj', document.querySelectorAll('.main-tab')[0])"
+                style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">
+                ← वापस
+            </button>
+            <span style="color:white;font-size:14px;font-weight:700;">🏪 नज़दीकी किसान दुकान</span>`;
+            if (shopSection && shopSection.parentNode) {
+                shopSection.parentNode.insertBefore(backBar, shopSection);
+            }
+        }
+        backBar.style.display = "flex";
+    } else {
+        if (backBar) backBar.style.display = "none";
+    }
+
+    if (subTabsEl) subTabsEl.style.display = tab==="anaaj" ? "flex" : "none";
 
     if (isShop) {
         renderShopSection();
