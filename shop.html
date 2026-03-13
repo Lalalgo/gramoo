@@ -841,35 +841,31 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
 onAuthStateChanged(auth, async user => {
-    // Loader hata do
-    const loader = document.getElementById('pageLoader');
-    if (loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 400); }
+    document.getElementById('pageLoader').style.opacity = '0';
+    setTimeout(() => document.getElementById('pageLoader').style.display = 'none', 400);
 
     if (user) {
         currentUser = user;
-        try {
-            // Firestore se status check karo
-            const regSnap  = await getDoc(doc(db, 'shopRequests', user.uid));
-            const shopSnap = await getDoc(doc(db, 'shops', user.uid));
+        // Check registration status in shopRequests
+        const regSnap = await getDoc(doc(db, 'shopRequests', user.uid));
+        const shopSnap = await getDoc(doc(db, 'shops', user.uid));
 
-            if (shopSnap.exists() && shopSnap.data().status === 'approved') {
-                showMainApp(user);
-            } else if (regSnap.exists() && regSnap.data().status === 'pending') {
-                showPendingScreen(regSnap.data().shopName);
-            } else if (regSnap.exists() && regSnap.data().status === 'rejected') {
-                showRegisterScreen();
-                showToast('⚠️ पिछली request reject हुई थी। फिर से apply करें।');
-            } else if (shopSnap.exists()) {
-                showMainApp(user);
-            } else {
-                // Naya user — registration form dikhao
-                showRegisterScreen();
-            }
-        } catch(err) {
-            console.error('Firestore error:', err);
-            // Error aaye toh bhi registration form dikhao — hang mat karo
+        if (shopSnap.exists() && shopSnap.data().status === 'approved') {
+            // Fully approved — show main portal
+            showMainApp(user);
+        } else if (regSnap.exists() && regSnap.data().status === 'pending') {
+            // Registration pending
+            showPendingScreen(regSnap.data().shopName);
+        } else if (regSnap.exists() && regSnap.data().status === 'rejected') {
+            // Rejected — let them re-register
             showRegisterScreen();
-            showToast('⚠️ कनेक्शन में समस्या। फिर से try करें।');
+            showToast('⚠️ पिछली request reject हुई थी। फिर से apply करें।');
+        } else if (shopSnap.exists()) {
+            // Old shop without status field — approved
+            showMainApp(user);
+        } else {
+            // New user — show registration form
+            showRegisterScreen();
         }
     } else {
         currentUser = null;
@@ -1439,6 +1435,7 @@ window.saveShopProfile = async function() {
         renderDashboardTop();
         showToast('✅ Profile save हो गई!');
     } catch(e) { showToast('❌ Error: ' + e.message); }
+};
 };
 
 function fillProfileForm() {
