@@ -96,11 +96,11 @@
 
     <!-- 3 Action Buttons -->
     <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding:0 16px 20px;">
-        <button onclick="openForm();switchFormTab('anaaj-form',document.querySelector('.modal-tab'))"
+        <button onclick="openForm('becho')"
             style="background:#2e7d32;color:white;border:none;padding:14px 22px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(46,125,50,0.3);">
             🌾 फसल बेचें
         </button>
-        <button onclick="openForm();switchFormTab('anaaj-form',document.querySelector('.modal-tab'))"
+        <button onclick="openForm('kharido')"
             style="background:#1565c0;color:white;border:none;padding:14px 22px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(21,101,192,0.3);">
             🛒 फसल खरीदें
         </button>
@@ -263,15 +263,32 @@
             <form onsubmit="addAnaajListing(event)">
                 <div class="fgroup"><label>आपका नाम *</label><input type="text" id="fName" placeholder="जैसे: रमेश कुमार" required></div>
                 <div class="frow">
-                    <div class="fgroup"><label>कौन सा अनाज? *</label>
-                        <select id="fGrain" required><option value="">चुनें</option><option>गेहूं</option><option>चावल</option><option>दाल</option><option>सरसों</option><option>मक्का</option><option>बाजरा</option><option>अन्य</option></select>
+                    <div class="fgroup"><label>बेचना है / खरीदना है *</label>
+                        <select id="fType" required>
+                            <option value="बेचना है">🌾 बेचना है</option>
+                            <option value="खरीदना है">🛒 खरीदना है</option>
+                        </select>
                     </div>
-                    <div class="fgroup"><label>कितना? (KG) *</label><input type="number" id="fQty" placeholder="जैसे: 50" required min="1"></div>
+                    <div class="fgroup"><label>कौन सा अनाज? *</label>
+                        <select id="fGrain" required onchange="updateSubtypeDropdown()">
+                            <option value="">चुनें</option>
+                            <option>गेहूं</option><option>चावल</option><option>दाल</option>
+                            <option>सरसों</option><option>मक्का</option><option>बाजरा</option>
+                            <option>ज्वार</option><option>गन्ना</option><option>कपास</option>
+                            <option>अन्य</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Subtype dropdown — grain select ke baad aata hai -->
+                <div class="fgroup" id="fSubtypeWrap" style="display:none;">
+                    <label>किस्म / Variety <span style="font-weight:400;color:#aaa;font-size:11px;">(optional)</span></label>
+                    <select id="fSubtype"></select>
                 </div>
                 <div class="frow">
+                    <div class="fgroup"><label>कितना? (KG) *</label><input type="number" id="fQty" placeholder="जैसे: 50" required min="1"></div>
                     <div class="fgroup"><label>कीमत (₹/KG) *</label><input type="number" id="fPrice" placeholder="जैसे: 25" required min="1"></div>
-                    <div class="fgroup"><label>आपका क्षेत्र *</label><input type="text" id="fLoc" placeholder="जैसे: अनूपशहर" required></div>
                 </div>
+                <div class="fgroup"><label>आपका क्षेत्र *</label><input type="text" id="fLoc" placeholder="जैसे: अनूपशहर" required></div>
                 <div class="fgroup"><label>WhatsApp नंबर *</label>
                     <div class="phone-wrap"><span class="phone-prefix">+91</span>
                         <input class="phone-input-pad" type="tel" id="fWA" placeholder="10 अंक" required maxlength="10" oninput="validatePhone(this,'fWAErr','fWAOk')" onkeypress="return event.charCode>=48&&event.charCode<=57">
@@ -280,6 +297,7 @@
                     <div class="phone-ok" id="fWAOk">✅ नंबर सही है</div>
                 </div>
                 <div class="fgroup"><label>कोई खास बात?</label><textarea id="fDesc" rows="2" placeholder="जैसे: नया माल, जैविक..."></textarea></div>
+                <p style="font-size:12px;color:#888;margin-bottom:8px;text-align:center;">🔐 Submit करने पर Google Login माँगा जाएगा</p>
                 <button type="submit" class="btn-submit" id="fSubmitBtn">✅ मुफ्त लिस्टिंग जोड़ें</button>
             </form>
         </div>

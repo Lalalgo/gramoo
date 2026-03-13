@@ -46,7 +46,35 @@ const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
 
-// ── 2. Meta ──────────────────────────────────────────────
+// ── 2b. Grain Subtypes Master ─────────────────────────────
+const GRAIN_SUBTYPES = {
+    "गेहूं":   ["DBW-187","DBW-303","HD-2967","HD-3086","PBW-343","GW-496","K-307","Sharbati","Lokwan","अन्य"],
+    "चावल":   ["बासमती (Pusa 1121)","बासमती (1509)","बासमती (1718)","सरबती","HMT","PR-106","Swarna","MTU-7029","Parmal","अन्य"],
+    "दाल":    ["अरहर (तुअर)","मूंग","उड़द","मसूर","चना","राजमा","मटर","लोबिया","अन्य"],
+    "सरसों":  ["पीली सरसों","काली सरसों","Pusa Bold","Laxmi","RH-749","RH-30","Vardan","अन्य"],
+    "मक्का":  ["पीला मक्का","सफेद मक्का","Pioneer P3396","DKC-9144","Bio-9681","Navjot","अन्य"],
+    "बाजरा":  ["HHB-67","HHB-197","Raj-171","MPMH-17","Kaveri Gold","अन्य"],
+    "ज्वार":  ["CSH-16","SPH-1634","Maldandi","अन्य"],
+    "गन्ना":  ["Co-0238","Co-0118","CoJ-64","Up-05125","अन्य"],
+    "कपास":   ["BT Cotton","Hybrid","देसी","अन्य"],
+    "अन्य":   ["अन्य"],
+};
+
+function updateSubtypeDropdown() {
+    const grain   = document.getElementById("fGrain")?.value || "";
+    const wrap    = document.getElementById("fSubtypeWrap");
+    const sel     = document.getElementById("fSubtype");
+    if (!wrap || !sel) return;
+    const list = GRAIN_SUBTYPES[grain] || [];
+    if (!grain || !list.length) {
+        wrap.style.display = "none";
+        sel.innerHTML = "";
+        return;
+    }
+    wrap.style.display = "block";
+    sel.innerHTML = `<option value="">-- किस्म चुनें (optional) --</option>` +
+        list.map(s => `<option value="${s}">${s}</option>`).join("");
+}
 const grainMeta = {
     "गेहूं": {icon:"🌾",bg:"#fff8e1"}, "चावल":  {icon:"🍚",bg:"#e8f5e9"},
     "दाल":   {icon:"🫘",bg:"#fce4ec"}, "सरसों": {icon:"🟡",bg:"#fff3e0"},
@@ -636,6 +664,21 @@ function switchSubTab(tab, el) {
     G.subTab = tab;
     document.querySelectorAll(".sub-tab").forEach(t => t.classList.remove("active"));
     el.classList.add("active");
+    // Post bar update
+    const pb  = DOM.postBarText(), btn = DOM.postBtn();
+    if (pb && btn) {
+        if (tab === "kharido") {
+            pb.innerHTML = 'अनाज खरीदना है? <b>मुफ्त में Request डालें!</b>';
+            btn.textContent = "+ Request डालें";
+            btn.className = "btn-post blue";
+            btn.onclick = () => openForm("becho"); // form mein type=kharido bhi ho sakta
+        } else {
+            pb.innerHTML = 'आपके पास अनाज है? <b>मुफ्त में लिस्टिंग दें!</b>';
+            btn.textContent = "+ लिस्टिंग डालें";
+            btn.className = "btn-post";
+            btn.onclick = () => openForm("becho");
+        }
+    }
     filterListings();
 }
 function switchFormTab(sec, el) {
@@ -646,26 +689,60 @@ function switchFormTab(sec, el) {
 }
 
 // ── 13. Form Open / Close ────────────────────────────────
-function openForm() {
+function openForm(defaultTab) {
     // Shop tab active hai to shop.html par redirect
     if (G.mainTab === "shop") {
         window.location.href = "shop.html";
         return;
     }
-    if (!G.currentUser) {
-        if (confirm("लिस्टिंग डालने के लिए पहले Login करें।\n\nLogin करना है?")) {
-            googleLogin();
-        }
+
+    // "फसल खरीदें" — seedha listings dikhao, form nahi
+    if (defaultTab === "kharido") {
+        // Scroll to listings
+        const subTabsRow = DOM.subTabsRow();
+        const kharidoTab = subTabsRow?.querySelector(".sub-tab:nth-child(2)");
+        if (kharidoTab) switchSubTab("kharido", kharidoTab);
+        // Smooth scroll to listings
+        const listEl = DOM.listingsContainer();
+        if (listEl) listEl.scrollIntoView({ behavior: "smooth", block: "start" });
         return;
     }
+
     DOM.modalOverlay().classList.add("active");
     DOM.successMsg().style.display      = "none";
     DOM.savingIndicator().style.display = "none";
     const tabs = document.querySelectorAll(".modal-tab");
-    if (G.mainTab === "suchna") switchFormTab("suchna-form", tabs[1]);
+    if (G.mainTab === "suchna") switchFormTab("suchna-form", tabs[2]);
     else                        switchFormTab("anaaj-form",  tabs[0]);
+
+    // Default type = becho
+    const typeSel = document.getElementById("fType");
+    if (typeSel) typeSel.value = "बेचना है";
 }
 function closeForm() { DOM.modalOverlay().classList.remove("active"); }
+
+// Login required popup — contact/submit ke waqt
+function requireLogin(msg) {
+    const box = document.createElement("div");
+    box.id = "loginRequiredBox";
+    box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
+    box.innerHTML = `
+        <div style="background:white;border-radius:20px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+            <div style="font-size:40px;margin-bottom:10px;">🔐</div>
+            <div style="font-size:17px;font-weight:800;color:#1b5e20;margin-bottom:8px;">${msg || "Login करें"}</div>
+            <div style="font-size:13px;color:#888;margin-bottom:20px;">Google account से एक क्लिक में Login — बिल्कुल मुफ्त</div>
+            <button id="loginRequiredBtn" style="width:100%;padding:13px;background:#1b5e20;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;">
+                🔐 Google से Login करें
+            </button>
+            <button id="loginRequiredClose" style="width:100%;padding:10px;background:#f5f5f5;color:#666;border:none;border-radius:12px;font-size:14px;cursor:pointer;">
+                अभी नहीं
+            </button>
+        </div>`;
+    document.body.appendChild(box);
+    document.getElementById("loginRequiredBtn").onclick   = () => { box.remove(); googleLogin(); };
+    document.getElementById("loginRequiredClose").onclick = () => box.remove();
+    box.addEventListener("click", e => { if (e.target === box) box.remove(); });
+}
 
 // ── 14. Location ─────────────────────────────────────────
 function openLocationPopup()  { DOM.locationPopup().classList.add("active"); }
@@ -713,22 +790,40 @@ function setLoading(btnId, on) {
 
 async function addAnaajListing(e) {
     e.preventDefault();
+    // Login check — sirf submit par
+    if (!G.currentUser) {
+        requireLogin("लिस्टिंग डालने के लिए Login करें");
+        return;
+    }
     const inp = DOM.fWA();
     if (!validatePhone(inp,"fWAErr","fWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
     const wa = inp.value.trim();
     if (!checkSpam(wa)) return;
     setLoading("fSubmitBtn", true);
+
+    const listingType = document.getElementById("fType")?.value || "बेचना है";
+    const subtype     = document.getElementById("fSubtype")?.value || "";
+    const collection_name = listingType === "खरीदना है" ? "buy" : "sell";
+
     try {
-        await addDoc(collection(db,"sell"), {
-            name: DOM.fName().value, grain: DOM.fGrain().value,
-            qty:  parseInt(DOM.fQty().value), price: parseInt(DOM.fPrice().value),
-            loc:  DOM.fLoc().value, wa: encPhone(wa), desc: DOM.fDesc().value,
-            tag:"naya", verified:false,
-            lat: G.userLat||28.40, lng: G.userLng||77.85,
+        await addDoc(collection(db, collection_name), {
+            name:  DOM.fName().value,
+            grain: DOM.fGrain().value,
+            subtype: subtype,
+            type:  listingType,
+            qty:   parseInt(DOM.fQty().value),
+            price: parseInt(DOM.fPrice().value),
+            loc:   DOM.fLoc().value,
+            wa:    encPhone(wa),
+            desc:  DOM.fDesc().value,
+            tag:   "naya", verified: false,
+            uid:   G.currentUser.uid,
+            lat:   G.userLat||28.40, lng: G.userLng||77.85,
             createdAt: serverTimestamp()
         });
         DOM.successMsg().style.display = "block";
         e.target.reset();
+        updateSubtypeDropdown(); // reset subtype
         setTimeout(() => { closeForm(); openMissedCall(); }, 1500);
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("fSubmitBtn", false);
@@ -736,6 +831,10 @@ async function addAnaajListing(e) {
 
 async function addShopListing(e) {
     e.preventDefault();
+    if (!G.currentUser) {
+        requireLogin("दुकान लिस्टिंग के लिए Login करें");
+        return;
+    }
     const inp = DOM.sWA();
     if (!validatePhone(inp,"sWAErr","sWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
     const wa = inp.value.trim();
@@ -758,6 +857,10 @@ async function addShopListing(e) {
 
 async function addSuchnaListing(e) {
     e.preventDefault();
+    if (!G.currentUser) {
+        requireLogin("सूचना प्रकाशित करने के लिए Login करें");
+        return;
+    }
     const inp = DOM.nPhone();
     if (!validatePhone(inp,"nPhErr","nPhOk")) { alert("कृपया सही संपर्क नंबर डालें"); return; }
     const ph = inp.value.trim();
@@ -864,26 +967,31 @@ function bindEvents() {
         if (!btn) return;
         const action = btn.dataset.action;
         if (action==="wa-grain") {
+            if (!G.currentUser) { requireLogin("संपर्क करने के लिए Login करें"); return; }
             const {wa, grain, qty, price} = btn.dataset;
             if (wa==="SAMPLE") { alert("यह नमूना डेटा है।"); return; }
             window.open(`https://wa.me/91${decPhone(wa)}?text=${encodeURIComponent(`नमस्ते! Gramoo पर आपकी ${grain} (${qty} KG @ ₹${price}/KG) देखी। उपलब्ध है?`)}`, "_blank");
         }
         else if (action==="wa-shop") {
+            if (!G.currentUser) { requireLogin("संपर्क करने के लिए Login करें"); return; }
             const {wa, prod} = btn.dataset;
             if (wa==="SAMPLE") { alert("यह नमूना डेटा है।"); return; }
             window.open(`https://wa.me/91${decPhone(wa)}?text=${encodeURIComponent(`नमस्ते! Gramoo पर आपका ${prod} देखा। अधिक जानकारी दें।`)}`, "_blank");
         }
         else if (action==="wa-suchna") {
+            if (!G.currentUser) { requireLogin("संपर्क करने के लिए Login करें"); return; }
             const {ph, title} = btn.dataset;
             if (ph==="SAMPLE") { alert("यह नमूना डेटा है।"); return; }
             window.open(`https://wa.me/91${decPhone(ph)}?text=${encodeURIComponent(`नमस्ते! Gramoo पर "${title}" देखी। जानकारी दें।`)}`, "_blank");
         }
         else if (action==="wa-fullshop") {
+            if (!G.currentUser) { requireLogin("संपर्क करने के लिए Login करें"); return; }
             const {phone, naam} = btn.dataset;
             if (!phone || phone==="SAMPLE") { alert("यह नमूना दुकान है।"); return; }
             window.open(`https://wa.me/91${decPhone(phone)}?text=${encodeURIComponent(`नमस्ते! Gramoo पर आपकी दुकान "${naam}" देखी। उपलब्ध stock जानना था।`)}`, "_blank");
         }
         else if (action==="call") {
+            if (!G.currentUser) { requireLogin("संपर्क करने के लिए Login करें"); return; }
             const {ph} = btn.dataset;
             if (ph==="SAMPLE") return;
             window.open("tel:"+decPhone(ph));
@@ -900,6 +1008,7 @@ function bindEvents() {
     document.addEventListener("click", e => {
         const btn = e.target.closest("button[data-action='wa-fullshop']");
         if (!btn) return;
+        if (!G.currentUser) { requireLogin("संपर्क करने के लिए Login करें"); return; }
         const {phone, naam} = btn.dataset;
         if (!phone || phone==="SAMPLE") { alert("यह नमूना दुकान है।"); return; }
         window.open(`https://wa.me/91${decPhone(phone)}?text=${encodeURIComponent(`नमस्ते! Gramoo पर आपकी दुकान "${naam}" देखी। उपलब्ध stock जानना था।`)}`, "_blank");
@@ -1077,6 +1186,7 @@ function renderMyListings() {
 
 
 // ── Window Exports (type=module ke liye zaroori) ─────────
+window.updateSubtypeDropdown = updateSubtypeDropdown;
 window.runShopSearch     = runShopSearch;
 window.openForm          = openForm;
 window.closeForm         = closeForm;
