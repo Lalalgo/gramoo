@@ -264,7 +264,7 @@
                 <div class="fgroup"><label>आपका नाम *</label><input type="text" id="fName" placeholder="जैसे: रमेश कुमार" required></div>
                 <div class="frow">
                     <div class="fgroup"><label>बेचना है / खरीदना है *</label>
-                        <select id="fType" required>
+                        <select id="fType" required onchange="updateSubtypeDropdown()">
                             <option value="बेचना है">🌾 बेचना है</option>
                             <option value="खरीदना है">🛒 खरीदना है</option>
                         </select>
@@ -296,7 +296,7 @@
                     <div class="phone-error" id="fWAErr">❌ सही नंबर डालें</div>
                     <div class="phone-ok" id="fWAOk">✅ नंबर सही है</div>
                 </div>
-                <div class="fgroup"><label>कोई खास बात?</label><textarea id="fDesc" rows="2" placeholder="जैसे: नया माल, जैविक..."></textarea></div>
+                <div class="fgroup"><label id="fDescLabel">कोई खास बात? <span style="font-weight:400;color:#aaa;font-size:11px;">(optional — पर लिखें तो जल्दी मिलेगा)</span></label><textarea id="fDesc" rows="2" placeholder="जैसे: नया माल, जैविक, जल्दी चाहिए..."></textarea></div>
                 <p style="font-size:12px;color:#888;margin-bottom:8px;text-align:center;">🔐 Submit करने पर Google Login माँगा जाएगा</p>
                 <button type="submit" class="btn-submit" id="fSubmitBtn">✅ मुफ्त लिस्टिंग जोड़ें</button>
             </form>

@@ -64,16 +64,40 @@ function updateSubtypeDropdown() {
     const grain   = document.getElementById("fGrain")?.value || "";
     const wrap    = document.getElementById("fSubtypeWrap");
     const sel     = document.getElementById("fSubtype");
-    if (!wrap || !sel) return;
-    const list = GRAIN_SUBTYPES[grain] || [];
-    if (!grain || !list.length) {
-        wrap.style.display = "none";
-        sel.innerHTML = "";
-        return;
+    const desc    = document.getElementById("fDesc");
+    const descLbl = document.getElementById("fDescLabel");
+
+    // Subtype dropdown
+    if (wrap && sel) {
+        const list = GRAIN_SUBTYPES[grain] || [];
+        if (!grain || !list.length) {
+            wrap.style.display = "none";
+            sel.innerHTML = "";
+        } else {
+            wrap.style.display = "block";
+            sel.innerHTML = `<option value="">-- किस्म चुनें (optional) --</option>` +
+                list.map(s => `<option value="${s}">${s}</option>`).join("");
+        }
     }
-    wrap.style.display = "block";
-    sel.innerHTML = `<option value="">-- किस्म चुनें (optional) --</option>` +
-        list.map(s => `<option value="${s}">${s}</option>`).join("");
+
+    // fDesc placeholder + label update
+    if (desc) {
+        if (grain) {
+            const typeVal = document.getElementById("fType")?.value || "बेचना है";
+            if (typeVal === "बेचना है") {
+                desc.placeholder = `अपने ${grain} के बारे में बताएं — जैसे: नया माल है, खेत से सीधे, जैविक, कब से उपलब्ध, कोई खास बात...`;
+            } else {
+                desc.placeholder = `आपको कैसा ${grain} चाहिए — जैसे: अच्छी किस्म, कम नमी, जल्दी चाहिए, delivery चाहिए...`;
+            }
+        } else {
+            desc.placeholder = "जैसे: नया माल, जैविक, जल्दी चाहिए...";
+        }
+    }
+    if (descLbl && grain) {
+        descLbl.innerHTML = `अपने <b style="color:#1b5e20">${grain}</b> के बारे में बताएं <span style="font-weight:400;color:#aaa;font-size:11px;">(optional — पर लिखें तो जल्दी मिलेगा)</span>`;
+    } else if (descLbl) {
+        descLbl.innerHTML = `कोई खास बात? <span style="font-weight:400;color:#aaa;font-size:11px;">(optional)</span>`;
+    }
 }
 const grainMeta = {
     "गेहूं": {icon:"🌾",bg:"#fff8e1"}, "चावल":  {icon:"🍚",bg:"#e8f5e9"},
