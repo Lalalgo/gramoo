@@ -460,7 +460,6 @@ function switchMainTab(tab, el) {
 
     if (mainLayout)  mainLayout.style.display  = isShop ? "none" : "";
     if (shopSection) shopSection.style.display = isShop ? "block" : "none";
-    if (postBarEl)   postBarEl.style.display   = isShop ? "none" : "";
     if (heroEl)      heroEl.style.display      = isShop ? "none" : "";
     if (mainTabsEl)  mainTabsEl.style.display  = isShop ? "none" : "";
 
@@ -492,9 +491,7 @@ function switchMainTab(tab, el) {
         return;
     }
 
-    const pb  = DOM.postBarText(), btn = DOM.postBtn();
-    if (tab==="suchna") { pb.innerHTML='सरकारी सूचना देनी है? <b>मुफ्त में प्रकाशित करें!</b>'; btn.className="btn-post blue"; }
-    else                { pb.innerHTML='आपके पास अनाज है? <b>मुफ्त में लिस्टिंग दें!</b>';       btn.className="btn-post"; }
+
     filterListings();
 }
 // ── Master Item List (same as shop.html) ─────────────────
@@ -710,21 +707,6 @@ function switchSubTab(tab, el) {
     G.subTab = tab;
     document.querySelectorAll(".sub-tab").forEach(t => t.classList.remove("active"));
     el.classList.add("active");
-    // Post bar update
-    const pb  = DOM.postBarText(), btn = DOM.postBtn();
-    if (pb && btn) {
-        if (tab === "kharido") {
-            pb.innerHTML = 'अनाज खरीदना है? <b>मुफ्त में Request डालें!</b>';
-            btn.textContent = "+ Request डालें";
-            btn.className = "btn-post blue";
-            btn.onclick = () => openForm("becho"); // form mein type=kharido bhi ho sakta
-        } else {
-            pb.innerHTML = 'आपके पास अनाज है? <b>मुफ्त में लिस्टिंग दें!</b>';
-            btn.textContent = "+ लिस्टिंग डालें";
-            btn.className = "btn-post";
-            btn.onclick = () => openForm("becho");
-        }
-    }
     filterListings();
 }
 function switchFormTab(sec, el) {
