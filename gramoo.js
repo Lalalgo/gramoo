@@ -408,13 +408,35 @@ function filterListings() {
 function updateStats() {
     DOM.totalListings().textContent = G.allSell.length + G.allBuy.length + G.allShop.length;
     DOM.noticeCount().textContent   = G.allSuchna.length;
+    // Sub-tab counts
+    const sc = document.getElementById("sellCount");
+    const bc = document.getElementById("buyCount");
+    const ls = document.getElementById("liveSellCount");
+    const lb = document.getElementById("liveBuyCount");
+    if (sc) sc.textContent = G.allSell.length;
+    if (bc) bc.textContent = G.allBuy.length;
+    if (ls) ls.textContent = G.allSell.length;
+    if (lb) lb.textContent = G.allBuy.length;
 }
 function updateActivity() {
     const items = [];
-    G.allSell.slice(0,3).forEach(i   => items.push({blue:false, text:`<b>${i.grain||"अनाज"}</b> बेचने की listing — ${i.loc||""}`, time:timeAgo(i.createdAt)}));
-    G.allSuchna.slice(0,3).forEach(i => items.push({blue:true,  text:`📢 ${i.title||""}`,                                           time:timeAgo(i.createdAt)}));
-    items.sort(()=>Math.random()-0.5);
-    DOM.activityFeed().innerHTML = items.slice(0,6).map(i =>
+    // Sirf sell aur buy — time ke hisaab se sort
+    G.allSell.slice(0,4).forEach(i => items.push({
+        blue: false,
+        text: `🌾 <b>${i.name||"किसान"}</b> — <b>${i.grain||"अनाज"}</b> बेचना है — ${i.loc||""}`,
+        ms: i.createdAt ? i.createdAt.toMillis() : 0,
+        time: timeAgo(i.createdAt)
+    }));
+    G.allBuy.slice(0,4).forEach(i => items.push({
+        blue: true,
+        text: `🛒 <b>${i.name||"खरीदार"}</b> — <b>${i.grain||"अनाज"}</b> खरीदना है — ${i.loc||""}`,
+        ms: i.createdAt ? i.createdAt.toMillis() : 0,
+        time: timeAgo(i.createdAt)
+    }));
+    items.sort((a,b) => b.ms - a.ms);
+    const feed = DOM.activityFeed();
+    if (!feed) return;
+    feed.innerHTML = items.slice(0,6).map(i =>
         `<div class="activity-item"><div class="dot${i.blue?" blue":""}"></div><div><span>${i.text}</span><span class="atime">${i.time}</span></div></div>`
     ).join("") || `<div class="activity-item"><div class="dot"></div><div><span>अभी कोई गतिविधि नहीं</span></div></div>`;
 }
@@ -1080,21 +1102,15 @@ function startListeners() {
 
 // ── Tab Settings from Firebase ───────────────────────────
 async function loadTabSettings() {
-    // Form modal tabs
-    const formTabShop   = document.querySelector(".modal-tab[onclick*='shop-form']");
     const formTabSuchna = document.querySelector(".modal-tab[onclick*='suchna-form']");
 
     function applySettings(shopOn, suchnaOn) {
-        // Main nav tabs hide/show
         const mainTabs = document.querySelectorAll(".main-tab");
         if (mainTabs[1]) mainTabs[1].style.display = shopOn   ? "" : "none";
         if (mainTabs[2]) mainTabs[2].style.display = suchnaOn ? "" : "none";
-
-        // Form modal tabs hide/show
-        if (formTabShop)   formTabShop.style.display   = shopOn   ? "" : "none";
+        // Form modal tab bhi hide karo agar suchna off hai
         if (formTabSuchna) formTabSuchna.style.display = suchnaOn ? "" : "none";
-
-        // Agar disabled tab pe already hain to anaaj pe le jao
+        // Agar disabled tab pe hain to anaaj pe wapas lo
         if (!shopOn   && G.mainTab === "shop")   switchMainTab("anaaj", document.querySelector(".main-tab"));
         if (!suchnaOn && G.mainTab === "suchna") switchMainTab("anaaj", document.querySelector(".main-tab"));
     }
