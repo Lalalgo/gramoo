@@ -720,15 +720,15 @@ function openForm(defaultTab) {
         return;
     }
 
-    // "फसल खरीदें" — seedha listings dikhao, form nahi
+    // "फसल खरीदें" — form kholo with type=खरीदना है
     if (defaultTab === "kharido") {
-        // Scroll to listings
-        const subTabsRow = DOM.subTabsRow();
-        const kharidoTab = subTabsRow?.querySelector(".sub-tab:nth-child(2)");
-        if (kharidoTab) switchSubTab("kharido", kharidoTab);
-        // Smooth scroll to listings
-        const listEl = DOM.listingsContainer();
-        if (listEl) listEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        DOM.modalOverlay().classList.add("active");
+        DOM.successMsg().style.display      = "none";
+        DOM.savingIndicator().style.display = "none";
+        const tabs = document.querySelectorAll(".modal-tab");
+        switchFormTab("anaaj-form", tabs[0]);
+        const typeSel = document.getElementById("fType");
+        if (typeSel) { typeSel.value = "खरीदना है"; updateSubtypeDropdown(); }
         return;
     }
 
