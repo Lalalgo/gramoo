@@ -1080,31 +1080,35 @@ function startListeners() {
 
 // ── Tab Settings from Firebase ───────────────────────────
 async function loadTabSettings() {
+    // Form modal tabs
+    const formTabShop   = document.querySelector(".modal-tab[onclick*='shop-form']");
+    const formTabSuchna = document.querySelector(".modal-tab[onclick*='suchna-form']");
+
+    function applySettings(shopOn, suchnaOn) {
+        // Main nav tabs hide/show
+        const mainTabs = document.querySelectorAll(".main-tab");
+        if (mainTabs[1]) mainTabs[1].style.display = shopOn   ? "" : "none";
+        if (mainTabs[2]) mainTabs[2].style.display = suchnaOn ? "" : "none";
+
+        // Form modal tabs hide/show
+        if (formTabShop)   formTabShop.style.display   = shopOn   ? "" : "none";
+        if (formTabSuchna) formTabSuchna.style.display = suchnaOn ? "" : "none";
+
+        // Agar disabled tab pe already hain to anaaj pe le jao
+        if (!shopOn   && G.mainTab === "shop")   switchMainTab("anaaj", document.querySelector(".main-tab"));
+        if (!suchnaOn && G.mainTab === "suchna") switchMainTab("anaaj", document.querySelector(".main-tab"));
+    }
+
     try {
         const snap = await getDoc(doc(db, "settings", "tabs"));
         if (snap.exists()) {
             const d = snap.data();
-            const tabs = document.querySelectorAll(".main-tab");
-            // tabs[1] = shop, tabs[2] = suchna
-            if (d.shop === false) {
-                tabs[1].style.display = "none";
-            } else {
-                tabs[1].style.display = "";
-            }
-            if (d.suchna === false) {
-                tabs[2].style.display = "none";
-            } else {
-                tabs[2].style.display = "";
-            }
+            applySettings(d.shop === true, d.suchna === true);
         } else {
-            // Default: dono band
-            document.querySelectorAll(".main-tab")[1].style.display = "none";
-            document.querySelectorAll(".main-tab")[2].style.display = "none";
+            applySettings(false, false);
         }
     } catch(e) {
-        // Network error — dono hide rakho by default
-        document.querySelectorAll(".main-tab")[1].style.display = "none";
-        document.querySelectorAll(".main-tab")[2].style.display = "none";
+        applySettings(false, false);
     }
 }
 
