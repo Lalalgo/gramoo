@@ -1,0 +1,33 @@
+{
+  "name": "Gramoo — किसान मंडी",
+  "short_name": "Gramoo",
+  "description": "बिना दलाल — सीधा खरीदो बेचो | मुफ्त ऑनलाइन अनाज मंडी",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#1b5e20",
+  "theme_color": "#1b5e20",
+  "orientation": "portrait",
+  "lang": "hi",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["shopping", "agriculture", "business"]
+}
