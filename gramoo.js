@@ -1107,9 +1107,8 @@ window.submitFeedback = async function() {
 
 // ── Google Auth ───────────────────────────────────────────
 async function googleLogin() {
-    // Already logged in hai to kuch mat karo — login box hata do
-    const currentUser = (window._G && window._G.currentUser) || null;
-    if (currentUser) {
+    // Already logged in hai — box hata do, kuch mat karo
+    if (G.currentUser) {
         const box = document.getElementById("loginRequiredBox");
         if (box) box.remove();
         return;
@@ -1117,10 +1116,8 @@ async function googleLogin() {
     try {
         const isMobile = /mobile|android|iphone|ipad/i.test(navigator.userAgent);
         if (isMobile) {
-            // Mobile: redirect — COOP error nahi aata
             await signInWithRedirect(auth, provider);
         } else {
-            // Desktop: popup
             const result = await signInWithPopup(auth, provider);
             if (result?.user) {
                 const box = document.getElementById("loginRequiredBox");
@@ -1152,7 +1149,6 @@ function updateAuthUI(user) {
 }
 
 function startAuthListener() {
-    // Mobile redirect ke baad result handle karo
     getRedirectResult(auth).then(result => {
         if (result?.user) {
             const box = document.getElementById("loginRequiredBox");
@@ -1162,7 +1158,6 @@ function startAuthListener() {
 
     onAuthStateChanged(auth, user => {
         updateAuthUI(user);
-        // Login hote hi loginRequiredBox auto-remove
         if (user) {
             const box = document.getElementById("loginRequiredBox");
             if (box) box.remove();
