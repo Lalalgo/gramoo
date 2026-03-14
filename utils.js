@@ -45,13 +45,18 @@ export function decPhone(e) {
 // ── Spam Control (localStorage based) ────────────────────
 // Max 3 listings per 5 min per phone number
 export function checkSpam(phone) {
-    const key = "gramoo_sp_" + phone, LIM = 3, WIN = 300000;
+    // UID + phone se key — har user ki alag limit
+    // Testing se real users affect nahi honge
+    const uid = (window._G?.currentUser?.uid || "guest").slice(-6);
+    const key = "gramoo_sp_" + uid + "_" + phone;
+    const LIM = 3, WIN = 300000;
     let arr = [];
     try { arr = JSON.parse(localStorage.getItem(key) || "[]"); } catch(x) {}
     const now = Date.now();
     arr = arr.filter(t => now - t < WIN);
     if (arr.length >= LIM) {
-        alert("⚠️ 5 मिनट में 3 से ज़्यादा listing नहीं। " + Math.ceil((WIN-(now-arr[0]))/60000) + " मिनट बाद try करें।");
+        const wait = Math.ceil((WIN - (now - arr[0])) / 60000);
+        alert("⚠️ 5 मिनट में 3 से ज़्यादा listing नहीं।\n" + wait + " मिनट बाद try करें।");
         return false;
     }
     arr.push(now);
