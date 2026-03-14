@@ -19,8 +19,26 @@ const DOM = window._DOM || {};
 
 // ── Google Auth ───────────────────────────────────────────
 async function googleLogin() {
+    // Already logged in hai to kuch mat karo — login box hata do
+    const currentUser = (window._G && window._G.currentUser) || null;
+    if (currentUser) {
+        const box = document.getElementById("loginRequiredBox");
+        if (box) box.remove();
+        return;
+    }
     try {
-        await signInWithPopup(auth, provider);
+        const isMobile = /mobile|android|iphone|ipad/i.test(navigator.userAgent);
+        if (isMobile) {
+            // Mobile: redirect — COOP error nahi aata
+            await signInWithRedirect(auth, provider);
+        } else {
+            // Desktop: popup
+            const result = await signInWithPopup(auth, provider);
+            if (result?.user) {
+                const box = document.getElementById("loginRequiredBox");
+                if (box) box.remove();
+            }
+        }
     } catch(e) {
         const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
         if (!ignore.includes(e.code)) alert("Login failed: " + e.message);
@@ -46,7 +64,22 @@ function updateAuthUI(user) {
 }
 
 function startAuthListener() {
-    onAuthStateChanged(auth, user => updateAuthUI(user));
+    // Mobile redirect ke baad result handle karo
+    getRedirectResult(auth).then(result => {
+        if (result?.user) {
+            const box = document.getElementById("loginRequiredBox");
+            if (box) box.remove();
+        }
+    }).catch(() => {});
+
+    onAuthStateChanged(auth, user => {
+        updateAuthUI(user);
+        // Login hote hi loginRequiredBox auto-remove
+        if (user) {
+            const box = document.getElementById("loginRequiredBox");
+            if (box) box.remove();
+        }
+    });
 }
 
 function openMyListings() {
