@@ -719,7 +719,7 @@ function startShopListener() {
             snap.forEach(d => {
                 const data = d.data();
                 // Only approved shops show on main page
-                if (data.status === "approved" || data.naam) {
+                if (data.status === "approved") {
                     arr.push({ id: d.id, ...data });
                 }
             });
@@ -877,16 +877,18 @@ async function addAnaajListing(e) {
             createdAt: serverTimestamp()
         });
         DOM.successMsg().style.display = "block";
-        e.target.reset();
-        updateSubtypeDropdown();
-        sendListingEmail(G.currentUser, {
+        // email ke liye values reset se PEHLE save karo
+        const emailData = {
             type:  listingType,
             grain: DOM.fGrain().value,
-            qty:   document.getElementById('fQty')?.value  || '',
-            price: document.getElementById('fPrice')?.value || '',
+            qty:   DOM.fQty().value   || '',
+            price: DOM.fPrice().value || '',
             loc:   DOM.fLoc().value,
             name:  DOM.fName().value,
-        });
+        };
+        e.target.reset();
+        updateSubtypeDropdown();
+        sendListingEmail(G.currentUser, emailData);
         setTimeout(() => { closeForm(); openMissedCall(); }, 1500);
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("fSubmitBtn", false);
@@ -908,6 +910,7 @@ async function addShopListing(e) {
             name: DOM.sName().value, cat: DOM.sCategory().value,
             product: DOM.sProduct().value, price: DOM.sPrice().value,
             loc: DOM.sLoc().value, wa: encPhone(wa), desc: DOM.sDesc().value,
+            uid: G.currentUser.uid,
             lat: G.userLat||28.40, lng: G.userLng||77.85,
             createdAt: serverTimestamp()
         });
@@ -1148,7 +1151,8 @@ async function loadTabSettings() {
             applySettings(false, false);
         }
     } catch(e) {
-        applySettings(false, false);
+        // Network error ho to tabs default ON rakhein
+        applySettings(true, true);
     }
 }
 
