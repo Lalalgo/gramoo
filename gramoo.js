@@ -42,18 +42,6 @@ import { googleLogin, updateAuthUI, startAuthListener, openMyListings, closeMyLi
 
 
 // ── 2b. Grain Subtypes Master ─────────────────────────────
-const GRAIN_SUBTYPES = {
-    "गेहूं":   ["DBW-187","DBW-303","HD-2967","HD-3086","PBW-343","GW-496","K-307","Sharbati","Lokwan","अन्य"],
-    "चावल":   ["बासमती (Pusa 1121)","बासमती (1509)","बासमती (1718)","सरबती","HMT","PR-106","Swarna","MTU-7029","Parmal","अन्य"],
-    "दाल":    ["अरहर (तुअर)","मूंग","उड़द","मसूर","चना","राजमा","मटर","लोबिया","अन्य"],
-    "सरसों":  ["पीली सरसों","काली सरसों","Pusa Bold","Laxmi","RH-749","RH-30","Vardan","अन्य"],
-    "मक्का":  ["पीला मक्का","सफेद मक्का","Pioneer P3396","DKC-9144","Bio-9681","Navjot","अन्य"],
-    "बाजरा":  ["HHB-67","HHB-197","Raj-171","MPMH-17","Kaveri Gold","अन्य"],
-    "ज्वार":  ["CSH-16","SPH-1634","Maldandi","अन्य"],
-    "गन्ना":  ["Co-0238","Co-0118","CoJ-64","Up-05125","अन्य"],
-    "कपास":   ["BT Cotton","Hybrid","देसी","अन्य"],
-    "अन्य":   ["अन्य"],
-};
 
 function updateSubtypeDropdown() {
     const grain   = document.getElementById("fGrain")?.value || "";
@@ -93,93 +81,22 @@ function updateSubtypeDropdown() {
     } else if (descLbl) {
         descLbl.innerHTML = `कोई खास बात? <span style="font-weight:400;color:#aaa;font-size:11px;">(optional)</span>`;
     }
-}
-const grainMeta = {
-    "गेहूं": {icon:"🌾",bg:"#fff8e1"}, "चावल":  {icon:"🍚",bg:"#e8f5e9"},
-    "दाल":   {icon:"🫘",bg:"#fce4ec"}, "सरसों": {icon:"🟡",bg:"#fff3e0"},
-    "मक्का": {icon:"🌽",bg:"#e0f7fa"}, "बाजरा": {icon:"🌿",bg:"#e8eaf6"},
-    "अन्य":  {icon:"🌱",bg:"#f3e5f5"}
-};
-const shopMeta = {
+}const shopMeta = {
     "खाद":          {icon:"🌿",bg:"#e8f5e9"}, "बीज":          {icon:"🌱",bg:"#f1f8e9"},
     "कीटनाशक":      {icon:"💊",bg:"#fff3e0"}, "कृषि यंत्र":  {icon:"🚜",bg:"#e3f2fd"},
     "सिंचाई उपकरण": {icon:"💧",bg:"#e0f7fa"}, "पशु आहार":    {icon:"🐄",bg:"#fce4ec"},
     "अन्य":         {icon:"🌾",bg:"#f5f5f5"}
 };
-const suchnaMeta = {
-    "खाद उपलब्धता":     {icon:"🌿",bg:"#e8f5e9"}, "बीज वितरण":       {icon:"🌱",bg:"#f1f8e9"},
-    "कीटनाशक उपलब्धता": {icon:"💊",bg:"#fff3e0"}, "सरकारी योजना":    {icon:"🏛️",bg:"#e3f2fd"},
-    "PM किसान सूची":    {icon:"💰",bg:"#fff8e1"}, "फसल बीमा":        {icon:"📋",bg:"#f3e5f5"},
-    "यंत्र किराया":     {icon:"🚜",bg:"#e3f2fd"}, "अन्य सूचना":      {icon:"📣",bg:"#fce4ec"}
-};
-
-// ── 3. Sample Data ───────────────────────────────────────
-const sampleSell = [
-    {id:"s1",name:"रमेश कुमार",  grain:"गेहूं", qty:200,price:28,loc:"अनूपशहर, बुलंदशहर",wa:"SAMPLE",tag:"naya",   desc:"नया माल, घर से ले सकते हैं",createdAt:null,lat:28.40,lng:77.85},
-    {id:"s2",name:"सुनीता देवी", grain:"चावल",  qty:50, price:45,loc:"सियाना, बुलंदशहर",  wa:"SAMPLE",tag:"organic",desc:"घर का उगाया जैविक चावल",     createdAt:null,lat:28.35,lng:77.90},
-    {id:"s3",name:"मो. सलीम",   grain:"सरसों", qty:100,price:60,loc:"खुर्जा, बुलंदशहर",  wa:"SAMPLE",tag:"",      desc:"तेल निकालने के लिए बढ़िया",  createdAt:null,lat:28.25,lng:77.85},
-    {id:"s4",name:"सुरेश सिंह", grain:"मक्का",  qty:500,price:22,loc:"दिबाई, बुलंदशहर",  wa:"SAMPLE",tag:"naya",   desc:"सीधे खेत से ताज़ा माल",      createdAt:null,lat:28.20,lng:78.00}
-];
-const sampleBuy = [
+// ── 3. Sample Data ───────────────────────────────────────const sampleBuy = [
     {id:"b1",name:"दिल्ली आटा मिल",grain:"गेहूं",qty:5000,price:27,loc:"डिलीवरी — बुलंदशहर",wa:"SAMPLE",tag:"",desc:"नियमित सप्लायर चाहिए",       createdAt:null,lat:28.40,lng:77.85},
     {id:"b2",name:"राकेश किराना", grain:"चावल", qty:200, price:43,loc:"बुलंदशहर शहर",      wa:"SAMPLE",tag:"",desc:"दुकान के लिए अच्छी क्वालिटी",createdAt:null,lat:28.40,lng:77.85}
-];
-const sampleShop = [
-    {id:"sh1",name:"रामलाल एग्रो सेंटर",cat:"खाद",     product:"DAP खाद",          price:"₹1350/बोरी",loc:"अनूपशहर",wa:"SAMPLE",desc:"होम डिलीवरी उपलब्ध", createdAt:null,lat:28.40,lng:77.85},
-    {id:"sh2",name:"किसान बीज भंडार",   cat:"बीज",     product:"HD-2967 गेहूं बीज",price:"₹60/KG",    loc:"खुर्जा",  wa:"SAMPLE",desc:"सरकार प्रमाणित बीज",createdAt:null,lat:28.25,lng:77.85},
-    {id:"sh3",name:"श्याम कृषि केंद्र", cat:"कीटनाशक",product:"कीट नाशक स्प्रे",  price:"₹450/लीटर", loc:"सियाना",  wa:"SAMPLE",desc:"सभी फसलों के लिए",   createdAt:null,lat:28.35,lng:77.90}
-];
-const sampleSuchna = [
+];const sampleSuchna = [
     {id:"n1",name:"IFFCO सहकारी समिति",  type:"खाद उपलब्धता", title:"DAP और यूरिया खाद आ गई है",            desc:"अनूपशहर गोदाम में DAP उपलब्ध है। ₹1350/बोरी सरकारी दर।",    loc:"अनूपशहर",      phone:"SAMPLE",valid:"30 नवंबर",  urgent:true, createdAt:null,lat:28.40,lng:77.85},
     {id:"n2",name:"ग्राम पंचायत",        type:"PM किसान सूची",title:"PM किसान 18वीं किस्त — सूची देखें",   desc:"18वीं किस्त जारी हो गई है। पंचायत कार्यालय में नाम जांचें।",loc:"बुलंदशहर",     phone:"SAMPLE",valid:"15 दिसंबर", urgent:false,createdAt:null,lat:28.40,lng:77.85},
     {id:"n3",name:"कृषि विभाग बुलंदशहर",type:"फसल बीमा",     title:"रबी फसल बीमा — अंतिम तारीख 31 दिसंबर",desc:"PMFBY के तहत रबी फसल का बीमा करवाएं।",                       loc:"बुलंदशहर जिला",phone:"SAMPLE",valid:"31 दिसंबर", urgent:true, createdAt:null,lat:28.40,lng:77.85}
 ];
 
-// ── Demo Shops (hamesha dikhenge) ────────────────────────
-const DEMO_SHOPS = [
-    {
-        id:"demo1", naam:"रामलाल एग्रो सेंटर", area:"अनूपशहर", district:"बुलंदशहर",
-        phone:"SAMPLE", isDemo:true, lat:28.40, lng:77.85,
-        inventory:[
-            {masterId:"dap",    nameHi:"डीएपी (DAP)",       cat:"खाद",       brand:"IFFCO",    packSize:"50kg",  price:1350, qty:45, stock:true},
-            {masterId:"urea",   nameHi:"यूरिया",             cat:"खाद",       brand:"KRIBHCO",  packSize:"45kg",  price:270,  qty:80, stock:true},
-            {masterId:"npk",    nameHi:"एनपीके",             cat:"खाद",       brand:"Coromandel",packSize:"50kg", price:1600, qty:20, stock:true},
-            {masterId:"wheat",  nameHi:"गेहूं बीज",           cat:"बीज",       brand:"HD-2967",  packSize:"40kg",  price:2400, qty:15, stock:true},
-            {masterId:"mustard",nameHi:"सरसों बीज",           cat:"बीज",       brand:"Pusa Bold",packSize:"1kg",   price:450,  qty:30, stock:true},
-            {masterId:"chlor",  nameHi:"क्लोरपाइरीफॉस",       cat:"कीटनाशक",  brand:"Dursban",  packSize:"1L",    price:380,  qty:0,  stock:false},
-            {masterId:"knap",   nameHi:"नैपसैक स्प्रेयर",     cat:"यंत्र",    brand:"Neptune",  packSize:"16L",   price:1800, qty:8,  stock:true},
-            {masterId:"cattle", nameHi:"कैटल फीड",            cat:"पशु आहार", brand:"Godrej",   packSize:"50kg",  price:1450, qty:25, stock:true},
-        ]
-    },
-    {
-        id:"demo2", naam:"किसान बीज भण्डार", area:"खुर्जा", district:"बुलंदशहर",
-        phone:"SAMPLE", isDemo:true, lat:28.25, lng:77.85,
-        inventory:[
-            {masterId:"wheat",  nameHi:"गेहूं बीज",           cat:"बीज",       brand:"DBW-187",  packSize:"40kg",  price:2200, qty:30, stock:true},
-            {masterId:"paddy",  nameHi:"धान बीज",             cat:"बीज",       brand:"Pusa Basmati",packSize:"5kg",price:320,  qty:50, stock:true},
-            {masterId:"mustard",nameHi:"सरसों बीज",           cat:"बीज",       brand:"NPJ-93",   packSize:"1kg",   price:420,  qty:40, stock:true},
-            {masterId:"maize",  nameHi:"मक्का बीज",            cat:"बीज",       brand:"Pioneer",  packSize:"5kg",   price:850,  qty:20, stock:true},
-            {masterId:"moong",  nameHi:"मूंग बीज",             cat:"बीज",       brand:"PDM-139",  packSize:"5kg",   price:260,  qty:0,  stock:false},
-            {masterId:"dap",    nameHi:"डीएपी (DAP)",         cat:"खाद",       brand:"IFFCO",    packSize:"50kg",  price:1380, qty:10, stock:true},
-            {masterId:"zinc",   nameHi:"जिंक सल्फेट",          cat:"खाद",       brand:"Aries",    packSize:"1kg",   price:95,   qty:60, stock:true},
-        ]
-    },
-    {
-        id:"demo3", naam:"श्याम कृषि सेवा केंद्र", area:"सियाना", district:"बुलंदशहर",
-        phone:"SAMPLE", isDemo:true, lat:28.35, lng:77.90,
-        inventory:[
-            {masterId:"chlor",  nameHi:"क्लोरपाइरीफॉस",       cat:"कीटनाशक",  brand:"Coroban",  packSize:"1L",    price:360,  qty:25, stock:true},
-            {masterId:"imida",  nameHi:"इमिडाक्लोप्रिड",       cat:"कीटनाशक",  brand:"Confidor", packSize:"250ml", price:480,  qty:15, stock:true},
-            {masterId:"manco",  nameHi:"मैंकोज़ेब",             cat:"कीटनाशक",  brand:"Dithane",  packSize:"1kg",   price:195,  qty:35, stock:true},
-            {masterId:"glyph",  nameHi:"ग्लाइफोसेट",            cat:"कीटनाशक",  brand:"Roundup",  packSize:"1L",    price:320,  qty:20, stock:true},
-            {masterId:"knap",   nameHi:"नैपसैक स्प्रेयर",      cat:"यंत्र",    brand:"Aspee",    packSize:"16L",   price:1650, qty:5,  stock:true},
-            {masterId:"power",  nameHi:"पावर स्प्रेयर",         cat:"यंत्र",    brand:"Kisankraft",packSize:"20L",  price:8500, qty:2,  stock:true},
-            {masterId:"dap",    nameHi:"डीएपी (DAP)",          cat:"खाद",      brand:"Zuari",    packSize:"50kg",  price:1340, qty:30, stock:true},
-            {masterId:"urea",   nameHi:"यूरिया",                cat:"खाद",      brand:"NFL",      packSize:"45kg",  price:265,  qty:50, stock:true},
-        ]
-    }
-];
-const DEMO_SHOP = DEMO_SHOPS[0]; // backward compat
+// ── Demo Shops (hamesha dikhenge) ────────────────────────const DEMO_SHOP = DEMO_SHOPS[0]; // backward compat
 
 // ── 4. Global State ──────────────────────────────────────
 const G = {
@@ -316,10 +233,6 @@ window.filterShops    = runShopSearch;
 window.runShopSearch  = runShopSearch;
 
 let _shopSearchInited = false;
-function renderShopSection() {
-    if (!_shopSearchInited) { initShopSearch(); _shopSearchInited = true; }
-    runShopSearch();
-}
 
 // ── Load Approved Shops from Firebase ───────────────────
 
@@ -603,13 +516,21 @@ window.submitFeedback = async function() {
 window._G   = G;
 window._DOM = DOM;
 
+// gramoo.js core
 window.switchMainTab         = switchMainTab;
 window.switchSubTab          = switchSubTab;
 window.updateSubtypeDropdown = updateSubtypeDropdown;
 window.submitFeedback        = submitFeedback;
+
+// render.js
 window.filterListings        = filterListings;
+window.updateStats           = updateStats;
+
+// shop-search.js
 window.runShopSearch         = runShopSearch;
 window.filterShops           = runShopSearch;
+
+// forms.js
 window.openForm              = openForm;
 window.closeForm             = closeForm;
 window.closeFormOutside      = (e) => { if(e.target===document.getElementById('modalOverlay')) closeForm(); };
@@ -624,107 +545,12 @@ window.setManualLocation     = setManualLocation;
 window.openMissedCall        = openMissedCall;
 window.closeMissedCall       = closeMissedCall;
 window.validatePhone         = validatePhone;
+
+// auth.js
 window.googleLogin           = googleLogin;
 window.openMyListings        = openMyListings;
 window.closeMyListings       = closeMyListings;
 
-
-
-// ── 21. Report Problem ───────────────────────────────────
-// getDeviceType, getBrowserName — utils.js mein hain
-
-function openReportProblem() {
-    const overlay = document.getElementById("rpOverlay");
-    if (!overlay) return;
-    overlay.classList.add("active");
-
-    // Reset state
-    document.getElementById("rpForm").style.display = "block";
-    document.getElementById("rpSuccess").style.display = "none";
-    document.getElementById("rpSubmitBtn").disabled = false;
-    document.getElementById("rpCategory").value = "";
-    document.getElementById("rpDesc").value = "";
-    document.getElementById("rpPhone").value = "";
-
-    // Auto-fill captured info
-    const tabName = G.mainTab === "anaaj"
-        ? (G.subTab === "becho" ? "अनाज — बेचना" : "अनाज — खरीदना")
-        : G.mainTab === "shop" ? "दुकान" : "सूचना";
-    const loginStatus = G.currentUser
-        ? (G.currentUser.displayName || G.currentUser.email || "Logged in")
-        : "Login नहीं";
-
-    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    set("rp_page",    window.location.pathname.split("/").pop() || "index.html");
-    set("rp_tab",     tabName);
-    set("rp_device",  getDeviceType());
-    set("rp_browser", getBrowserName() + " " + (navigator.userAgent.match(/(?:Chrome|Firefox|Safari|Edge|OPR)\/([\d.]+)/)?.[1] || ""));
-    set("rp_screen",  window.screen.width + "×" + window.screen.height);
-    set("rp_login",   loginStatus);
-}
-
-function closeReportProblem() {
-    const overlay = document.getElementById("rpOverlay");
-    if (overlay) overlay.classList.remove("active");
-}
-
-async function submitReportProblem() {
-    const category = document.getElementById("rpCategory").value.trim();
-    const desc     = document.getElementById("rpDesc").value.trim();
-    if (!category) { alert("कृपया problem चुनें"); return; }
-
-    const btn = document.getElementById("rpSubmitBtn");
-    btn.disabled = true;
-    btn.textContent = "⏳ भेज रहे हैं...";
-
-    // Collect all info
-    const tabName = G.mainTab === "anaaj"
-        ? (G.subTab === "becho" ? "अनाज — बेचना" : "अनाज — खरीदना")
-        : G.mainTab === "shop" ? "दुकान" : "सूचना";
-
-    const reportData = {
-        // Problem info
-        category,
-        desc:        desc || "—",
-        phone:       document.getElementById("rpPhone").value.trim() || "—",
-        // Auto-captured page info
-        page:        window.location.pathname.split("/").pop() || "index.html",
-        url:         window.location.href,
-        activeTab:   tabName,
-        // Device info
-        device:      getDeviceType(),
-        browser:     getBrowserName(),
-        browserFull: navigator.userAgent.substring(0, 120),
-        screen:      window.screen.width + "×" + window.screen.height,
-        // User info
-        loginStatus: G.currentUser ? "logged_in" : "logged_out",
-        userEmail:   G.currentUser ? G.currentUser.email : "—",
-        userUID:     G.currentUser ? G.currentUser.uid   : "—",
-        // App state
-        totalSell:   G.allSell?.length || 0,
-        totalBuy:    G.allBuy?.length  || 0,
-        userLat:     G.userLat || null,
-        userLng:     G.userLng || null,
-        // Timestamp
-        createdAt:   serverTimestamp(),
-        type:        "problem_report"
-    };
-
-    try {
-        await addDoc(collection(db, "problemReports"), reportData);
-        document.getElementById("rpForm").style.display = "none";
-        document.getElementById("rpSuccess").style.display = "block";
-        setTimeout(() => closeReportProblem(), 3000);
-    } catch (err) {
-        btn.disabled = false;
-        btn.textContent = "🚨 Report भेजें";
-        alert("Error: " + err.message);
-    }
-}
-
-window.openReportProblem  = openReportProblem;
-window.closeReportProblem = closeReportProblem;
-window.submitReportProblem= submitReportProblem;
 
 // ── 20. Init ─────────────────────────────────────────────
 function init() {
