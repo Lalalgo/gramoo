@@ -24,53 +24,16 @@
 //  20. Init
 // ════════════════════════════════════════════════════════
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+// ── Imports — Firebase ───────────────────────────────────
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, doc, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ── 1. Firebase Init ─────────────────────────────────────
-// ── EmailJS Config ────────────────────────────────────────
-const EJS_SERVICE     = 'service_un25x5y';
-const EJS_TPL_LISTING = 'template_g721f9g';
-const EJS_PUBKEY      = 'OAlzCN74cs01xSoZH';
-
-function sendListingEmail(user, data) {
-    if (!user || !user.email) return;
-    try {
-        emailjs.init(EJS_PUBKEY);
-        const isBuy = data.type === 'खरीदना है';
-        emailjs.send(EJS_SERVICE, EJS_TPL_LISTING, {
-            to_email:         user.email,
-            to_name:          user.displayName || data.name || 'किसान',
-            listing_type:     isBuy ? '🛒 खरीदना है' : '🌾 बेचना है',
-            grain_name:       data.grain || '',
-            qty:              data.qty   || '',
-            price:            data.price || '',
-            location:         data.loc   || '',
-            buyer_seller_msg: isBuy
-                ? 'जल्द ही नज़दीकी विक्रेता आपसे WhatsApp पर संपर्क करेंगे। 🌾'
-                : 'जल्द ही नज़दीकी खरीददार आपसे WhatsApp पर संपर्क करेंगे। 🛒',
-        }).then(() => console.log('✅ Listing email sent'))
-          .catch(e => console.log('Listing email error:', e));
-    } catch(e) { console.log('EmailJS error:', e); }
-}
-
-
-const firebaseConfig = {
-    apiKey:            "AIzaSyAeeN9ijnSuA3IyV43QQsiEshTrRdEjL0A",
-    authDomain:        "gramoo-44d83.firebaseapp.com",
-    projectId:         "gramoo-44d83",
-    storageBucket:     "gramoo-44d83.firebasestorage.app",
-    messagingSenderId: "527489942630",
-    appId:             "1:527489942630:web:08bc4f70cb17185ee199a7"
-};
-const app = initializeApp(firebaseConfig);
-const db   = getFirestore(app);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: "select_account" });
+// ── Imports — Local Modules ───────────────────────────────
+import { db, auth, provider } from "./firebase-config.js";
+import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
+import { sendListingEmail } from "./email.js";
 
 
 // ── 2b. Grain Subtypes Master ─────────────────────────────
@@ -271,51 +234,7 @@ const DOM = {
     nUrgent:() => document.getElementById("nUrgent"),
 };
 
-// ── 6. Helpers ───────────────────────────────────────────
-function getDist(a,b,c,d) {
-    const R=6371, dL=(c-a)*Math.PI/180, dG=(d-b)*Math.PI/180;
-    const x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dG/2)**2;
-    return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
-}
-function timeAgo(ts) {
-    if (!ts) return "अभी";
-    const sec = Math.floor((Date.now()-ts.toMillis())/1000);
-    if (sec < 60)    return "अभी";
-    if (sec < 3600)  return Math.floor(sec/60)  + " मिनट पहले";
-    if (sec < 86400) return Math.floor(sec/3600) + " घंटे पहले";
-    return Math.floor(sec/86400) + " दिन पहले";
-}
-
-// ── 7. Phone Encrypt / Decrypt ───────────────────────────
-function encPhone(p) {
-    const k="GRAMOO26"; let e="";
-    for(let i=0;i<p.length;i++) e+=String.fromCharCode(p.charCodeAt(i)^k.charCodeAt(i%k.length));
-    return btoa(e);
-}
-function decPhone(e) {
-    if (!e || e==="SAMPLE") return "";
-    try {
-        const d=atob(e), k="GRAMOO26"; let p="";
-        for(let i=0;i<d.length;i++) p+=String.fromCharCode(d.charCodeAt(i)^k.charCodeAt(i%k.length));
-        return p;
-    } catch(x) { return e; }
-}
-
-// ── 8. Spam Control ──────────────────────────────────────
-function checkSpam(phone) {
-    const key="gramoo_sp_"+phone, LIM=3, WIN=300000;
-    let arr=[];
-    try { arr=JSON.parse(localStorage.getItem(key)||"[]"); } catch(x) {}
-    const now=Date.now();
-    arr=arr.filter(t=>now-t<WIN);
-    if (arr.length>=LIM) {
-        alert("⚠️ 5 मिनट में 3 से ज़्यादा listing नहीं। "+Math.ceil((WIN-(now-arr[0]))/60000)+" मिनट बाद try करें।");
-        return false;
-    }
-    arr.push(now);
-    localStorage.setItem(key,JSON.stringify(arr));
-    return true;
-}
+// ── 6-8. Helpers, Phone, Spam ── (utils.js mein move ho gaye) ──
 
 // ── 9. Render Functions ──────────────────────────────────
 function renderGrain(item) {
@@ -822,15 +741,7 @@ function updateLocBar() {
     DOM.locationSub().textContent  = DOM.distanceSelect().value + " किमी के अंदर";
 }
 
-// ── 15. Phone Validation ─────────────────────────────────
-function validatePhone(input, errId, okId) {
-    const v = input.value.trim();
-    const valid = /^[6-9]\d{9}$/.test(v);
-    const err = document.getElementById(errId), ok = document.getElementById(okId);
-    if (!v)    { err.style.display="none"; ok.style.display="none"; input.classList.remove("input-error","input-ok"); return false; }
-    if (valid) { err.style.display="none"; ok.style.display="block"; input.classList.remove("input-error"); input.classList.add("input-ok"); return true; }
-    err.style.display="block"; ok.style.display="none"; input.classList.remove("input-ok"); input.classList.add("input-error"); return false;
-}
+// ── 15. Phone Validation ── (utils.js mein move ho gayi) ──
 
 // ── 16. Missed Call ──────────────────────────────────────
 function openMissedCall()  { DOM.missedOverlay().classList.add("active"); }
@@ -1283,21 +1194,7 @@ window.googleLogin       = googleLogin;
 
 
 // ── 21. Report Problem ───────────────────────────────────
-function getDeviceType() {
-    const ua = navigator.userAgent;
-    if (/tablet|ipad|playbook|silk/i.test(ua)) return "Tablet";
-    if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(ua)) return "Mobile";
-    return "Laptop/Desktop";
-}
-function getBrowserName() {
-    const ua = navigator.userAgent;
-    if (ua.includes("Edg/")) return "Edge";
-    if (ua.includes("OPR/") || ua.includes("Opera")) return "Opera";
-    if (ua.includes("Chrome/")) return "Chrome";
-    if (ua.includes("Firefox/")) return "Firefox";
-    if (ua.includes("Safari/") && !ua.includes("Chrome")) return "Safari";
-    return "Unknown";
-}
+// getDeviceType, getBrowserName — utils.js mein hain
 
 function openReportProblem() {
     const overlay = document.getElementById("rpOverlay");
