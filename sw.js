@@ -1,5 +1,5 @@
 // Gramoo Service Worker — PWA Offline Support
-const CACHE = 'gramoo-v1';
+const CACHE = 'gramoo-v2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -29,22 +29,30 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch — pehle network, fail ho to cache
+// Fetch — POST requests aur non-GET skip karo (Cache API sirf GET support karta hai)
 self.addEventListener('fetch', e => {
-  // Firebase aur external requests bypass karo
+
+  // ✅ Fix: Sirf GET requests cache karo — POST/PUT/DELETE skip
+  if (e.request.method !== 'GET') return;
+
+  // Firebase, ElevenLabs aur external APIs bypass karo
   if (e.request.url.includes('firebase') ||
       e.request.url.includes('googleapis') ||
       e.request.url.includes('firestore') ||
-      e.request.url.includes('gstatic')) {
+      e.request.url.includes('gstatic') ||
+      e.request.url.includes('elevenlabs') ||
+      e.request.url.includes('api.')) {
     return;
   }
 
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        // Fresh response cache mein bhi rakho
-        const clone = res.clone();
-        caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        // Sirf valid responses cache karo
+        if (res && res.status === 200 && res.type !== 'opaque') {
+          const clone = res.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        }
         return res;
       })
       .catch(() => caches.match(e.request))
