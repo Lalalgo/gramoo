@@ -778,6 +778,9 @@ function closeForm() { DOM.modalOverlay().classList.remove("active"); }
 
 // Login required popup — contact/submit ke waqt
 function requireLogin(msg) {
+    // Pehle se box hai to duplicate mat banao
+    if (document.getElementById("loginRequiredBox")) return;
+
     const box = document.createElement("div");
     box.id = "loginRequiredBox";
     box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
@@ -794,7 +797,13 @@ function requireLogin(msg) {
             </button>
         </div>`;
     document.body.appendChild(box);
-    document.getElementById("loginRequiredBtn").onclick   = () => { box.remove(); googleLogin(); };
+
+    document.getElementById("loginRequiredBtn").onclick = async () => {
+        // PEHLE login karo — box hatane se pehle, gesture active rahega
+        await googleLogin();
+        // Login ke baad box hatao
+        box.remove();
+    };
     document.getElementById("loginRequiredClose").onclick = () => box.remove();
     box.addEventListener("click", e => { if (e.target === box) box.remove(); });
 }
@@ -1223,7 +1232,18 @@ function updateAuthUI(user) {
 }
 
 function startAuthListener() {
-    onAuthStateChanged(auth, user => updateAuthUI(user));
+    // Fallback: 3 sec mein auth state na aaye to logged-out UI dikhao
+    const authFallback = setTimeout(() => {
+        if (!G.currentUser) updateAuthUI(null);
+    }, 3000);
+
+    onAuthStateChanged(auth, user => {
+        clearTimeout(authFallback);
+        updateAuthUI(user);
+        // Loading screen hide karo
+        const ls = DOM.loadingScreen();
+        if (ls) ls.classList.add("hide");
+    });
 }
 
 function openMyListings() {
