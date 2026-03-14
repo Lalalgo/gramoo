@@ -15,7 +15,6 @@ import { getFirestore, collection, collectionGroup, doc, getDoc, getDocs, setDoc
 import { db as _db, auth as _auth } from "./firebase-config.js";
 import { getDist, timeAgo, encPhone, decPhone, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
 import { sendApprovalEmail } from "./email.js";
-import { MASTER, catIcons } from "./data.js";
 
 // Firebase — firebase-config.js se db aur auth import ho rahe hain (_db, _auth)
 // window globals reportProblem ke liye
@@ -27,7 +26,62 @@ window._addDoc          = addDoc;
 window._collection      = collection;
 window._serverTimestamp = serverTimestamp;
 
-// MASTER, catIcons — data.js se import ho rahe hain
+// ── Master List ──
+const MASTER = [
+    // खाद / Fertilizers
+    { id:'dap',    hi:'डीएपी',           en:'DAP',              cat:'खाद',      brands:['IFFCO','KRIBHCO','Zuari','NFL','Coromandel'],         packs:['50kg'] },
+    { id:'urea',   hi:'यूरिया',           en:'Urea',             cat:'खाद',      brands:['IFFCO','KRIBHCO','NFL','Chambal'],                    packs:['45kg'] },
+    { id:'npk',    hi:'एनपीके',           en:'NPK',              cat:'खाद',      brands:['IFFCO','Coromandel','Zuari','Khaitan'],               packs:['50kg'] },
+    { id:'ssp',    hi:'एसएसपी',           en:'SSP',              cat:'खाद',      brands:['IFFCO','Zuari','Khaitan','Local'],                    packs:['50kg'] },
+    { id:'mop',    hi:'पोटाश (MOP)',       en:'MOP/Potash',       cat:'खाद',      brands:['IFFCO','SQM','Local'],                               packs:['50kg'] },
+    { id:'zinc',   hi:'जिंक सल्फेट',       en:'Zinc Sulphate',    cat:'खाद',      brands:['Aries','IFFCO','Swal'],                              packs:['1kg','25kg'] },
+    { id:'vermi',  hi:'वर्मी कम्पोस्ट',    en:'Vermi Compost',    cat:'खाद',      brands:['Local','Organic India'],                             packs:['5kg','10kg','50kg'] },
+    { id:'humic',  hi:'ह्यूमिक एसिड',      en:'Humic Acid',       cat:'खाद',      brands:['Multiplex','Aries','Anand'],                         packs:['500g','1kg','5kg'] },
+    { id:'boron',  hi:'बोरोन',             en:'Boron',            cat:'खाद',      brands:['Aries','Swal','Multiplex'],                          packs:['500g','1kg'] },
+
+    // बीज / Seeds
+    { id:'wheat',  hi:'गेहूं बीज',         en:'Wheat Seed',       cat:'बीज',      brands:['HD-2967','DBW-187','PBW-725','UP-2338'],              packs:['5kg','10kg','40kg'] },
+    { id:'paddy',  hi:'धान बीज',           en:'Paddy Seed',       cat:'बीज',      brands:['Pusa Basmati','Swarna','MTU-7029','Syngenta'],        packs:['5kg','10kg'] },
+    { id:'mustard',hi:'सरसों बीज',          en:'Mustard Seed',     cat:'बीज',      brands:['Pusa Bold','NPJ-93','Pioneer','Advanta'],             packs:['1kg','5kg'] },
+    { id:'maize',  hi:'मक्का बीज',          en:'Maize Seed',       cat:'बीज',      brands:['Pioneer','Syngenta','DKC'],                          packs:['1kg','5kg'] },
+    { id:'bajra',  hi:'बाजरा बीज',          en:'Bajra Seed',       cat:'बीज',      brands:['HHB-67','Pioneer','Nuziveedu'],                       packs:['1kg','5kg'] },
+    { id:'tomato', hi:'टमाटर बीज',          en:'Tomato Seed',      cat:'बीज',      brands:['Syngenta','Mahyco','Nunhems','Namdhari'],             packs:['10g','50g'] },
+    { id:'onion',  hi:'प्याज बीज',          en:'Onion Seed',       cat:'बीज',      brands:['Nasik Red','Agrifound','Mahyco'],                     packs:['500g','1kg'] },
+    { id:'chilli', hi:'मिर्च बीज',           en:'Chilli Seed',      cat:'बीज',      brands:['Syngenta','Indo-American','Mahyco'],                  packs:['10g','50g'] },
+    { id:'moong',  hi:'मूंग/उड़द बीज',       en:'Moong/Urad Seed',  cat:'बीज',      brands:['PDM-139','SML-668','Local'],                         packs:['5kg','10kg'] },
+
+    // कीटनाशक / Pesticides
+    { id:'chlor',  hi:'क्लोरपाइरीफॉस',      en:'Chlorpyrifos',     cat:'कीटनाशक', brands:['Dursban','Coroban','Dorsan'],                         packs:['500ml','1L'] },
+    { id:'imida',  hi:'इमिडाक्लोप्रिड',      en:'Imidacloprid',     cat:'कीटनाशक', brands:['Confidor','Tatamida','Admire'],                       packs:['100ml','250ml'] },
+    { id:'cyper',  hi:'साइपरमेथ्रिन',        en:'Cypermethrin',     cat:'कीटनाशक', brands:['Cyper','Ripcord','Demon'],                           packs:['500ml','1L'] },
+    { id:'manco',  hi:'मैंकोज़ेब',            en:'Mancozeb',         cat:'कीटनाशक', brands:['Dithane M-45','Indofil','Kavach'],                    packs:['250g','500g','1kg'] },
+    { id:'carb',   hi:'कार्बेन्डाजिम',        en:'Carbendazim',      cat:'कीटनाशक', brands:['Bavistin','Derosal','Roko'],                         packs:['100g','500g'] },
+    { id:'glyph',  hi:'ग्लाइफोसेट',           en:'Glyphosate',       cat:'कीटनाशक', brands:['Roundup','Glycel','Spark'],                          packs:['500ml','1L'] },
+    { id:'tricho', hi:'ट्राइकोडर्मा',          en:'Trichoderma (Bio)',cat:'कीटनाशक', brands:['Biofit','Ecosom','Multiplex'],                        packs:['250g','1kg'] },
+
+    // यंत्र / Equipment
+    { id:'knap',   hi:'नैपसैक स्प्रेयर',     en:'Knapsack Sprayer', cat:'यंत्र',   brands:['Neptune','Swan','Aspee'],                            packs:['16L','20L'] },
+    { id:'power',  hi:'पावर स्प्रेयर',        en:'Power Sprayer',    cat:'यंत्र',   brands:['Neptune','Kisankraft','Aspee'],                       packs:['16L','20L'] },
+    { id:'drip',   hi:'ड्रिप सिस्टम',          en:'Drip System',      cat:'यंत्र',   brands:['Netafim','Jain','Finolex'],                          packs:['Per Acre Kit'] },
+    { id:'tarp',   hi:'तिरपाल',               en:'Tarpaulin',        cat:'यंत्र',   brands:['Garware','SRF','Local'],                             packs:['12x9ft','18x12ft','24x18ft'] },
+    { id:'pipe',   hi:'पाइप सेट',              en:'Pipe Set',         cat:'यंत्र',   brands:['Supreme','Finolex','Prince'],                        packs:['Per Meter','Per Set'] },
+    { id:'tools',  hi:'खुरपी/दरांती',           en:'Hand Tools',       cat:'यंत्र',   brands:['Local','Nimbkar'],                                   packs:['Per Piece'] },
+
+    // पशु आहार / Animal Feed
+    { id:'cattle', hi:'कैटल फीड',             en:'Cattle Feed',      cat:'पशु आहार',brands:['Godrej Agrovet','Amul','Purina','Khanna'],            packs:['25kg','50kg'] },
+    { id:'poultry',hi:'पोल्ट्री फीड',           en:'Poultry Feed',     cat:'पशु आहार',brands:["Venky's",'Godrej','Suguna'],                          packs:['25kg','50kg'] },
+    { id:'mineral',hi:'मिनरल मिक्सचर',          en:'Mineral Mixture',  cat:'पशु आहार',brands:['Godrej','Tata Rallis','Provimi'],                     packs:['1kg','5kg'] },
+    { id:'mustcake',hi:'सरसों खल',             en:'Mustard Cake',     cat:'पशु आहार',brands:['Local','Patanjali'],                                  packs:['25kg','50kg'] },
+    { id:'bypass', hi:'बाईपास प्रोटीन',         en:'Bypass Protein',   cat:'पशु आहार',brands:['Godrej','Kemin','Provimi'],                           packs:['25kg'] },
+
+    // अन्य / Other
+    { id:'mulch',  hi:'मल्चिंग फिल्म',          en:'Mulching Film',    cat:'अन्य',    brands:['Garware','SRF'],                                     packs:['25 micron','30 micron'] },
+    { id:'soil',   hi:'मिट्टी जांच किट',          en:'Soil Testing Kit', cat:'अन्य',    brands:['IFFCO','Local'],                                     packs:['Per Kit'] },
+    { id:'coco',   hi:'कोको पीट',               en:'Coco Peat',        cat:'अन्य',    brands:['Classimax','Local'],                                 packs:['5kg','50L'] },
+    { id:'pherom', hi:'फेरोमोन ट्रैप',            en:'Pheromone Trap',   cat:'अन्य',    brands:['Pheromon','Local'],                                  packs:['Per Set'] },
+];
+
+const catIcons = { 'खाद':'🌿','बीज':'🌱','कीटनाशक':'💊','यंत्र':'🚜','पशु आहार':'🐄','अन्य':'🧪' };
 
 // ── State ──
 let currentUser = null;
@@ -97,7 +151,7 @@ onAuthStateChanged(auth, async user => {
         const ls = document.getElementById('loginScreen');
         if (ls) ls.style.display = 'flex';
     }
-});
+});;
 
 function hideAll() {
     ['loginScreen','pendingScreen','registerScreen','approvedScreen','mainApp'].forEach(id => {
