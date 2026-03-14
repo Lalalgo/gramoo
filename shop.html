@@ -8,6 +8,7 @@
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-S9HNMVR99Z"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -460,6 +461,31 @@ body {
         </p>
     </div>
 </div>
+
+<!-- APPROVED SCREEN -->
+<div id="approvedScreen" style="display:none; min-height:100vh; background:linear-gradient(160deg,#1b5e20,#2e7d32); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white;border-radius:24px;padding:40px 28px;width:100%;max-width:420px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+        <div style="font-size:64px;margin-bottom:8px;animation:popIn 0.5s ease;">🎉</div>
+        <div style="font-size:24px;font-weight:800;color:#1b5e20;margin-bottom:8px;">बधाई हो!</div>
+        <div style="font-size:15px;font-weight:700;color:#2e7d32;margin-bottom:16px;" id="approvedShopName"></div>
+        <div style="font-size:14px;color:#555;line-height:1.8;margin-bottom:16px;background:#f1f8e9;border-radius:12px;padding:16px;">
+            ✅ आपकी दुकान <b>Gramoo पर Live</b> हो गई है!<br>
+            अब आप items add कर सकते हैं,<br>
+            किसानों की demand देख सकते हैं।
+        </div>
+        <div id="approvedTime" style="font-size:12px;color:#888;margin-bottom:8px;"></div>
+        <div style="font-size:12px;color:#aaa;margin-bottom:24px;">
+            📧 Confirmation email आपके registered email पर भेज दी गई है।
+        </div>
+        <button onclick="goToPortal()"
+            style="width:100%;padding:14px;background:#1b5e20;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">
+            🏪 अपना Portal खोलें →
+        </button>
+    </div>
+</div>
+<style>
+@keyframes popIn { 0%{transform:scale(0.5);opacity:0} 70%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
+</style>
 
 <!-- APPROVED SCREEN -->
 <div id="approvedScreen" style="display:none; min-height:100vh; background:linear-gradient(160deg,#1b5e20,#2e7d32); align-items:center; justify-content:center; padding:20px;">
@@ -1004,6 +1030,68 @@ async function showApprovedScreen(user, regData) {
     try {
         await updateDoc(doc(db,'shopRequests',user.uid), { welcomeSeen: true });
     } catch(e) { console.log('welcomeSeen error:', e); }
+}
+
+window.goToPortal = function() { showMainApp(currentUser); };
+
+function sendApprovalEmail(user, regData) {
+    try {
+        emailjs.init(EJS_PUBKEY);
+        emailjs.send(EJS_SERVICE, EJS_TPL_APPROVAL, {
+            to_email:      user.email,
+            to_name:       user.displayName || 'Dukandaar',
+            shop_name:     regData.shopName  || 'Aapki Dukaan',
+            shop_area:     (regData.area||'') + ', ' + (regData.district||''),
+            portal_url:    'https://gramoo.in/shop.html',
+            approved_time: regData.approvedAt
+                ? regData.approvedAt.toDate().toLocaleDateString('hi-IN',
+                    {day:'numeric',month:'long',year:'numeric'})
+                : 'Aaj',
+        }).then(() => console.log('✅ Approval email sent'))
+          .catch(e => console.log('Email error:', e));
+    } catch(e) { console.log('EmailJS error:', e); }
+}
+
+// ── EmailJS Config ────────────────────────────────────────
+const EJS_SERVICE      = 'service_un25x5y';
+const EJS_TPL_APPROVAL = 'template_pubasuc';
+const EJS_PUBKEY       = 'OAlzCN74cs01xSoZH';
+
+async function showApprovedScreen(user, regData) {
+    hideAll();
+    document.getElementById('approvedScreen').style.display = 'flex';
+    const naam = regData.shopName || 'आपकी दुकान';
+    document.getElementById('approvedShopName').textContent = '🏪 ' + naam;
+    const timeEl = document.getElementById('approvedTime');
+    if (regData.approvedAt) {
+        try {
+            const d = regData.approvedAt.toDate();
+            timeEl.textContent = '✅ Approved: ' +
+                d.toLocaleDateString('hi-IN',{day:'numeric',month:'long',year:'numeric'}) +
+                ' — ' + d.toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'});
+        } catch(e) {}
+    }
+    // Email bhejo
+    sendApprovalEmail(user, regData);
+    // welcomeSeen mark karo — dobara nahi dikhega
+    try {
+        await updateDoc(doc(db,'shopRequests',user.uid), { welcomeSeen: true });
+    } catch(e) { console.log('welcomeSeen error:', e); }
+    // shops collection mein bhi entry karo (dukandaar khud karta hai — admin nahi)
+    try {
+        await setDoc(doc(db,'shops',user.uid), {
+            uid:      user.uid,
+            naam:     regData.shopName  || '',
+            phone:    regData.phone     || '',
+            district: regData.district  || '',
+            area:     regData.area      || '',
+            lat:      regData.lat       || null,
+            lng:      regData.lng       || null,
+            category: regData.category  || 'general',
+            status:   'approved',
+            approvedAt: regData.approvedAt || null,
+        }, { merge: true });
+    } catch(e) { console.log('shops entry error:', e); }
 }
 
 window.goToPortal = function() { showMainApp(currentUser); };
