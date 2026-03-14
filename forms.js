@@ -3,10 +3,7 @@
 // Form open/close, listing submit, location, missed call
 // ════════════════════════════════════════
 
-import { collection, addDoc, serverTimestamp }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { db, auth, provider } from "./firebase-config.js";
-import { googleLogin } from "./auth.js";
 import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
 import { sendListingEmail } from "./email.js";
 import { catIcons, grainMeta, shopMeta, suchnaMeta, GRAIN_SUBTYPES, MASTER_ITEMS, DEMO_SHOPS, DEMO_SHOP, sampleSell, sampleBuy, sampleShop, sampleSuchna } from "./data.js";
@@ -36,7 +33,7 @@ function openForm(defaultTab) {
         const tabs = document.querySelectorAll(".modal-tab");
         switchFormTab("anaaj-form", tabs[0]);
         const typeSel = document.getElementById("fType");
-        if (typeSel) { typeSel.value = "खरीदना है"; if (window.updateSubtypeDropdown) window.updateSubtypeDropdown(); }
+        if (typeSel) { typeSel.value = "खरीदना है"; updateSubtypeDropdown(); }
         return;
     }
 
@@ -99,15 +96,7 @@ function updateLocBar() {
     DOM.locationSub().textContent  = DOM.distanceSelect().value + " किमी के अंदर";
 }
 
-// ── 15. Phone Validation ─────────────────────────────────
-function validatePhone(input, errId, okId) {
-    const v = input.value.trim();
-    const valid = /^[6-9]\d{9}$/.test(v);
-    const err = document.getElementById(errId), ok = document.getElementById(okId);
-    if (!v)    { err.style.display="none"; ok.style.display="none"; input.classList.remove("input-error","input-ok"); return false; }
-    if (valid) { err.style.display="none"; ok.style.display="block"; input.classList.remove("input-error"); input.classList.add("input-ok"); return true; }
-    err.style.display="block"; ok.style.display="none"; input.classList.remove("input-ok"); input.classList.add("input-error"); return false;
-}
+// validatePhone — utils.js se import hoti hai
 
 // ── 16. Missed Call ──────────────────────────────────────
 function openMissedCall()  { DOM.missedOverlay().classList.add("active"); }
@@ -164,7 +153,7 @@ async function addAnaajListing(e) {
             name:  DOM.fName().value,
         };
         e.target.reset();
-        if (window.updateSubtypeDropdown) window.updateSubtypeDropdown();
+        updateSubtypeDropdown();
         sendListingEmail(G.currentUser, emailData);
         setTimeout(() => { closeForm(); openMissedCall(); }, 1500);
     } catch(err) { alert("❌ Error: " + err.message); }
@@ -193,7 +182,7 @@ async function addShopListing(e) {
         });
         DOM.successMsg().style.display = "block";
         e.target.reset();
-        setTimeout(() => { closeForm(); if (window.switchMainTab) window.switchMainTab("shop", document.querySelectorAll(".main-tab")[1]); openMissedCall(); }, 1500);
+        setTimeout(() => { closeForm(); switchMainTab("shop", document.querySelectorAll(".main-tab")[1]); openMissedCall(); }, 1500);
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("sSubmitBtn", false);
 }
@@ -220,18 +209,10 @@ async function addSuchnaListing(e) {
         });
         DOM.successMsg().style.display = "block";
         e.target.reset();
-        setTimeout(() => { closeForm(); if (window.switchMainTab) window.switchMainTab("suchna", document.querySelectorAll(".main-tab")[2]); }, 2000);
+        setTimeout(() => { closeForm(); switchMainTab("suchna", document.querySelectorAll(".main-tab")[2]); }, 2000);
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("nSubmitBtn", false);
 }
 
-
-function switchFormTab(sec, el) {
-    document.querySelectorAll(".modal-tab").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".form-section").forEach(s => s.classList.remove("active"));
-    if (el) el.classList.add("active");
-    const secEl = document.getElementById(sec);
-    if (secEl) secEl.classList.add("active");
-}
 
 export { openForm, closeForm, switchFormTab, addAnaajListing, addShopListing, addSuchnaListing, openLocationPopup, closeLocationPopup, autoLocation, setManualLocation, openMissedCall, closeMissedCall };
