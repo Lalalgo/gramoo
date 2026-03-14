@@ -34,6 +34,93 @@
     .cat-btn { padding:7px 13px; border:1px solid #c8e6c9; border-radius:20px; background:white; color:#2e7d32; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.2s; }
     .cat-btn.active { background:#1a6b3c; color:white; border-color:#1a6b3c; }
     .cat-btn:hover:not(.active) { background:#e8f5e9; }
+
+/* ── Report Problem — Floating Button ── */
+.btn-report-problem {
+    position: fixed;
+    bottom: 24px; right: 20px;
+    z-index: 500;
+    background: #c62828;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 28px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(198,40,40,0.4);
+    display: flex; align-items: center; gap: 7px;
+    font-family: inherit;
+    transition: all 0.2s;
+    animation: rpulse 3s infinite;
+}
+.btn-report-problem:hover {
+    background: #b71c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(198,40,40,0.5);
+    animation: none;
+}
+@keyframes rpulse { 0%,100%{box-shadow:0 4px 16px rgba(198,40,40,0.4)} 50%{box-shadow:0 4px 22px rgba(198,40,40,0.7)} }
+
+/* ── Report Problem Modal ── */
+.rp-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 9000;
+    align-items: center; justify-content: center;
+    padding: 16px;
+}
+.rp-overlay.active { display: flex; }
+.rp-box {
+    background: white;
+    border-radius: 20px;
+    width: 100%; max-width: 460px;
+    max-height: 92vh; overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.rp-header {
+    background: linear-gradient(135deg, #c62828, #e53935);
+    color: white; padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-radius: 20px 20px 0 0;
+    position: sticky; top: 0; z-index: 1;
+}
+.rp-header h3 { font-size: 16px; font-weight: 800; }
+.rp-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.rp-body { padding: 20px; }
+.rp-auto-info {
+    background: #f8f9fa; border: 1px solid #e0e0e0;
+    border-radius: 10px; padding: 12px 14px;
+    margin-bottom: 16px; font-size: 11.5px;
+    color: #666; line-height: 1.8;
+}
+.rp-auto-info strong { color: #333; font-size: 12px; display: block; margin-bottom: 6px; }
+.rp-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+.rp-info-item { display: flex; gap: 4px; }
+.rp-info-label { color: #999; white-space: nowrap; }
+.rp-info-value { color: #333; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rp-fgroup { margin-bottom: 14px; }
+.rp-fgroup label { display: block; font-size: 12px; font-weight: 700; color: #555; margin-bottom: 5px; }
+.rp-fgroup select, .rp-fgroup textarea, .rp-fgroup input {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid #e0e0e0; border-radius: 10px;
+    font-size: 13px; font-family: inherit; color: #333;
+    transition: border-color 0.2s;
+}
+.rp-fgroup select:focus, .rp-fgroup textarea:focus, .rp-fgroup input:focus { outline: none; border-color: #c62828; }
+.rp-submit {
+    width: 100%; padding: 13px; background: #c62828;
+    color: white; border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: background 0.2s;
+}
+.rp-submit:hover { background: #b71c1c; }
+.rp-submit:disabled { background: #aaa; cursor: not-allowed; }
+.rp-success { display: none; text-align: center; padding: 30px 20px; }
+.rp-success .rp-ok-icon { font-size: 48px; margin-bottom: 12px; }
+.rp-success h4 { font-size: 17px; font-weight: 800; color: #2e7d32; margin-bottom: 8px; }
+.rp-success p { font-size: 13px; color: #666; line-height: 1.6; }
+
 </style>
 </head>
 <body>
@@ -457,5 +544,71 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
+<!-- ── Report Problem Floating Button ── -->
+<button class="btn-report-problem" onclick="openReportProblem()" id="btnReportProblem">
+    🚨 Problem?
+</button>
+
+<!-- ── Report Problem Modal ── -->
+<div class="rp-overlay" id="rpOverlay">
+    <div class="rp-box">
+        <div class="rp-header">
+            <h3>🚨 Problem Report करें</h3>
+            <button class="rp-close" onclick="closeReportProblem()">✕</button>
+        </div>
+        <!-- Success State -->
+        <div class="rp-success" id="rpSuccess">
+            <div class="rp-ok-icon">✅</div>
+            <h4>Report मिल गई!</h4>
+            <p>हम जल्द से जल्द इसे देखेंगे।<br>आपकी मदद के लिए धन्यवाद 🙏</p>
+        </div>
+        <!-- Form -->
+        <div class="rp-body" id="rpForm">
+            <!-- Auto-captured info -->
+            <div class="rp-auto-info">
+                <strong>📋 Automatically Captured Info:</strong>
+                <div class="rp-info-grid" id="rpAutoInfo">
+                    <div class="rp-info-item"><span class="rp-info-label">Page:</span><span class="rp-info-value" id="rp_page">—</span></div>
+                    <div class="rp-info-item"><span class="rp-info-label">Tab:</span><span class="rp-info-value" id="rp_tab">—</span></div>
+                    <div class="rp-info-item"><span class="rp-info-label">Device:</span><span class="rp-info-value" id="rp_device">—</span></div>
+                    <div class="rp-info-item"><span class="rp-info-label">Browser:</span><span class="rp-info-value" id="rp_browser">—</span></div>
+                    <div class="rp-info-item"><span class="rp-info-label">Screen:</span><span class="rp-info-value" id="rp_screen">—</span></div>
+                    <div class="rp-info-item"><span class="rp-info-label">Login:</span><span class="rp-info-value" id="rp_login">—</span></div>
+                </div>
+            </div>
+
+            <div class="rp-fgroup">
+                <label>क्या problem आई? *</label>
+                <select id="rpCategory">
+                    <option value="">— problem चुनें —</option>
+                    <option>Login नहीं हो रहा</option>
+                    <option>Listing submit नहीं हुई</option>
+                    <option>WhatsApp button काम नहीं कर रहा</option>
+                    <option>Page load नहीं हुआ</option>
+                    <option>कुछ दिख नहीं रहा / गायब है</option>
+                    <option>Location काम नहीं कर रही</option>
+                    <option>Search काम नहीं कर रही</option>
+                    <option>कुछ और</option>
+                </select>
+            </div>
+
+            <div class="rp-fgroup">
+                <label>थोड़ा और बताएं</label>
+                <textarea id="rpDesc" rows="3" placeholder="जैसे: बेचें button दबाया — form नहीं खुला। या: Login किया — फिर भी WA button पर login माँगा..."></textarea>
+            </div>
+
+            <div class="rp-fgroup">
+                <label>आपका WhatsApp नंबर <span style="font-weight:400;color:#aaa">(optional — अगर हम contact करें)</span></label>
+                <input type="tel" id="rpPhone" placeholder="10 अंक" maxlength="10" onkeypress="return event.charCode>=48&&event.charCode<=57">
+            </div>
+
+            <button class="rp-submit" id="rpSubmitBtn" onclick="submitReportProblem()">
+                🚨 Report भेजें
+            </button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

@@ -170,7 +170,20 @@
         .map-link { color:var(--blue); font-size:12px; text-decoration:none; }
         .map-link:hover { text-decoration:underline; }
         @media (max-width:600px) { .content{padding:12px;} .login-box{width:90%;padding:32px 20px;} th,td{padding:8px 10px;} }
-    </style>
+    
+        .problem-card { background:white; border-radius:12px; padding:16px; border:1px solid #ffcdd2; margin-bottom:12px; border-left:4px solid #c62828; }
+        .problem-card.resolved { border-left-color:#66bb6a; border-color:#c8e6c9; opacity:0.7; }
+        .problem-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; gap:10px; }
+        .problem-cat { font-size:14px; font-weight:700; color:#c62828; }
+        .problem-card.resolved .problem-cat { color:#2e7d32; }
+        .problem-time { font-size:11px; color:#aaa; white-space:nowrap; }
+        .problem-desc { font-size:13px; color:#444; margin-bottom:10px; line-height:1.6; background:#fafafa; padding:8px 12px; border-radius:8px; }
+        .problem-meta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:4px 12px; margin-bottom:10px; }
+        .problem-meta-item { font-size:11.5px; color:#666; display:flex; gap:4px; }
+        .problem-meta-item b { color:#333; }
+        .problem-actions { display:flex; gap:8px; }
+
+</style>
 </head>
 <body>
 
@@ -198,6 +211,7 @@
         <button class="nav-tab" data-sec="settings">⚙️ Settings</button>
         <button class="nav-tab" data-sec="feedback">💬 Feedback</button>
         <button class="nav-tab" data-sec="reports">🚨 Reports</button>
+        <button class="nav-tab" data-sec="problems">🔴 Problem Reports</button>
         <button class="nav-tab" data-sec="traffic">📈 Traffic</button>
     </div>
 
@@ -220,6 +234,7 @@
                 <div class="stat-card"><div class="num" id="dTotalSuchna">—</div><div class="lbl">📢 Suchna</div></div>
                 <div class="stat-card"><div class="num" id="dTotalFeedback">—</div><div class="lbl">💬 Feedback</div></div>
                 <div class="stat-card"><div class="num" id="dTotalReports">—</div><div class="lbl">🚨 Pending Reports</div></div>
+                <div class="stat-card" style="border-color:#ffcdd2"><div class="num" id="dTotalProblems" style="color:#c62828">—</div><div class="lbl">🔴 User Problems</div></div>
             </div>
 
             <!-- Pending requests alert -->
@@ -349,6 +364,13 @@
             <div class="table-wrap">
                 <div id="reportsTable"><div class="loading">Load ho raha hai...</div></div>
             </div>
+        </div>
+
+
+        <!-- PROBLEM REPORTS -->
+        <div class="section" id="sec-problems">
+            <div class="sec-title">🔴 User Problem Reports</div>
+            <div id="problemsContainer"><div class="loading">Load ho raha hai...</div></div>
         </div>
 
         <!-- TRAFFIC -->
@@ -484,6 +506,7 @@ function loadAll() {
     loadCategories();
     loadReports();
     loadFeedback();
+    loadProblemReports();
     loadSettings();
     document.getElementById("listingSearch").addEventListener("input", renderListingsTable);
     document.getElementById("listingType").addEventListener("change", renderListingsTable);
@@ -849,6 +872,68 @@ window.delReport = async (id) => {
     if (!confirm("Delete karna chahte ho?")) return;
     try { await deleteDoc(doc(db,"reports",id)); }
     catch(e) { alert("Error: "+e.message); }
+};
+
+
+// ── PROBLEM REPORTS ──────────────────────────────────────
+function loadProblemReports() {
+    onSnapshot(
+        query(collection(db, "problemReports"), orderBy("createdAt", "desc")),
+        snap => {
+            const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
+            renderProblemReports(data);
+            // Update stat
+            const open = data.filter(r => r.status !== "resolved").length;
+            document.getElementById("dTotalProblems").textContent = open;
+        },
+        err => {
+            document.getElementById("problemsContainer").innerHTML =
+                '<div class="empty"><div>⚠️</div><p>Load nahi hua: ' + err.message + '</p></div>';
+        }
+    );
+}
+
+function renderProblemReports(data) {
+    const el = document.getElementById("problemsContainer");
+    if (!data.length) {
+        el.innerHTML = '<div class="empty"><div>✅</div><p>Koi problem report nahi hai</p></div>';
+        return;
+    }
+    el.innerHTML = data.map(r => {
+        const ts = r.createdAt ? timeAgo(r.createdAt) : "—";
+        const resolved = r.status === "resolved";
+        return `<div class="problem-card ${resolved ? 'resolved' : ''}">
+            <div class="problem-header">
+                <div class="problem-cat">${resolved ? '✅' : '🔴'} ${r.category || "—"}</div>
+                <div class="problem-time">${ts}</div>
+            </div>
+            ${r.desc && r.desc !== "—" ? `<div class="problem-desc">"${r.desc}"</div>` : ''}
+            <div class="problem-meta-grid">
+                <div class="problem-meta-item">📄 <b>Page:</b> ${r.page || "—"}</div>
+                <div class="problem-meta-item">🗂 <b>Tab:</b> ${r.activeTab || "—"}</div>
+                <div class="problem-meta-item">📱 <b>Device:</b> ${r.device || "—"}</div>
+                <div class="problem-meta-item">🌐 <b>Browser:</b> ${r.browser || "—"}</div>
+                <div class="problem-meta-item">📐 <b>Screen:</b> ${r.screen || "—"}</div>
+                <div class="problem-meta-item">🔐 <b>Login:</b> ${r.loginStatus === "logged_in" ? "✅ " + (r.userEmail || "yes") : "❌ Nahi"}</div>
+                ${r.phone && r.phone !== "—" ? `<div class="problem-meta-item">📞 <b>Phone:</b> ${r.phone}</div>` : ''}
+                <div class="problem-meta-item">📊 <b>Data:</b> S:${r.totalSell||0} B:${r.totalBuy||0}</div>
+            </div>
+            <div class="problem-actions">
+                ${!resolved ? `<button class="btn-approve" onclick="resolveProblem('${r.id}')">✅ Resolve</button>` : '<span style="color:#2e7d32;font-size:12px;font-weight:700">✅ Resolved</span>'}
+                <button class="btn-del" onclick="delProblem('${r.id}')">🗑️ Delete</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+window.resolveProblem = async (id) => {
+    try { await updateDoc(doc(db, "problemReports", id), {status: "resolved"}); }
+    catch(e) { alert("Error: " + e.message); }
+};
+window.delProblem = async (id) => {
+    if (!confirm("Delete karna chahte ho?")) return;
+    try { await deleteDoc(doc(db, "problemReports", id)); }
+    catch(e) { alert("Error: " + e.message); }
 };
 
 // ── TRAFFIC ──

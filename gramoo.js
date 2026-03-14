@@ -1026,6 +1026,13 @@ function bindEvents() {
         }
     });
 
+
+    // Report Problem overlay close
+    const rpOverlay = document.getElementById("rpOverlay");
+    if (rpOverlay) rpOverlay.addEventListener("click", e => {
+        if (e.target === rpOverlay) closeReportProblem();
+    });
+
     // Missed call
     const missedDone = document.querySelector(".btn-missed-done");
     const missedSkip = document.querySelector(".btn-missed-skip");
@@ -1234,6 +1241,117 @@ window.addSuchnaListing  = addSuchnaListing;
 window.openMyListings    = openMyListings;
 window.closeMyListings   = closeMyListings;
 window.googleLogin       = googleLogin;
+
+
+// ── 21. Report Problem ───────────────────────────────────
+function getDeviceType() {
+    const ua = navigator.userAgent;
+    if (/tablet|ipad|playbook|silk/i.test(ua)) return "Tablet";
+    if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(ua)) return "Mobile";
+    return "Laptop/Desktop";
+}
+function getBrowserName() {
+    const ua = navigator.userAgent;
+    if (ua.includes("Edg/")) return "Edge";
+    if (ua.includes("OPR/") || ua.includes("Opera")) return "Opera";
+    if (ua.includes("Chrome/")) return "Chrome";
+    if (ua.includes("Firefox/")) return "Firefox";
+    if (ua.includes("Safari/") && !ua.includes("Chrome")) return "Safari";
+    return "Unknown";
+}
+
+function openReportProblem() {
+    const overlay = document.getElementById("rpOverlay");
+    if (!overlay) return;
+    overlay.classList.add("active");
+
+    // Reset state
+    document.getElementById("rpForm").style.display = "block";
+    document.getElementById("rpSuccess").style.display = "none";
+    document.getElementById("rpSubmitBtn").disabled = false;
+    document.getElementById("rpCategory").value = "";
+    document.getElementById("rpDesc").value = "";
+    document.getElementById("rpPhone").value = "";
+
+    // Auto-fill captured info
+    const tabName = G.mainTab === "anaaj"
+        ? (G.subTab === "becho" ? "अनाज — बेचना" : "अनाज — खरीदना")
+        : G.mainTab === "shop" ? "दुकान" : "सूचना";
+    const loginStatus = G.currentUser
+        ? (G.currentUser.displayName || G.currentUser.email || "Logged in")
+        : "Login नहीं";
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set("rp_page",    window.location.pathname.split("/").pop() || "index.html");
+    set("rp_tab",     tabName);
+    set("rp_device",  getDeviceType());
+    set("rp_browser", getBrowserName() + " " + (navigator.userAgent.match(/(?:Chrome|Firefox|Safari|Edge|OPR)\/([\d.]+)/)?.[1] || ""));
+    set("rp_screen",  window.screen.width + "×" + window.screen.height);
+    set("rp_login",   loginStatus);
+}
+
+function closeReportProblem() {
+    const overlay = document.getElementById("rpOverlay");
+    if (overlay) overlay.classList.remove("active");
+}
+
+async function submitReportProblem() {
+    const category = document.getElementById("rpCategory").value.trim();
+    const desc     = document.getElementById("rpDesc").value.trim();
+    if (!category) { alert("कृपया problem चुनें"); return; }
+
+    const btn = document.getElementById("rpSubmitBtn");
+    btn.disabled = true;
+    btn.textContent = "⏳ भेज रहे हैं...";
+
+    // Collect all info
+    const tabName = G.mainTab === "anaaj"
+        ? (G.subTab === "becho" ? "अनाज — बेचना" : "अनाज — खरीदना")
+        : G.mainTab === "shop" ? "दुकान" : "सूचना";
+
+    const reportData = {
+        // Problem info
+        category,
+        desc:        desc || "—",
+        phone:       document.getElementById("rpPhone").value.trim() || "—",
+        // Auto-captured page info
+        page:        window.location.pathname.split("/").pop() || "index.html",
+        url:         window.location.href,
+        activeTab:   tabName,
+        // Device info
+        device:      getDeviceType(),
+        browser:     getBrowserName(),
+        browserFull: navigator.userAgent.substring(0, 120),
+        screen:      window.screen.width + "×" + window.screen.height,
+        // User info
+        loginStatus: G.currentUser ? "logged_in" : "logged_out",
+        userEmail:   G.currentUser ? G.currentUser.email : "—",
+        userUID:     G.currentUser ? G.currentUser.uid   : "—",
+        // App state
+        totalSell:   G.allSell?.length || 0,
+        totalBuy:    G.allBuy?.length  || 0,
+        userLat:     G.userLat || null,
+        userLng:     G.userLng || null,
+        // Timestamp
+        createdAt:   serverTimestamp(),
+        type:        "problem_report"
+    };
+
+    try {
+        await addDoc(collection(db, "problemReports"), reportData);
+        document.getElementById("rpForm").style.display = "none";
+        document.getElementById("rpSuccess").style.display = "block";
+        setTimeout(() => closeReportProblem(), 3000);
+    } catch (err) {
+        btn.disabled = false;
+        btn.textContent = "🚨 Report भेजें";
+        alert("Error: " + err.message);
+    }
+}
+
+window.openReportProblem  = openReportProblem;
+window.closeReportProblem = closeReportProblem;
+window.submitReportProblem= submitReportProblem;
 
 // ── 20. Init ─────────────────────────────────────────────
 function init() {
