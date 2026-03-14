@@ -34,10 +34,11 @@ import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTim
 import { db, auth, provider } from "./firebase-config.js";
 import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
 import { sendListingEmail } from "./email.js";
-import { googleLogin, updateAuthUI, startAuthListener, openMyListings, closeMyListings } from "./auth.js";
-import { openForm, closeForm, switchFormTab, addAnaajListing, addShopListing, addSuchnaListing, openLocationPopup, closeLocationPopup, autoLocation, setManualLocation, openMissedCall, closeMissedCall } from "./forms.js";
+import { catIcons, grainMeta, shopMeta, suchnaMeta, GRAIN_SUBTYPES, MASTER_ITEMS, DEMO_SHOPS, DEMO_SHOP, sampleSell, sampleBuy, sampleShop, sampleSuchna } from "./data.js";
 import { renderGrain, renderShop, renderSuchna, filterListings, updateStats, updateActivity } from "./render.js";
 import { initShopSearch, runShopSearch, renderShopSection, startShopListener } from "./shop-search.js";
+import { openForm, closeForm, switchFormTab, addAnaajListing, addShopListing, addSuchnaListing, openLocationPopup, closeLocationPopup, autoLocation, setManualLocation, openMissedCall, closeMissedCall } from "./forms.js";
+import { googleLogin, updateAuthUI, startAuthListener, openMyListings, closeMyListings } from "./auth.js";
 
 
 // ── 2b. Grain Subtypes Master ─────────────────────────────
@@ -241,155 +242,12 @@ const DOM = {
 // ── 6-8. Helpers, Phone, Spam ── (utils.js mein move ho gaye) ──
 
 // ── 9. Render Functions ──────────────────────────────────
-function renderGrain(item) {
-    const m  = grainMeta[item.grain] || {icon:"🌾",bg:"#f5f5f5"};
-    const db = (G.userLat&&item.lat) ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,item.lat,item.lng))} किमी</span>` : "";
-    const t  = timeAgo(item.createdAt);
-    const waBtn = item.wa==="SAMPLE"
-        ? `<span style="font-size:11px;color:#aaa">नमूना</span>`
-        : `<button class="btn-wa" data-action="wa-grain" data-wa="${item.wa}" data-grain="${item.grain}" data-qty="${item.qty}" data-price="${item.price}">💬 WhatsApp</button>`;
-    return `
-    <div class="listing-card">
-        <div class="grain-icon" style="background:${m.bg}">${m.icon}</div>
-        <div class="card-body">
-            ${item.tag==="naya"    ? '<span class="tag tag-naya">🔥 नया माल</span>'   : ""}
-            ${item.tag==="organic" ? '<span class="tag tag-organic">🌿 जैविक</span>' : ""}
-            ${item.verified        ? '<span class="tag tag-verified">✅ वेरीफाइड</span>' : ""}
-            <div class="card-top">
-                <div class="grain-name">${item.grain}</div>
-                <div class="price-tag">₹${item.price}/KG</div>
-            </div>
-            <div class="card-meta"><span>📦 ${item.qty} KG</span><span>📍 ${item.loc}${db}</span></div>
-            ${item.desc ? `<div class="card-desc">"${item.desc}"</div>` : ""}
-            <div class="card-bottom">
-                <div><div class="sname">👤 ${item.name}</div><div class="stime">🕐 ${t}</div></div>
-                ${waBtn}
-            </div>
-        </div>
-    </div>`;
-}
 
-function renderShop(item) {
-    const catKey = Object.keys(shopMeta).find(k=>item.cat&&item.cat.includes(k)) || "अन्य";
-    const m  = shopMeta[catKey];
-    const db = (G.userLat&&item.lat) ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,item.lat,item.lng))} किमी</span>` : "";
-    const t  = timeAgo(item.createdAt);
-    const waBtn = item.wa==="SAMPLE"
-        ? `<span style="font-size:11px;color:#aaa">नमूना</span>`
-        : `<button class="btn-wa" data-action="wa-shop" data-wa="${item.wa}" data-prod="${item.product}">💬 WhatsApp</button>`;
-    return `
-    <div class="listing-card shop-card">
-        <div class="grain-icon" style="background:${m.bg}">${m.icon}</div>
-        <div class="card-body">
-            <span class="tag tag-shop">🏪 ${item.cat}</span>
-            <div class="card-top">
-                <div class="grain-name shop">${item.product}</div>
-                <div class="price-tag shop">${item.price}</div>
-            </div>
-            <div class="card-meta"><span>📍 ${item.loc}${db}</span></div>
-            ${item.desc ? `<div class="card-desc">"${item.desc}"</div>` : ""}
-            <div class="card-bottom">
-                <div><div class="sname">🏪 ${item.name}</div><div class="stime">🕐 ${t}</div></div>
-                ${waBtn}
-            </div>
-        </div>
-    </div>`;
-}
 
-function renderSuchna(item) {
-    const typeKey = Object.keys(suchnaMeta).find(k=>item.type&&item.type.includes(k)) || "अन्य सूचना";
-    const m  = suchnaMeta[typeKey] || {icon:"📢",bg:"#e3f2fd"};
-    const db = (G.userLat&&item.lat) ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,item.lat,item.lng))} किमी</span>` : "";
-    const t  = timeAgo(item.createdAt);
-    const cardCls = item.urgent ? "listing-card sarkari-card" : "listing-card notice-card";
-    const nmCls   = item.urgent ? "grain-name sarkari" : "grain-name notice";
-    const waBtn = item.phone==="SAMPLE"
-        ? `<span style="font-size:11px;color:#aaa">नमूना</span>`
-        : `<button class="btn-wa"   data-action="wa-suchna" data-ph="${item.phone}" data-title="${item.title}">💬 WhatsApp</button>
-           <button class="btn-call" data-action="call"      data-ph="${item.phone}">📞 कॉल</button>`;
-    return `
-    <div class="${cardCls}">
-        <div class="grain-icon" style="background:${m.bg}">${m.icon}</div>
-        <div class="card-body">
-            <span class="tag ${item.urgent ? "tag-urgent" : "tag-notice"}">${item.urgent ? "🚨 अत्यावश्यक" : "📢 सरकारी"}</span>
-            <span class="tag tag-notice" style="margin-left:4px">${item.type}</span>
-            <div class="card-top"><div class="${nmCls}">${item.title}</div></div>
-            <div class="card-meta">
-                <span>📍 ${item.loc}${db}</span>
-                ${item.valid ? `<span class="valid-till">⏰ ${item.valid} तक</span>` : ""}
-            </div>
-            <div class="card-desc">${item.desc}</div>
-            <div class="card-bottom">
-                <div><div class="sname">🏛️ ${item.name}</div><div class="stime">🕐 ${t}</div></div>
-                <div>${waBtn}</div>
-            </div>
-        </div>
-    </div>`;
-}
 
 // ── 10. Filter & Display ─────────────────────────────────
-function filterListings() {
-    const search = DOM.searchInput().value.toLowerCase();
-    const dist   = parseInt(DOM.distanceSelect().value);
-    const list   = G.mainTab==="suchna" ? G.allSuchna
-                 : G.mainTab==="shop"   ? G.allShop
-                 : G.subTab==="becho"   ? G.allSell : G.allBuy;
-
-    const filtered = list.filter(item => {
-        const hay = JSON.stringify(item).toLowerCase();
-        const mS  = !search || hay.includes(search);
-        let   mD  = true;
-        if (G.userLat && item.lat) mD = getDist(G.userLat,G.userLng,item.lat,item.lng) <= dist;
-        return mS && mD;
-    });
-
-    const c = DOM.listingsContainer();
-    if (!filtered.length) {
-        c.innerHTML = `<div class="no-results"><div>${G.mainTab==="suchna"?"📢":"🌾"}</div><p>कोई लिस्टिंग नहीं मिली</p><p style="font-size:12px;margin-top:6px;">दूरी बढ़ाएं या "सभी जगह" चुनें</p></div>`;
-        return;
-    }
-    c.innerHTML = filtered.map(item =>
-        G.mainTab==="suchna" ? renderSuchna(item) :
-        G.mainTab==="shop"   ? renderShop(item)   : renderGrain(item)
-    ).join("");
-}
 
 // ── 11. Stats & Activity ─────────────────────────────────
-function updateStats() {
-    DOM.totalListings().textContent = G.allSell.length + G.allBuy.length + G.allShop.length;
-    DOM.noticeCount().textContent   = G.allSuchna.length;
-    // Sub-tab counts
-    const sc = document.getElementById("sellCount");
-    const bc = document.getElementById("buyCount");
-    const ls = document.getElementById("liveSellCount");
-    const lb = document.getElementById("liveBuyCount");
-    if (sc) sc.textContent = G.allSell.length;
-    if (bc) bc.textContent = G.allBuy.length;
-    if (ls) ls.textContent = G.allSell.length;
-    if (lb) lb.textContent = G.allBuy.length;
-}
-function updateActivity() {
-    const items = [];
-    // Sirf sell aur buy — time ke hisaab se sort
-    G.allSell.slice(0,4).forEach(i => items.push({
-        blue: false,
-        text: `🌾 <b>${i.name||"किसान"}</b> — <b>${i.grain||"अनाज"}</b> बेचना है — ${i.loc||""}`,
-        ms: i.createdAt ? i.createdAt.toMillis() : 0,
-        time: timeAgo(i.createdAt)
-    }));
-    G.allBuy.slice(0,4).forEach(i => items.push({
-        blue: true,
-        text: `🛒 <b>${i.name||"खरीदार"}</b> — <b>${i.grain||"अनाज"}</b> खरीदना है — ${i.loc||""}`,
-        ms: i.createdAt ? i.createdAt.toMillis() : 0,
-        time: timeAgo(i.createdAt)
-    }));
-    items.sort((a,b) => b.ms - a.ms);
-    const feed = DOM.activityFeed();
-    if (!feed) return;
-    feed.innerHTML = items.slice(0,6).map(i =>
-        `<div class="activity-item"><div class="dot${i.blue?" blue":""}"></div><div><span>${i.text}</span><span class="atime">${i.time}</span></div></div>`
-    ).join("") || `<div class="activity-item"><div class="dot"></div><div><span>अभी कोई गतिविधि नहीं</span></div></div>`;
-}
 
 // ── 12. UI Tab Switching ─────────────────────────────────
 function switchMainTab(tab, el) {
@@ -445,177 +303,14 @@ function switchMainTab(tab, el) {
     filterListings();
 }
 // ── Master Item List (same as shop.html) ─────────────────
-// MASTER_ITEMS — data.js se import hota hai
 
 // Search state
 const SEARCH = { cat: '', item: '', text: '' };
 
-function initShopSearch() {
-    // Category buttons
-    document.getElementById('catBtnRow').addEventListener('click', e => {
-        const btn = e.target.closest('.cat-btn');
-        if (!btn) return;
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        SEARCH.cat  = btn.dataset.cat;
-        SEARCH.item = '';
-        renderItemButtons();
-    });
-    // Item buttons — delegation
-    document.getElementById('itemBtnRow').addEventListener('click', e => {
-        const btn = e.target.closest('.item-btn');
-        if (!btn) return;
-        document.querySelectorAll('.item-btn').forEach(b => b.classList.remove('active'));
-        if (SEARCH.item === btn.dataset.item) {
-            SEARCH.item = '';             // toggle off
-        } else {
-            btn.classList.add('active');
-            SEARCH.item = btn.dataset.item;
-        }
-    });
-}
 
-function renderItemButtons() {
-    const row = document.getElementById('itemListRow');
-    const btnRow = document.getElementById('itemBtnRow');
-    if (!SEARCH.cat) { row.style.display = 'none'; btnRow.innerHTML = ''; return; }
-    const items = MASTER_ITEMS[SEARCH.cat] || [];
-    row.style.display = 'block';
-    btnRow.innerHTML = items.map(i =>
-        `<button class="item-btn ${SEARCH.item===i?'active':''}" data-item="${i}">${i}</button>`
-    ).join('');
-}
 
 // ── Shop Section Render ───────────────────────────────────
-// catIcons — data.js se import hota hai
-function renderShopCard(shop, matchedItems) {
-    const dist = (G.userLat && shop.lat)
-        ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,shop.lat,shop.lng))} किमी</span>` : "";
 
-    // Jo items match karein unhe pehle dikhao, baaki baad mein
-    const allInv  = shop.inventory || [];
-    const showInv = matchedItems && matchedItems.length ? matchedItems : allInv.filter(i => i.stock).slice(0, 6);
-
-    const invHtml = showInv.map(item => `
-        <div style="display:flex;align-items:center;justify-content:space-between;
-            padding:7px 10px;border-radius:8px;
-            background:${item.stock ? '#f9f9f9' : '#fafafa'};
-            border:1px solid ${item.stock ? '#e0e0e0' : '#f0f0f0'};
-            opacity:${item.stock ? 1 : 0.6};">
-            <div style="flex:1;min-width:0;">
-                <span style="font-size:13px;">${catIcons[item.cat]||'🌾'}</span>
-                <span style="font-size:13px;font-weight:600;margin-left:4px;">${item.nameHi||item.name||''}</span>
-                <span style="font-size:11px;color:#888;margin-left:4px;">${item.brand||''} • ${item.packSize||item.pack||''}</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-                ${item.qty ? `<span style="font-size:11px;color:#555;">${item.qty} उपलब्ध</span>` : ''}
-                <span style="font-size:13px;font-weight:700;color:#1a6b3c;">₹${item.price}</span>
-                <span style="font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600;
-                    background:${item.stock ? '#e8f5e9' : '#ffebee'};
-                    color:${item.stock ? '#2e7d32' : '#c62828'};">
-                    ${item.stock ? '✅ है' : '❌ नहीं'}
-                </span>
-            </div>
-        </div>`).join('');
-
-    const demoTag = shop.isDemo
-        ? `<span style="background:#fff3e0;color:#e65100;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700;margin-left:6px;">DEMO</span>` : '';
-
-    const waBtn = shop.isDemo
-        ? `<span style="font-size:11px;color:#aaa">नमूना दुकान</span>`
-        : `<button class="btn-wa" data-action="wa-fullshop" data-phone="${shop.phone}" data-naam="${shop.naam}"
-               style="font-size:12px;">💬 WhatsApp</button>`;
-
-    return `
-    <div style="background:white;border-radius:14px;padding:16px;margin-bottom:12px;
-        box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:4px solid #1a6b3c;">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
-            <div>
-                <div style="font-size:16px;font-weight:800;color:#1a6b3c;">
-                    🏪 ${shop.naam}${demoTag}
-                </div>
-                <div style="font-size:12px;color:#777;margin-top:3px;">
-                    📍 ${shop.area||''}, ${shop.district||''} ${dist}
-                </div>
-            </div>
-            <span style="background:#e8f5e9;color:#2e7d32;font-size:11px;padding:3px 10px;
-                border-radius:10px;font-weight:700;flex-shrink:0;">● Live</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
-            ${invHtml || '<p style="text-align:center;color:#aaa;font-size:12px;padding:10px;">इस category में कोई item नहीं</p>'}
-        </div>
-        <div style="display:flex;justify-content:flex-end;">
-            ${waBtn}
-        </div>
-    </div>`;
-}
-
-function runShopSearch() {
-    const text = (document.getElementById('shopSearchText').value || '').toLowerCase().trim();
-    const cat  = SEARCH.cat;
-    const item = SEARCH.item;
-    const dist = parseInt(DOM.distanceSelect().value);
-
-    let shops = [...DEMO_SHOPS, ...G.allShopsFull];
-
-    // Distance filter
-    if (G.userLat) {
-        shops = shops.filter(s => !s.lat || getDist(G.userLat, G.userLng, s.lat, s.lng) <= dist);
-    }
-
-    const container = document.getElementById('shopCardsContainer');
-    if (!shops.length) {
-        container.innerHTML = `<div class="no-results"><div>🏪</div><p>नज़दीक कोई दुकान नहीं मिली</p><p style="font-size:12px;margin-top:6px;">दूरी बढ़ाएं या लोकेशन सेट करें</p></div>`;
-        return;
-    }
-
-    const results = [];
-
-    shops.forEach(shop => {
-        const inv = shop.inventory || [];
-        let matched = inv;
-
-        // Category filter
-        if (cat) matched = matched.filter(i => i.cat === cat);
-
-        // Item filter — agar item chuna to sirf wahi, warna poori category
-        if (item) matched = matched.filter(i =>
-            (i.nameHi||i.name||'').includes(item) || (i.nameEn||'').toLowerCase().includes(item.toLowerCase())
-        );
-
-        // Text filter
-        if (text) {
-            const shopStr = `${shop.naam} ${shop.area} ${shop.district}`.toLowerCase();
-            const itemMatch = matched.some(i =>
-                JSON.stringify(i).toLowerCase().includes(text)
-            );
-            if (!shopStr.includes(text) && !itemMatch) return;
-            matched = matched.filter(i => JSON.stringify(i).toLowerCase().includes(text));
-            if (!matched.length && !shopStr.includes(text)) return;
-        }
-
-        // Agar koi filter nahi aur koi item nahi to skip (sirf demo dikhao)
-        if (!cat && !item && !text && !shop.isDemo && !matched.length) return;
-
-        results.push({ shop, matched: matched.slice(0, 8) });
-    });
-
-    if (!results.length) {
-        container.innerHTML = `<div class="no-results"><div>🔍</div><p>कोई दुकान नहीं मिली</p><p style="font-size:12px;margin-top:6px;">अलग item या श्रेणी चुनें</p></div>`;
-        return;
-    }
-
-    // Sort by distance
-    if (G.userLat) {
-        results.sort((a, b) => {
-            const dA = a.shop.lat ? getDist(G.userLat, G.userLng, a.shop.lat, a.shop.lng) : 9999;
-            const dB = b.shop.lat ? getDist(G.userLat, G.userLng, b.shop.lat, b.shop.lng) : 9999;
-            return dA - dB;
-        });
-    }
-
-    container.innerHTML = results.map(r => renderShopCard(r.shop, r.matched)).join('');
-}
 
 window.filterShops    = runShopSearch;
 window.runShopSearch  = runShopSearch;
@@ -627,24 +322,6 @@ function renderShopSection() {
 }
 
 // ── Load Approved Shops from Firebase ───────────────────
-function startShopListener() {
-    onSnapshot(
-        query(collection(db, "shops"), orderBy("createdAt", "desc")),
-        snap => {
-            const arr = [];
-            snap.forEach(d => {
-                const data = d.data();
-                // Only approved shops show on main page
-                if (data.status === "approved") {
-                    arr.push({ id: d.id, ...data });
-                }
-            });
-            G.allShopsFull = arr;
-            if (G.mainTab === "shop") renderShopSection();
-        },
-        () => { G.allShopsFull = []; }
-    );
-}
 
 function switchSubTab(tab, el) {
     G.subTab = tab;
@@ -652,204 +329,22 @@ function switchSubTab(tab, el) {
     el.classList.add("active");
     filterListings();
 }
-// switchFormTab — forms.js mein hai
 
 // ── 13. Form Open / Close ────────────────────────────────
-function openForm(defaultTab) {
-    // Shop tab active hai to shop.html par redirect
-    if (G.mainTab === "shop") {
-        window.location.href = "shop.html";
-        return;
-    }
-
-    // "फसल खरीदें" — form kholo with type=खरीदना है
-    if (defaultTab === "kharido") {
-        DOM.modalOverlay().classList.add("active");
-        DOM.successMsg().style.display      = "none";
-        DOM.savingIndicator().style.display = "none";
-        const tabs = document.querySelectorAll(".modal-tab");
-        switchFormTab("anaaj-form", tabs[0]);
-        const typeSel = document.getElementById("fType");
-        if (typeSel) { typeSel.value = "खरीदना है"; updateSubtypeDropdown(); }
-        return;
-    }
-
-    DOM.modalOverlay().classList.add("active");
-    DOM.successMsg().style.display      = "none";
-    DOM.savingIndicator().style.display = "none";
-    const tabs = document.querySelectorAll(".modal-tab");
-    if (G.mainTab === "suchna") switchFormTab("suchna-form", tabs[2]);
-    else                        switchFormTab("anaaj-form",  tabs[0]);
-
-    // Default type = becho
-    const typeSel = document.getElementById("fType");
-    if (typeSel) typeSel.value = "बेचना है";
-}
-function closeForm() { DOM.modalOverlay().classList.remove("active"); }
 
 // Login required popup — contact/submit ke waqt
-function requireLogin(msg) {
-    const box = document.createElement("div");
-    box.id = "loginRequiredBox";
-    box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
-    box.innerHTML = `
-        <div style="background:white;border-radius:20px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-            <div style="font-size:40px;margin-bottom:10px;">🔐</div>
-            <div style="font-size:17px;font-weight:800;color:#1b5e20;margin-bottom:8px;">${msg || "Login करें"}</div>
-            <div style="font-size:13px;color:#888;margin-bottom:20px;">Google account से एक क्लिक में Login</div>
-            <button id="loginRequiredBtn" style="width:100%;padding:13px;background:#1b5e20;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;">
-                🔐 Google से Login करें
-            </button>
-            <button id="loginRequiredClose" style="width:100%;padding:10px;background:#f5f5f5;color:#666;border:none;border-radius:12px;font-size:14px;cursor:pointer;">
-                अभी नहीं
-            </button>
-        </div>`;
-    document.body.appendChild(box);
-    document.getElementById("loginRequiredBtn").onclick   = () => { box.remove(); googleLogin(); };
-    document.getElementById("loginRequiredClose").onclick = () => box.remove();
-    box.addEventListener("click", e => { if (e.target === box) box.remove(); });
-}
 
 // ── 14. Location ─────────────────────────────────────────
-function openLocationPopup()  { DOM.locationPopup().classList.add("active"); }
-function closeLocationPopup() { DOM.locationPopup().classList.remove("active"); }
 
-function autoLocation() {
-    const btn = document.querySelector(".btn-gps");
-    btn.textContent = "📡 लोकेशन मिल रही है..."; btn.disabled = true;
-    navigator.geolocation.getCurrentPosition(
-        p  => { G.userLat=p.coords.latitude; G.userLng=p.coords.longitude; G.userLocName="आपके पास"; updateLocBar(); closeLocationPopup(); filterListings(); },
-        () => { alert("GPS नहीं मिला।"); btn.textContent="📡 GPS से लोकेशन लें"; btn.disabled=false; }
-    );
-}
-function setManualLocation() {
-    const s=DOM.stateSelect(), o=s.options[s.selectedIndex];
-    if (!o.value) { alert("राज्य चुनें"); return; }
-    G.userLat=parseFloat(o.dataset.lat); G.userLng=parseFloat(o.dataset.lng); G.userLocName=o.text;
-    updateLocBar(); closeLocationPopup(); filterListings();
-}
-function updateLocBar() {
-    DOM.locationName().textContent = "📍 " + G.userLocName;
-    DOM.locationSub().textContent  = DOM.distanceSelect().value + " किमी के अंदर";
-}
 
 // ── 15. Phone Validation ── (utils.js mein move ho gayi) ──
 
 // ── 16. Missed Call ──────────────────────────────────────
-function openMissedCall()  { DOM.missedOverlay().classList.add("active"); }
-function closeMissedCall() { DOM.missedOverlay().classList.remove("active"); }
 
 // ── 17. Form Submit ──────────────────────────────────────
-function setLoading(btnId, on) {
-    const btn = document.getElementById(btnId);
-    if (btn) btn.disabled = on;
-    DOM.savingIndicator().style.display = on ? "block" : "none";
-}
 
-async function addAnaajListing(e) {
-    e.preventDefault();
-    // Login check — sirf submit par
-    if (!G.currentUser) {
-        requireLogin("लिस्टिंग डालने के लिए Login करें");
-        return;
-    }
-    const inp = DOM.fWA();
-    if (!validatePhone(inp,"fWAErr","fWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
-    const wa = inp.value.trim();
-    if (!checkSpam(wa)) return;
-    setLoading("fSubmitBtn", true);
 
-    const listingType = document.getElementById("fType")?.value || "बेचना है";
-    const subtype     = document.getElementById("fSubtype")?.value || "";
-    const collection_name = listingType === "खरीदना है" ? "buy" : "sell";
 
-    try {
-        await addDoc(collection(db, collection_name), {
-            name:  DOM.fName().value,
-            grain: DOM.fGrain().value,
-            subtype: subtype,
-            type:  listingType,
-            qty:   parseInt(DOM.fQty().value),
-            price: parseInt(DOM.fPrice().value),
-            loc:   DOM.fLoc().value,
-            wa:    encPhone(wa),
-            desc:  DOM.fDesc().value,
-            tag:   "naya", verified: false,
-            uid:   G.currentUser.uid,
-            lat:   G.userLat||28.40, lng: G.userLng||77.85,
-            createdAt: serverTimestamp()
-        });
-        DOM.successMsg().style.display = "block";
-        // email ke liye values reset se PEHLE save karo
-        const emailData = {
-            type:  listingType,
-            grain: DOM.fGrain().value,
-            qty:   DOM.fQty().value   || '',
-            price: DOM.fPrice().value || '',
-            loc:   DOM.fLoc().value,
-            name:  DOM.fName().value,
-        };
-        e.target.reset();
-        updateSubtypeDropdown();
-        sendListingEmail(G.currentUser, emailData);
-        setTimeout(() => { closeForm(); openMissedCall(); }, 1500);
-    } catch(err) { alert("❌ Error: " + err.message); }
-    setLoading("fSubmitBtn", false);
-}
-
-async function addShopListing(e) {
-    e.preventDefault();
-    if (!G.currentUser) {
-        requireLogin("दुकान लिस्टिंग के लिए Login करें");
-        return;
-    }
-    const inp = DOM.sWA();
-    if (!validatePhone(inp,"sWAErr","sWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
-    const wa = inp.value.trim();
-    if (!checkSpam(wa)) return;
-    setLoading("sSubmitBtn", true);
-    try {
-        await addDoc(collection(db,"shop"), {
-            name: DOM.sName().value, cat: DOM.sCategory().value,
-            product: DOM.sProduct().value, price: DOM.sPrice().value,
-            loc: DOM.sLoc().value, wa: encPhone(wa), desc: DOM.sDesc().value,
-            uid: G.currentUser.uid,
-            lat: G.userLat||28.40, lng: G.userLng||77.85,
-            createdAt: serverTimestamp()
-        });
-        DOM.successMsg().style.display = "block";
-        e.target.reset();
-        setTimeout(() => { closeForm(); switchMainTab("shop", document.querySelectorAll(".main-tab")[1]); openMissedCall(); }, 1500);
-    } catch(err) { alert("❌ Error: " + err.message); }
-    setLoading("sSubmitBtn", false);
-}
-
-async function addSuchnaListing(e) {
-    e.preventDefault();
-    if (!G.currentUser) {
-        requireLogin("सूचना प्रकाशित करने के लिए Login करें");
-        return;
-    }
-    const inp = DOM.nPhone();
-    if (!validatePhone(inp,"nPhErr","nPhOk")) { alert("कृपया सही संपर्क नंबर डालें"); return; }
-    const ph = inp.value.trim();
-    if (!checkSpam(ph)) return;
-    setLoading("nSubmitBtn", true);
-    try {
-        await addDoc(collection(db,"suchna"), {
-            name: DOM.nName().value, type: DOM.nType().value,
-            title: DOM.nTitle().value, desc: DOM.nDesc().value,
-            loc: DOM.nLoc().value, phone: encPhone(ph),
-            valid: DOM.nValid().value||"", urgent: DOM.nUrgent().value==="yes",
-            lat: G.userLat||28.40, lng: G.userLng||77.85,
-            createdAt: serverTimestamp()
-        });
-        DOM.successMsg().style.display = "block";
-        e.target.reset();
-        setTimeout(() => { closeForm(); switchMainTab("suchna", document.querySelectorAll(".main-tab")[2]); }, 2000);
-    } catch(err) { alert("❌ Error: " + err.message); }
-    setLoading("nSubmitBtn", false);
-}
 
 // ── 18. Event Listeners (Event Delegation) ───────────────
 function bindEvents() {
@@ -1098,41 +593,41 @@ window.submitFeedback = async function() {
 
 
 // ── Google Auth ───────────────────────────────────────────
-// googleLogin — auth.js mein hai
-
-// updateAuthUI — auth.js mein hai
-
-// startAuthListener — auth.js mein hai
-
-// openMyListings — auth.js mein hai
-// closeMyListings — auth.js mein hai
-
-// renderMyListings — auth.js mein hai
 
 
-// ── Window Exports (type=module ke liye zaroori) ─────────
+
+
+
+
+// ── Window Exports ───────────────────────────────────────
+window._G   = G;
+window._DOM = DOM;
+
+window.switchMainTab         = switchMainTab;
+window.switchSubTab          = switchSubTab;
 window.updateSubtypeDropdown = updateSubtypeDropdown;
-window.runShopSearch     = runShopSearch;
-window.openForm          = openForm;
-window.closeForm         = closeForm;
-window.closeFormOutside  = (e) => { if(e.target===DOM.modalOverlay()) closeForm(); };
-window.switchMainTab     = switchMainTab;
-window.switchSubTab      = switchSubTab;
-window.switchFormTab     = switchFormTab;
-window.filterListings    = filterListings;
-window.openLocationPopup = openLocationPopup;
-window.closeLocationPopup= closeLocationPopup;
-window.autoLocation      = autoLocation;
-window.setManualLocation = setManualLocation;
-window.validatePhone     = validatePhone;
-window.openMissedCall    = openMissedCall;
-window.closeMissedCall   = closeMissedCall;
-window.addAnaajListing   = addAnaajListing;
-window.addShopListing    = addShopListing;
-window.addSuchnaListing  = addSuchnaListing;
-window.openMyListings    = openMyListings;
-window.closeMyListings   = closeMyListings;
-window.googleLogin       = googleLogin;
+window.submitFeedback        = submitFeedback;
+window.filterListings        = filterListings;
+window.runShopSearch         = runShopSearch;
+window.filterShops           = runShopSearch;
+window.openForm              = openForm;
+window.closeForm             = closeForm;
+window.closeFormOutside      = (e) => { if(e.target===document.getElementById('modalOverlay')) closeForm(); };
+window.switchFormTab         = switchFormTab;
+window.addAnaajListing       = addAnaajListing;
+window.addShopListing        = addShopListing;
+window.addSuchnaListing      = addSuchnaListing;
+window.openLocationPopup     = openLocationPopup;
+window.closeLocationPopup    = closeLocationPopup;
+window.autoLocation          = autoLocation;
+window.setManualLocation     = setManualLocation;
+window.openMissedCall        = openMissedCall;
+window.closeMissedCall       = closeMissedCall;
+window.validatePhone         = validatePhone;
+window.googleLogin           = googleLogin;
+window.openMyListings        = openMyListings;
+window.closeMyListings       = closeMyListings;
+
 
 
 // ── 21. Report Problem ───────────────────────────────────
