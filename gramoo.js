@@ -57,31 +57,6 @@ function sendListingEmail(user, data) {
     } catch(e) { console.log('EmailJS error:', e); }
 }
 
-// ── EmailJS Config ────────────────────────────────────────
-const EJS_SERVICE     = 'service_un25x5y';
-const EJS_TPL_LISTING = 'template_g721f9g';
-const EJS_PUBKEY      = 'OAlzCN74cs01xSoZH';
-
-function sendListingEmail(user, data) {
-    if (!user || !user.email) return;
-    try {
-        emailjs.init(EJS_PUBKEY);
-        const isBuy = data.type === 'खरीदना है';
-        emailjs.send(EJS_SERVICE, EJS_TPL_LISTING, {
-            to_email:         user.email,
-            to_name:          user.displayName || data.name || 'किसान',
-            listing_type:     isBuy ? '🛒 खरीदना है' : '🌾 बेचना है',
-            grain_name:       data.grain || '',
-            qty:              data.qty   || '',
-            price:            data.price || '',
-            location:         data.loc   || '',
-            buyer_seller_msg: isBuy
-                ? 'जल्द ही नज़दीकी विक्रेता आपसे WhatsApp पर संपर्क करेंगे। 🌾'
-                : 'जल्द ही नज़दीकी खरीददार आपसे WhatsApp पर संपर्क करेंगे। 🛒',
-        }).then(() => console.log('✅ Listing email sent'))
-          .catch(e => console.log('Listing email error:', e));
-    } catch(e) { console.log('EmailJS error:', e); }
-}
 
 const firebaseConfig = {
     apiKey:            "AIzaSyAeeN9ijnSuA3IyV43QQsiEshTrRdEjL0A",
