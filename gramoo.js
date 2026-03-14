@@ -31,6 +31,58 @@ import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTim
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ── 1. Firebase Init ─────────────────────────────────────
+// ── EmailJS Config ────────────────────────────────────────
+const EJS_SERVICE     = 'service_un25x5y';
+const EJS_TPL_LISTING = 'template_g721f9g';
+const EJS_PUBKEY      = 'OAlzCN74cs01xSoZH';
+
+function sendListingEmail(user, data) {
+    if (!user || !user.email) return;
+    try {
+        emailjs.init(EJS_PUBKEY);
+        const isBuy = data.type === 'खरीदना है';
+        emailjs.send(EJS_SERVICE, EJS_TPL_LISTING, {
+            to_email:         user.email,
+            to_name:          user.displayName || data.name || 'किसान',
+            listing_type:     isBuy ? '🛒 खरीदना है' : '🌾 बेचना है',
+            grain_name:       data.grain || '',
+            qty:              data.qty   || '',
+            price:            data.price || '',
+            location:         data.loc   || '',
+            buyer_seller_msg: isBuy
+                ? 'जल्द ही नज़दीकी विक्रेता आपसे WhatsApp पर संपर्क करेंगे। 🌾'
+                : 'जल्द ही नज़दीकी खरीददार आपसे WhatsApp पर संपर्क करेंगे। 🛒',
+        }).then(() => console.log('✅ Listing email sent'))
+          .catch(e => console.log('Listing email error:', e));
+    } catch(e) { console.log('EmailJS error:', e); }
+}
+
+// ── EmailJS Config ────────────────────────────────────────
+const EJS_SERVICE     = 'service_un25x5y';
+const EJS_TPL_LISTING = 'template_g721f9g';
+const EJS_PUBKEY      = 'OAlzCN74cs01xSoZH';
+
+function sendListingEmail(user, data) {
+    if (!user || !user.email) return;
+    try {
+        emailjs.init(EJS_PUBKEY);
+        const isBuy = data.type === 'खरीदना है';
+        emailjs.send(EJS_SERVICE, EJS_TPL_LISTING, {
+            to_email:         user.email,
+            to_name:          user.displayName || data.name || 'किसान',
+            listing_type:     isBuy ? '🛒 खरीदना है' : '🌾 बेचना है',
+            grain_name:       data.grain || '',
+            qty:              data.qty   || '',
+            price:            data.price || '',
+            location:         data.loc   || '',
+            buyer_seller_msg: isBuy
+                ? 'जल्द ही नज़दीकी विक्रेता आपसे WhatsApp पर संपर्क करेंगे। 🌾'
+                : 'जल्द ही नज़दीकी खरीददार आपसे WhatsApp पर संपर्क करेंगे। 🛒',
+        }).then(() => console.log('✅ Listing email sent'))
+          .catch(e => console.log('Listing email error:', e));
+    } catch(e) { console.log('EmailJS error:', e); }
+}
+
 const firebaseConfig = {
     apiKey:            "AIzaSyAeeN9ijnSuA3IyV43QQsiEshTrRdEjL0A",
     authDomain:        "gramoo-44d83.firebaseapp.com",
@@ -851,7 +903,15 @@ async function addAnaajListing(e) {
         });
         DOM.successMsg().style.display = "block";
         e.target.reset();
-        updateSubtypeDropdown(); // reset subtype
+        updateSubtypeDropdown();
+        sendListingEmail(G.currentUser, {
+            type:  listingType,
+            grain: DOM.fGrain().value,
+            qty:   document.getElementById('fQty')?.value  || '',
+            price: document.getElementById('fPrice')?.value || '',
+            loc:   DOM.fLoc().value,
+            name:  DOM.fName().value,
+        });
         setTimeout(() => { closeForm(); openMissedCall(); }, 1500);
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("fSubmitBtn", false);
@@ -1345,11 +1405,7 @@ async function submitReportProblem() {
     } catch (err) {
         btn.disabled = false;
         btn.textContent = "🚨 Report भेजें";
-        if (err.code === "permission-denied") {
-            alert("❌ Permission error — Firebase rules update karein\n\nproblemReports collection allow karein.");
-        } else {
-            alert("Error: " + err.message);
-        }
+        alert("Error: " + err.message);
     }
 }
 
