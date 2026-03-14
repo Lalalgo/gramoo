@@ -453,7 +453,7 @@ body {
             Approve होने के बाद आप यहाँ items add कर सकेंगे।
         </div>
         <div id="pendingShopName" style="background:#fff3e0;border-radius:12px;padding:14px;margin-bottom:20px;font-weight:700;color:#e65100;font-size:15px;"></div>
-        <button onclick="signOut(auth)" style="width:100%;padding:12px;background:#f5f5f5;border:1px solid #ddd;border-radius:12px;font-size:14px;cursor:pointer;font-family:inherit;">
+        <button onclick="doSignOut()" style="width:100%;padding:12px;background:#f5f5f5;border:1px solid #ddd;border-radius:12px;font-size:14px;cursor:pointer;font-family:inherit;">
             Logout
         </button>
         <p style="font-size:12px;color:#aaa;margin-top:16px;">
@@ -531,7 +531,7 @@ body {
             style="width:100%;padding:14px;background:#1b5e20;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;">
             📨 Registration Request भेजें
         </button>
-        <button onclick="signOut(auth)"
+        <button onclick="doSignOut()"
             style="width:100%;padding:10px;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;font-family:inherit;margin-top:10px;">
             Logout
         </button>
@@ -1007,7 +1007,8 @@ async function showApprovedScreen(user, regData) {
     } catch(e) { console.log('welcomeSeen error:', e); }
 }
 
-window.goToPortal = function() { showMainApp(currentUser); };
+window.goToPortal  = function() { showMainApp(currentUser); };
+window.doSignOut   = function() { signOut(auth); };
 
 function sendApprovalEmail(user, regData) {
     try {
@@ -1724,8 +1725,17 @@ async function submitReportProblem() {
     btn.disabled    = true;
     btn.textContent = '⏳ भेज रहे हैं...';
     const u = typeof currentUser !== 'undefined' ? currentUser : null;
+    // window globals use karo — module scope se bahar hain
+    const _db  = window._db;
+    const _add = window._addDoc;
+    const _col = window._collection;
+    const _ts  = window._serverTimestamp;
+    if (!_db || !_add || !_col || !_ts) {
+        btn.disabled = false; btn.textContent = '🚨 Report भेजें';
+        alert('Page abhi load ho raha hai, thodi der baad try karein।'); return;
+    }
     try {
-        await addDoc(collection(db, 'problemReports'), {
+        await _add(_col(_db, 'problemReports'), {
             category,
             desc:        document.getElementById('rpDesc').value.trim() || '—',
             phone:       document.getElementById('rpPhone').value.trim() || '—',
@@ -1739,7 +1749,7 @@ async function submitReportProblem() {
             loginStatus: u ? 'logged_in'  : 'logged_out',
             userEmail:   u ? (u.email||'—') : '—',
             userUID:     u ? (u.uid||'—')   : '—',
-            createdAt:   serverTimestamp(),
+            createdAt:   _ts(),
             type:        'problem_report'
         });
         document.getElementById('rpForm').style.display    = 'none';
