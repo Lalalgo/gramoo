@@ -1345,7 +1345,11 @@ async function submitReportProblem() {
     } catch (err) {
         btn.disabled = false;
         btn.textContent = "🚨 Report भेजें";
-        alert("Error: " + err.message);
+        if (err.code === "permission-denied") {
+            alert("❌ Permission error — Firebase rules update karein\n\nproblemReports collection allow karein.");
+        } else {
+            alert("Error: " + err.message);
+        }
     }
 }
 
