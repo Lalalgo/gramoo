@@ -802,6 +802,12 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
+// Window globals — Report Problem script ke liye (module scope ke bahar accessible)
+window._db              = db;
+window._addDoc          = addDoc;
+window._collection      = collection;
+window._serverTimestamp = serverTimestamp;
+
 // ── Master List ──
 const MASTER = [
     // खाद / Fertilizers
@@ -879,38 +885,50 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
 onAuthStateChanged(auth, async user => {
-    document.getElementById('pageLoader').style.opacity = '0';
-    setTimeout(() => document.getElementById('pageLoader').style.display = 'none', 400);
+    // Loader hide karo
+    const loader = document.getElementById('pageLoader');
+    if (loader) {
+        loader.style.opacity = '0';
+        loader.style.transition = 'opacity 0.3s';
+        setTimeout(() => { if(loader) loader.style.display = 'none'; }, 350);
+    }
 
     if (user) {
+        // Same user baar baar handle mat karo — login loop fix
+        if (currentUser && currentUser.uid === user.uid) return;
         currentUser = user;
-        // Check registration status in shopRequests
-        const regSnap = await getDoc(doc(db, 'shopRequests', user.uid));
-        const shopSnap = await getDoc(doc(db, 'shops', user.uid));
+        window._currentUser = user;
 
-        if (shopSnap.exists() && shopSnap.data().status === 'approved') {
-            // Fully approved — show main portal
-            showMainApp(user);
-        } else if (regSnap.exists() && regSnap.data().status === 'pending') {
-            // Registration pending
-            showPendingScreen(regSnap.data().shopName);
-        } else if (regSnap.exists() && regSnap.data().status === 'rejected') {
-            // Rejected — let them re-register
-            showRegisterScreen();
-            showToast('⚠️ पिछली request reject हुई थी। फिर से apply करें।');
-        } else if (shopSnap.exists()) {
-            // Old shop without status field — approved
-            showMainApp(user);
-        } else {
-            // New user — show registration form
+        try {
+            const [regSnap, shopSnap] = await Promise.all([
+                getDoc(doc(db, 'shopRequests', user.uid)),
+                getDoc(doc(db, 'shops', user.uid))
+            ]);
+
+            if (shopSnap.exists() && shopSnap.data().status === 'approved') {
+                showMainApp(user);
+            } else if (shopSnap.exists() && !shopSnap.data().status) {
+                showMainApp(user); // purana shop
+            } else if (regSnap.exists() && regSnap.data().status === 'pending') {
+                showPendingScreen(regSnap.data().shopName);
+            } else if (regSnap.exists() && regSnap.data().status === 'rejected') {
+                showRegisterScreen();
+                showToast('⚠️ पिछली request reject हुई थी। फिर से apply करें।');
+            } else {
+                showRegisterScreen();
+            }
+        } catch(e) {
+            console.error('Auth error:', e);
             showRegisterScreen();
         }
     } else {
         currentUser = null;
+        window._currentUser = null;
         hideAll();
-        document.getElementById('loginScreen').style.display = 'flex';
+        const ls = document.getElementById('loginScreen');
+        if (ls) ls.style.display = 'flex';
     }
-});
+});;
 
 function hideAll() {
     ['loginScreen','pendingScreen','registerScreen','mainApp'].forEach(id => {
