@@ -81,7 +81,7 @@ const MASTER = [
     { id:'pherom', hi:'फेरोमोन ट्रैप',            en:'Pheromone Trap',   cat:'अन्य',    brands:['Pheromon','Local'],                                  packs:['Per Set'] },
 ];
 
-const catIcons = { 'खाद':'🌿','बीज':'🌱','कीटनाशक':'💊','यंत्र':'🚜','पशु आहार':'🐄','अन्य':'🧪' };
+// catIcons — data.js se import hota hai
 
 // ── State ──
 let currentUser = null;

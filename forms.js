@@ -3,7 +3,10 @@
 // Form open/close, listing submit, location, missed call
 // ════════════════════════════════════════
 
+import { collection, addDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { db, auth, provider } from "./firebase-config.js";
+import { googleLogin } from "./auth.js";
 import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
 import { sendListingEmail } from "./email.js";
 import { catIcons, grainMeta, shopMeta, suchnaMeta, GRAIN_SUBTYPES, MASTER_ITEMS, DEMO_SHOPS, DEMO_SHOP, sampleSell, sampleBuy, sampleShop, sampleSuchna } from "./data.js";
@@ -33,7 +36,7 @@ function openForm(defaultTab) {
         const tabs = document.querySelectorAll(".modal-tab");
         switchFormTab("anaaj-form", tabs[0]);
         const typeSel = document.getElementById("fType");
-        if (typeSel) { typeSel.value = "खरीदना है"; updateSubtypeDropdown(); }
+        if (typeSel) { typeSel.value = "खरीदना है"; if (window.updateSubtypeDropdown) window.updateSubtypeDropdown(); }
         return;
     }
 
@@ -161,7 +164,7 @@ async function addAnaajListing(e) {
             name:  DOM.fName().value,
         };
         e.target.reset();
-        updateSubtypeDropdown();
+        if (window.updateSubtypeDropdown) window.updateSubtypeDropdown();
         sendListingEmail(G.currentUser, emailData);
         setTimeout(() => { closeForm(); openMissedCall(); }, 1500);
     } catch(err) { alert("❌ Error: " + err.message); }
@@ -190,7 +193,7 @@ async function addShopListing(e) {
         });
         DOM.successMsg().style.display = "block";
         e.target.reset();
-        setTimeout(() => { closeForm(); switchMainTab("shop", document.querySelectorAll(".main-tab")[1]); openMissedCall(); }, 1500);
+        setTimeout(() => { closeForm(); if (window.switchMainTab) window.switchMainTab("shop", document.querySelectorAll(".main-tab")[1]); openMissedCall(); }, 1500);
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("sSubmitBtn", false);
 }
@@ -217,10 +220,18 @@ async function addSuchnaListing(e) {
         });
         DOM.successMsg().style.display = "block";
         e.target.reset();
-        setTimeout(() => { closeForm(); switchMainTab("suchna", document.querySelectorAll(".main-tab")[2]); }, 2000);
+        setTimeout(() => { closeForm(); if (window.switchMainTab) window.switchMainTab("suchna", document.querySelectorAll(".main-tab")[2]); }, 2000);
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("nSubmitBtn", false);
 }
 
+
+function switchFormTab(sec, el) {
+    document.querySelectorAll(".modal-tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".form-section").forEach(s => s.classList.remove("active"));
+    if (el) el.classList.add("active");
+    const secEl = document.getElementById(sec);
+    if (secEl) secEl.classList.add("active");
+}
 
 export { openForm, closeForm, switchFormTab, addAnaajListing, addShopListing, addSuchnaListing, openLocationPopup, closeLocationPopup, autoLocation, setManualLocation, openMissedCall, closeMissedCall };

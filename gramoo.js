@@ -34,6 +34,10 @@ import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTim
 import { db, auth, provider } from "./firebase-config.js";
 import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
 import { sendListingEmail } from "./email.js";
+import { googleLogin, updateAuthUI, startAuthListener, openMyListings, closeMyListings } from "./auth.js";
+import { openForm, closeForm, switchFormTab, addAnaajListing, addShopListing, addSuchnaListing, openLocationPopup, closeLocationPopup, autoLocation, setManualLocation, openMissedCall, closeMissedCall } from "./forms.js";
+import { renderGrain, renderShop, renderSuchna, filterListings, updateStats, updateActivity } from "./render.js";
+import { initShopSearch, runShopSearch, renderShopSection, startShopListener } from "./shop-search.js";
 
 
 // ── 2b. Grain Subtypes Master ─────────────────────────────
@@ -441,13 +445,7 @@ function switchMainTab(tab, el) {
     filterListings();
 }
 // ── Master Item List (same as shop.html) ─────────────────
-const MASTER_ITEMS = {
-    'खाद':     ['डीएपी (DAP)','यूरिया','एनपीके (NPK)','एसएसपी','पोटाश (MOP)','जिंक सल्फेट','वर्मी कम्पोस्ट','ह्यूमिक एसिड','बोरोन'],
-    'बीज':     ['गेहूं बीज','धान बीज','सरसों बीज','मक्का बीज','बाजरा बीज','टमाटर बीज','प्याज बीज','मिर्च बीज','मूंग/उड़द बीज'],
-    'कीटनाशक': ['क्लोरपाइरीफॉस','इमिडाक्लोप्रिड','साइपरमेथ्रिन','मैंकोज़ेब','कार्बेन्डाजिम','ग्लाइफोसेट','ट्राइकोडर्मा'],
-    'यंत्र':   ['नैपसैक स्प्रेयर','पावर स्प्रेयर','ड्रिप सिस्टम','तिरपाल','पाइप सेट','खुरपी/दरांती'],
-    'पशु आहार':['कैटल फीड','पोल्ट्री फीड','मिनरल मिक्सचर','सरसों खल','बाईपास प्रोटीन'],
-};
+// MASTER_ITEMS — data.js se import hota hai
 
 // Search state
 const SEARCH = { cat: '', item: '', text: '' };
@@ -489,8 +487,7 @@ function renderItemButtons() {
 }
 
 // ── Shop Section Render ───────────────────────────────────
-const catIcons = {'खाद':'🌿','बीज':'🌱','कीटनाशक':'💊','यंत्र':'🚜','पशु आहार':'🐄','अन्य':'🧪'};
-
+// catIcons — data.js se import hota hai
 function renderShopCard(shop, matchedItems) {
     const dist = (G.userLat && shop.lat)
         ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,shop.lat,shop.lng))} किमी</span>` : "";
@@ -655,12 +652,7 @@ function switchSubTab(tab, el) {
     el.classList.add("active");
     filterListings();
 }
-function switchFormTab(sec, el) {
-    document.querySelectorAll(".modal-tab").forEach(t  => t.classList.remove("active"));
-    document.querySelectorAll(".form-section").forEach(s => s.classList.remove("active"));
-    el.classList.add("active");
-    document.getElementById(sec).classList.add("active");
-}
+// switchFormTab — forms.js mein hai
 
 // ── 13. Form Open / Close ────────────────────────────────
 function openForm(defaultTab) {
@@ -1106,97 +1098,16 @@ window.submitFeedback = async function() {
 
 
 // ── Google Auth ───────────────────────────────────────────
-async function googleLogin() {
-    // Already logged in hai — box hata do
-    if (G.currentUser) {
-        const box = document.getElementById("loginRequiredBox");
-        if (box) box.remove();
-        return;
-    }
-    try {
-        // Popup try karo — COOP warning sirf warning hai, error nahi
-        // Login successful hota hai popup se bhi
-        const result = await signInWithPopup(auth, provider);
-        if (result?.user) {
-            const box = document.getElementById("loginRequiredBox");
-            if (box) box.remove();
-        }
-    } catch(e) {
-        const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
-        if (ignore.includes(e.code)) return;
-        // Popup fail hua — redirect try karo
-        try {
-            await signInWithRedirect(auth, provider);
-        } catch(e2) {
-            alert("Login failed: " + e2.message);
-        }
-    }
-}
+// googleLogin — auth.js mein hai
 
-function updateAuthUI(user) {
-    G.currentUser = user;
-    const authBtn  = document.getElementById("authBtn");
-    const userInfo = document.getElementById("userInfo");
-    if (!authBtn || !userInfo) return;
-    if (user) {
-        authBtn.style.display  = "none";
-        userInfo.style.display = "flex";
-        const photo = document.getElementById("userPhoto");
-        const name  = document.getElementById("userName");
-        if (photo) { photo.src = user.photoURL || ""; photo.style.display = user.photoURL ? "block" : "none"; }
-        if (name)  name.textContent = user.displayName ? user.displayName.split(" ")[0] : "User";
-    } else {
-        authBtn.style.display  = "flex";
-        userInfo.style.display = "none";
-    }
-}
+// updateAuthUI — auth.js mein hai
 
-function startAuthListener() {
-    getRedirectResult(auth).then(result => {
-        if (result?.user) {
-            const box = document.getElementById("loginRequiredBox");
-            if (box) box.remove();
-        }
-    }).catch(() => {});
+// startAuthListener — auth.js mein hai
 
-    onAuthStateChanged(auth, user => {
-        updateAuthUI(user);
-        if (user) {
-            const box = document.getElementById("loginRequiredBox");
-            if (box) box.remove();
-        }
-    });
-}
+// openMyListings — auth.js mein hai
+// closeMyListings — auth.js mein hai
 
-function openMyListings() {
-    const panel = document.getElementById("myListingsPanel");
-    if (!panel) return;
-    panel.classList.add("active");
-    renderMyListings();
-}
-function closeMyListings() {
-    const panel = document.getElementById("myListingsPanel");
-    if (panel) panel.classList.remove("active");
-}
-
-function renderMyListings() {
-    const body = document.getElementById("myListingsBody");
-    if (!body || !G.currentUser) return;
-    const uid = G.currentUser.uid;
-    const all = [...(G.allSell||[]), ...(G.allBuy||[]), ...(G.allShop||[]), ...(G.allSuchna||[])]
-        .filter(i => i.uid === uid);
-    if (!all.length) {
-        body.innerHTML = '<p style="text-align:center;color:#888;padding:20px">अभी कोई listing नहीं</p>';
-        return;
-    }
-    body.innerHTML = all.map(i => `
-        <div class="my-listing-item">
-            <div>
-                <div class="my-listing-title">${i.name||i.title||"—"}</div>
-                <div class="my-listing-meta">${i.grain||i.product||i.type||""} • ${i.loc||""}</div>
-            </div>
-        </div>`).join("");
-}
+// renderMyListings — auth.js mein hai
 
 
 // ── Window Exports (type=module ke liye zaroori) ─────────

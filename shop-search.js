@@ -3,6 +3,8 @@
 // Shop search, filters, cards — index.html dukaan tab
 // ════════════════════════════════════════
 
+import { collection, query, orderBy, onSnapshot }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { db, auth, provider } from "./firebase-config.js";
 import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
 import { sendListingEmail } from "./email.js";
@@ -17,14 +19,7 @@ const DOM = window._DOM || {};
 // G aur DOM — gramoo.js core se share hota hai
 // Direct window._G / window._DOM use karo ya gramoo.js G/DOM import karo
 
-// ── Master Item List (same as shop.html) ─────────────────
-const MASTER_ITEMS = {
-    'खाद':     ['डीएपी (DAP)','यूरिया','एनपीके (NPK)','एसएसपी','पोटाश (MOP)','जिंक सल्फेट','वर्मी कम्पोस्ट','ह्यूमिक एसिड','बोरोन'],
-    'बीज':     ['गेहूं बीज','धान बीज','सरसों बीज','मक्का बीज','बाजरा बीज','टमाटर बीज','प्याज बीज','मिर्च बीज','मूंग/उड़द बीज'],
-    'कीटनाशक': ['क्लोरपाइरीफॉस','इमिडाक्लोप्रिड','साइपरमेथ्रिन','मैंकोज़ेब','कार्बेन्डाजिम','ग्लाइफोसेट','ट्राइकोडर्मा'],
-    'यंत्र':   ['नैपसैक स्प्रेयर','पावर स्प्रेयर','ड्रिप सिस्टम','तिरपाल','पाइप सेट','खुरपी/दरांती'],
-    'पशु आहार':['कैटल फीड','पोल्ट्री फीड','मिनरल मिक्सचर','सरसों खल','बाईपास प्रोटीन'],
-};
+// MASTER_ITEMS — data.js se import hota hai
 
 // Search state
 const SEARCH = { cat: '', item: '', text: '' };
@@ -66,7 +61,7 @@ function renderItemButtons() {
 }
 
 // ── Shop Section Render ───────────────────────────────────
-const catIcons = {'खाद':'🌿','बीज':'🌱','कीटनाशक':'💊','यंत्र':'🚜','पशु आहार':'🐄','अन्य':'🧪'};
+// catIcons — data.js se import hota hai
 
 function renderShopCard(shop, matchedItems) {
     const dist = (G.userLat && shop.lat)
@@ -226,18 +221,8 @@ function startShopListener() {
     );
 }
 
-function switchSubTab(tab, el) {
-    G.subTab = tab;
-    document.querySelectorAll(".sub-tab").forEach(t => t.classList.remove("active"));
-    el.classList.add("active");
-    filterListings();
-}
-function switchFormTab(sec, el) {
-    document.querySelectorAll(".modal-tab").forEach(t  => t.classList.remove("active"));
-    document.querySelectorAll(".form-section").forEach(s => s.classList.remove("active"));
-    el.classList.add("active");
-    document.getElementById(sec).classList.add("active");
-}
+// switchSubTab — gramoo.js/forms.js mein hai
+// switchFormTab — gramoo.js/forms.js mein hai
 
 
 export { initShopSearch, runShopSearch, renderShopSection, startShopListener };

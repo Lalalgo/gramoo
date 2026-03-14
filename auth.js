@@ -3,6 +3,8 @@
 // Google login, auth UI, My Listings panel
 // ════════════════════════════════════════
 
+import { signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { db, auth, provider } from "./firebase-config.js";
 import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
 import { sendListingEmail } from "./email.js";
@@ -113,29 +115,10 @@ function renderMyListings() {
 }
 
 
-// ── Window Exports (type=module ke liye zaroori) ─────────
-window.updateSubtypeDropdown = updateSubtypeDropdown;
-window.runShopSearch     = runShopSearch;
-window.openForm          = openForm;
-window.closeForm         = closeForm;
-window.closeFormOutside  = (e) => { if(e.target===DOM.modalOverlay()) closeForm(); };
-window.switchMainTab     = switchMainTab;
-window.switchSubTab      = switchSubTab;
-window.switchFormTab     = switchFormTab;
-window.filterListings    = filterListings;
-window.openLocationPopup = openLocationPopup;
-window.closeLocationPopup= closeLocationPopup;
-window.autoLocation      = autoLocation;
-window.setManualLocation = setManualLocation;
-window.validatePhone     = validatePhone;
-window.openMissedCall    = openMissedCall;
-window.closeMissedCall   = closeMissedCall;
-window.addAnaajListing   = addAnaajListing;
-window.addShopListing    = addShopListing;
-window.addSuchnaListing  = addSuchnaListing;
-window.openMyListings    = openMyListings;
-window.closeMyListings   = closeMyListings;
-window.googleLogin       = googleLogin;
+// ── Window Exports — sirf auth.js ke functions ───────────
+window.googleLogin    = googleLogin;
+window.openMyListings = openMyListings;
+window.closeMyListings= closeMyListings;
 
 
 
