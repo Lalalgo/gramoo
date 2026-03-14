@@ -932,21 +932,29 @@ onAuthStateChanged(auth, async user => {
                 getDoc(doc(db, 'shops', user.uid))
             ]);
 
-            if (shopSnap.exists() && shopSnap.data().status === 'approved') {
-                const regData = regSnap.exists() ? regSnap.data() : {};
+            const regData  = regSnap.exists()  ? regSnap.data()  : null;
+            const shopData = shopSnap.exists() ? shopSnap.data() : null;
+
+            // shopRequests status PEHLE check karo — yahi source of truth hai
+            if (regData && regData.status === 'approved') {
+                // Admin ne approve kiya — welcome screen ya main app
                 if (regData.welcomeSeen) {
                     showMainApp(user);
                 } else {
                     showApprovedScreen(user, regData);
                 }
-            } else if (shopSnap.exists() && !shopSnap.data().status) {
-                showMainApp(user); // purana shop
-            } else if (regSnap.exists() && regSnap.data().status === 'pending') {
-                showPendingScreen(regSnap.data().shopName);
-            } else if (regSnap.exists() && regSnap.data().status === 'rejected') {
+            } else if (regData && regData.status === 'pending') {
+                // Request pending hai — pending screen dikhao
+                showPendingScreen(regData.shopName);
+            } else if (regData && regData.status === 'rejected') {
+                // Request reject hui — register screen + message
                 showRegisterScreen();
                 showToast('⚠️ पिछली request reject हुई थी। फिर से apply करें।');
+            } else if (!regData && shopData && !shopData.status) {
+                // Purana shop — bina request ke directly approved tha
+                showMainApp(user);
             } else {
+                // Koi request nahi — registration form dikhao
                 showRegisterScreen();
             }
         } catch(e) {
