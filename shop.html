@@ -1012,16 +1012,22 @@ window.goToPortal = function() { showMainApp(currentUser); };
 function sendApprovalEmail(user, regData) {
     try {
         emailjs.init(EJS_PUBKEY);
+        // approvedAt null ho toh crash na ho
+        let approvedTimeStr = 'Aaj';
+        try {
+            if (regData.approvedAt && typeof regData.approvedAt.toDate === 'function') {
+                approvedTimeStr = regData.approvedAt.toDate().toLocaleDateString('hi-IN',
+                    {day:'numeric', month:'long', year:'numeric'});
+            }
+        } catch(dateErr) { approvedTimeStr = 'Aaj'; }
+
         emailjs.send(EJS_SERVICE, EJS_TPL_APPROVAL, {
             to_email:      user.email,
             to_name:       user.displayName || 'Dukandaar',
             shop_name:     regData.shopName  || 'Aapki Dukaan',
             shop_area:     (regData.area||'') + ', ' + (regData.district||''),
             portal_url:    'https://gramoo.in/shop.html',
-            approved_time: regData.approvedAt
-                ? regData.approvedAt.toDate().toLocaleDateString('hi-IN',
-                    {day:'numeric',month:'long',year:'numeric'})
-                : 'Aaj',
+            approved_time: approvedTimeStr,
         }).then(() => console.log('✅ Approval email sent'))
           .catch(e => console.log('Email error:', e));
     } catch(e) { console.log('EmailJS error:', e); }

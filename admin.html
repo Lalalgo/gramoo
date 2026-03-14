@@ -626,14 +626,31 @@ function renderShopRequests() {
 window.approveShop = async function(uid, naam, phone, district, area, lat, lng, category) {
     if (!confirm(`"${naam}" ko APPROVE karna chahte ho?\n\nYeh dukaan ab Gramoo par live ho jaayegi.`)) return;
     try {
-        // shopRequests mein status approved karo
-        // shop.html khud apna shops entry create karega jab dukandaar login karega
+        const now = serverTimestamp();
+
+        // 1. shopRequests mein status update karo
         await updateDoc(doc(db, "shopRequests", uid), {
             status:     "approved",
-            approvedAt: serverTimestamp(),
+            approvedAt: now,
             approvedBy: "admin"
         });
-        alert(`✅ "${naam}" approve ho gayi!\nDukandaar ko notification milegi.`);
+
+        // 2. shops/{uid} document create karo — shop.html isi se check karta hai
+        await setDoc(doc(db, "shops", uid), {
+            naam:      naam,
+            phone:     phone,
+            district:  district,
+            area:      area,
+            lat:       parseFloat(lat) || 0,
+            lng:       parseFloat(lng) || 0,
+            category:  category || "general",
+            status:    "approved",
+            uid:       uid,
+            approvedAt: now,
+            createdAt:  now
+        });
+
+        alert(`✅ "${naam}" approve ho gayi!\nDukandaar ko portal access mil gaya.`);
     } catch(e) { alert("Error: " + e.message); }
 };
 
