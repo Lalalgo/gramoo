@@ -1114,16 +1114,10 @@ async function googleLogin() {
         return;
     }
     try {
-        const isMobile = /mobile|android|iphone|ipad/i.test(navigator.userAgent);
-        if (isMobile) {
-            await signInWithRedirect(auth, provider);
-        } else {
-            const result = await signInWithPopup(auth, provider);
-            if (result?.user) {
-                const box = document.getElementById("loginRequiredBox");
-                if (box) box.remove();
-            }
-        }
+        // COOP एरर से बचने के लिए सभी डिवाइसेस पर Redirect का उपयोग करें।
+        // रिडायरेक्ट का रिजल्ट 'startAuthListener' में 'getRedirectResult' द्वारा हैंडल किया जाता है।
+        await signInWithRedirect(auth, provider);
+
     } catch(e) {
         const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
         if (!ignore.includes(e.code)) alert("Login failed: " + e.message);

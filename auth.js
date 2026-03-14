@@ -27,18 +27,10 @@ async function googleLogin() {
         return;
     }
     try {
-        const isMobile = /mobile|android|iphone|ipad/i.test(navigator.userAgent);
-        if (isMobile) {
-            // Mobile: redirect — COOP error nahi aata
-            await signInWithRedirect(auth, provider);
-        } else {
-            // Desktop: popup
-            const result = await signInWithPopup(auth, provider);
-            if (result?.user) {
-                const box = document.getElementById("loginRequiredBox");
-                if (box) box.remove();
-            }
-        }
+        // Cross-Origin-Opener-Policy (COOP) एरर को फिक्स करने के लिए Redirect मोड का उपयोग करें।
+        // यह ब्राउज़र को पॉपअप ब्लॉक करने से रोकता है।
+        await signInWithRedirect(auth, provider);
+
     } catch(e) {
         const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
         if (!ignore.includes(e.code)) alert("Login failed: " + e.message);
