@@ -3,8 +3,6 @@
 // Google login, auth UI, My Listings panel
 // ════════════════════════════════════════
 
-import { signInWithRedirect, getRedirectResult, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { db, auth, provider } from "./firebase-config.js";
 import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
 import { sendListingEmail } from "./email.js";
@@ -21,7 +19,7 @@ const DOM = window._DOM || {};
 
 // ── Google Auth ───────────────────────────────────────────
 async function googleLogin() {
-    // Already logged in hai to kuch mat karo — login box hata do
+    // Already logged in hai — box hata do
     const currentUser = (window._G && window._G.currentUser) || null;
     if (currentUser) {
         const box = document.getElementById("loginRequiredBox");
@@ -29,13 +27,22 @@ async function googleLogin() {
         return;
     }
     try {
-        // Cross-Origin-Opener-Policy (COOP) एरर को फिक्स करने के लिए Redirect मोड का उपयोग करें।
-        // यह ब्राउज़र को पॉपअप ब्लॉक करने से रोकता है।
-        await signInWithRedirect(auth, provider);
-
+        // Popup try karo — COOP warning sirf warning hai, error nahi
+        // Login successful hota hai popup se bhi
+        const result = await signInWithPopup(auth, provider);
+        if (result?.user) {
+            const box = document.getElementById("loginRequiredBox");
+            if (box) box.remove();
+        }
     } catch(e) {
         const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
-        if (!ignore.includes(e.code)) alert("Login failed: " + e.message);
+        if (ignore.includes(e.code)) return;
+        // Popup fail hua — redirect try karo
+        try {
+            await signInWithRedirect(auth, provider);
+        } catch(e2) {
+            alert("Login failed: " + e2.message);
+        }
     }
 }
 
@@ -58,7 +65,7 @@ function updateAuthUI(user) {
 }
 
 function startAuthListener() {
-    // Mobile redirect ke baad result handle karo
+    // Redirect ke baad result handle karo
     getRedirectResult(auth).then(result => {
         if (result?.user) {
             const box = document.getElementById("loginRequiredBox");
@@ -68,7 +75,6 @@ function startAuthListener() {
 
     onAuthStateChanged(auth, user => {
         updateAuthUI(user);
-        // Login hote hi loginRequiredBox auto-remove
         if (user) {
             const box = document.getElementById("loginRequiredBox");
             if (box) box.remove();
@@ -107,11 +113,29 @@ function renderMyListings() {
 }
 
 
-// ── Window Exports ───────────────────────────────────────
-// Sirf auth.js ke apne functions — baaki apni files mein set honge
-window.googleLogin    = googleLogin;
-window.openMyListings = openMyListings;
-window.closeMyListings= closeMyListings;
+// ── Window Exports (type=module ke liye zaroori) ─────────
+window.updateSubtypeDropdown = updateSubtypeDropdown;
+window.runShopSearch     = runShopSearch;
+window.openForm          = openForm;
+window.closeForm         = closeForm;
+window.closeFormOutside  = (e) => { if(e.target===DOM.modalOverlay()) closeForm(); };
+window.switchMainTab     = switchMainTab;
+window.switchSubTab      = switchSubTab;
+window.switchFormTab     = switchFormTab;
+window.filterListings    = filterListings;
+window.openLocationPopup = openLocationPopup;
+window.closeLocationPopup= closeLocationPopup;
+window.autoLocation      = autoLocation;
+window.setManualLocation = setManualLocation;
+window.validatePhone     = validatePhone;
+window.openMissedCall    = openMissedCall;
+window.closeMissedCall   = closeMissedCall;
+window.addAnaajListing   = addAnaajListing;
+window.addShopListing    = addShopListing;
+window.addSuchnaListing  = addSuchnaListing;
+window.openMyListings    = openMyListings;
+window.closeMyListings   = closeMyListings;
+window.googleLogin       = googleLogin;
 
 
 

@@ -1107,20 +1107,29 @@ window.submitFeedback = async function() {
 
 // ── Google Auth ───────────────────────────────────────────
 async function googleLogin() {
-    // Already logged in hai — box hata do, kuch mat karo
+    // Already logged in hai — box hata do
     if (G.currentUser) {
         const box = document.getElementById("loginRequiredBox");
         if (box) box.remove();
         return;
     }
     try {
-        // COOP एरर से बचने के लिए सभी डिवाइसेस पर Redirect का उपयोग करें।
-        // रिडायरेक्ट का रिजल्ट 'startAuthListener' में 'getRedirectResult' द्वारा हैंडल किया जाता है।
-        await signInWithRedirect(auth, provider);
-
+        // Popup try karo — COOP warning sirf warning hai, error nahi
+        // Login successful hota hai popup se bhi
+        const result = await signInWithPopup(auth, provider);
+        if (result?.user) {
+            const box = document.getElementById("loginRequiredBox");
+            if (box) box.remove();
+        }
     } catch(e) {
         const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
-        if (!ignore.includes(e.code)) alert("Login failed: " + e.message);
+        if (ignore.includes(e.code)) return;
+        // Popup fail hua — redirect try karo
+        try {
+            await signInWithRedirect(auth, provider);
+        } catch(e2) {
+            alert("Login failed: " + e2.message);
+        }
     }
 }
 
