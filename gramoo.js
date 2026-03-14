@@ -25,10 +25,18 @@
 // ════════════════════════════════════════════════════════
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, doc, setDoc }
+import { onSnapshot, query, orderBy, getDoc, doc, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── Sub-module imports ────────────────────────────────────
+import { db, auth, provider } from "./firebase-config.js";
+import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
+import { sendListingEmail } from "./email.js";
+import { catIcons, grainMeta, shopMeta, suchnaMeta, GRAIN_SUBTYPES, MASTER_ITEMS, DEMO_SHOPS, DEMO_SHOP, sampleSell, sampleBuy, sampleShop, sampleSuchna } from "./data.js";
+import { renderGrain, renderShop, renderSuchna, filterListings, updateStats, updateActivity } from "./render.js";
+import { initShopSearch, runShopSearch, renderShopSection, startShopListener } from "./shop-search.js";
+import { openForm, closeForm, switchFormTab, addAnaajListing, addShopListing, addSuchnaListing, openLocationPopup, closeLocationPopup, autoLocation, setManualLocation, openMissedCall, closeMissedCall } from "./forms.js";
+import { googleLogin, updateAuthUI, startAuthListener, openMyListings, closeMyListings } from "./auth.js";
 
 // ── 1. Firebase Init ─────────────────────────────────────
 // ── EmailJS Config ────────────────────────────────────────
@@ -317,156 +325,11 @@ function checkSpam(phone) {
     return true;
 }
 
-// ── 9. Render Functions ──────────────────────────────────
-function renderGrain(item) {
-    const m  = grainMeta[item.grain] || {icon:"🌾",bg:"#f5f5f5"};
-    const db = (G.userLat&&item.lat) ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,item.lat,item.lng))} किमी</span>` : "";
-    const t  = timeAgo(item.createdAt);
-    const waBtn = item.wa==="SAMPLE"
-        ? `<span style="font-size:11px;color:#aaa">नमूना</span>`
-        : `<button class="btn-wa" data-action="wa-grain" data-wa="${item.wa}" data-grain="${item.grain}" data-qty="${item.qty}" data-price="${item.price}">💬 WhatsApp</button>`;
-    return `
-    <div class="listing-card">
-        <div class="grain-icon" style="background:${m.bg}">${m.icon}</div>
-        <div class="card-body">
-            ${item.tag==="naya"    ? '<span class="tag tag-naya">🔥 नया माल</span>'   : ""}
-            ${item.tag==="organic" ? '<span class="tag tag-organic">🌿 जैविक</span>' : ""}
-            ${item.verified        ? '<span class="tag tag-verified">✅ वेरीफाइड</span>' : ""}
-            <div class="card-top">
-                <div class="grain-name">${item.grain}</div>
-                <div class="price-tag">₹${item.price}/KG</div>
-            </div>
-            <div class="card-meta"><span>📦 ${item.qty} KG</span><span>📍 ${item.loc}${db}</span></div>
-            ${item.desc ? `<div class="card-desc">"${item.desc}"</div>` : ""}
-            <div class="card-bottom">
-                <div><div class="sname">👤 ${item.name}</div><div class="stime">🕐 ${t}</div></div>
-                ${waBtn}
-            </div>
-        </div>
-    </div>`;
-}
+// 9. Render Functions — render.js se import ho raha hai
 
-function renderShop(item) {
-    const catKey = Object.keys(shopMeta).find(k=>item.cat&&item.cat.includes(k)) || "अन्य";
-    const m  = shopMeta[catKey];
-    const db = (G.userLat&&item.lat) ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,item.lat,item.lng))} किमी</span>` : "";
-    const t  = timeAgo(item.createdAt);
-    const waBtn = item.wa==="SAMPLE"
-        ? `<span style="font-size:11px;color:#aaa">नमूना</span>`
-        : `<button class="btn-wa" data-action="wa-shop" data-wa="${item.wa}" data-prod="${item.product}">💬 WhatsApp</button>`;
-    return `
-    <div class="listing-card shop-card">
-        <div class="grain-icon" style="background:${m.bg}">${m.icon}</div>
-        <div class="card-body">
-            <span class="tag tag-shop">🏪 ${item.cat}</span>
-            <div class="card-top">
-                <div class="grain-name shop">${item.product}</div>
-                <div class="price-tag shop">${item.price}</div>
-            </div>
-            <div class="card-meta"><span>📍 ${item.loc}${db}</span></div>
-            ${item.desc ? `<div class="card-desc">"${item.desc}"</div>` : ""}
-            <div class="card-bottom">
-                <div><div class="sname">🏪 ${item.name}</div><div class="stime">🕐 ${t}</div></div>
-                ${waBtn}
-            </div>
-        </div>
-    </div>`;
-}
+// 10. Filter & Display — render.js se import ho raha hai
 
-function renderSuchna(item) {
-    const typeKey = Object.keys(suchnaMeta).find(k=>item.type&&item.type.includes(k)) || "अन्य सूचना";
-    const m  = suchnaMeta[typeKey] || {icon:"📢",bg:"#e3f2fd"};
-    const db = (G.userLat&&item.lat) ? `<span class="dist-badge">${Math.round(getDist(G.userLat,G.userLng,item.lat,item.lng))} किमी</span>` : "";
-    const t  = timeAgo(item.createdAt);
-    const cardCls = item.urgent ? "listing-card sarkari-card" : "listing-card notice-card";
-    const nmCls   = item.urgent ? "grain-name sarkari" : "grain-name notice";
-    const waBtn = item.phone==="SAMPLE"
-        ? `<span style="font-size:11px;color:#aaa">नमूना</span>`
-        : `<button class="btn-wa"   data-action="wa-suchna" data-ph="${item.phone}" data-title="${item.title}">💬 WhatsApp</button>
-           <button class="btn-call" data-action="call"      data-ph="${item.phone}">📞 कॉल</button>`;
-    return `
-    <div class="${cardCls}">
-        <div class="grain-icon" style="background:${m.bg}">${m.icon}</div>
-        <div class="card-body">
-            <span class="tag ${item.urgent ? "tag-urgent" : "tag-notice"}">${item.urgent ? "🚨 अत्यावश्यक" : "📢 सरकारी"}</span>
-            <span class="tag tag-notice" style="margin-left:4px">${item.type}</span>
-            <div class="card-top"><div class="${nmCls}">${item.title}</div></div>
-            <div class="card-meta">
-                <span>📍 ${item.loc}${db}</span>
-                ${item.valid ? `<span class="valid-till">⏰ ${item.valid} तक</span>` : ""}
-            </div>
-            <div class="card-desc">${item.desc}</div>
-            <div class="card-bottom">
-                <div><div class="sname">🏛️ ${item.name}</div><div class="stime">🕐 ${t}</div></div>
-                <div>${waBtn}</div>
-            </div>
-        </div>
-    </div>`;
-}
-
-// ── 10. Filter & Display ─────────────────────────────────
-function filterListings() {
-    const search = DOM.searchInput().value.toLowerCase();
-    const dist   = parseInt(DOM.distanceSelect().value);
-    const list   = G.mainTab==="suchna" ? G.allSuchna
-                 : G.mainTab==="shop"   ? G.allShop
-                 : G.subTab==="becho"   ? G.allSell : G.allBuy;
-
-    const filtered = list.filter(item => {
-        const hay = JSON.stringify(item).toLowerCase();
-        const mS  = !search || hay.includes(search);
-        let   mD  = true;
-        if (G.userLat && item.lat) mD = getDist(G.userLat,G.userLng,item.lat,item.lng) <= dist;
-        return mS && mD;
-    });
-
-    const c = DOM.listingsContainer();
-    if (!filtered.length) {
-        c.innerHTML = `<div class="no-results"><div>${G.mainTab==="suchna"?"📢":"🌾"}</div><p>कोई लिस्टिंग नहीं मिली</p><p style="font-size:12px;margin-top:6px;">दूरी बढ़ाएं या "सभी जगह" चुनें</p></div>`;
-        return;
-    }
-    c.innerHTML = filtered.map(item =>
-        G.mainTab==="suchna" ? renderSuchna(item) :
-        G.mainTab==="shop"   ? renderShop(item)   : renderGrain(item)
-    ).join("");
-}
-
-// ── 11. Stats & Activity ─────────────────────────────────
-function updateStats() {
-    DOM.totalListings().textContent = G.allSell.length + G.allBuy.length + G.allShop.length;
-    DOM.noticeCount().textContent   = G.allSuchna.length;
-    // Sub-tab counts
-    const sc = document.getElementById("sellCount");
-    const bc = document.getElementById("buyCount");
-    const ls = document.getElementById("liveSellCount");
-    const lb = document.getElementById("liveBuyCount");
-    if (sc) sc.textContent = G.allSell.length;
-    if (bc) bc.textContent = G.allBuy.length;
-    if (ls) ls.textContent = G.allSell.length;
-    if (lb) lb.textContent = G.allBuy.length;
-}
-function updateActivity() {
-    const items = [];
-    // Sirf sell aur buy — time ke hisaab se sort
-    G.allSell.slice(0,4).forEach(i => items.push({
-        blue: false,
-        text: `🌾 <b>${i.name||"किसान"}</b> — <b>${i.grain||"अनाज"}</b> बेचना है — ${i.loc||""}`,
-        ms: i.createdAt ? i.createdAt.toMillis() : 0,
-        time: timeAgo(i.createdAt)
-    }));
-    G.allBuy.slice(0,4).forEach(i => items.push({
-        blue: true,
-        text: `🛒 <b>${i.name||"खरीदार"}</b> — <b>${i.grain||"अनाज"}</b> खरीदना है — ${i.loc||""}`,
-        ms: i.createdAt ? i.createdAt.toMillis() : 0,
-        time: timeAgo(i.createdAt)
-    }));
-    items.sort((a,b) => b.ms - a.ms);
-    const feed = DOM.activityFeed();
-    if (!feed) return;
-    feed.innerHTML = items.slice(0,6).map(i =>
-        `<div class="activity-item"><div class="dot${i.blue?" blue":""}"></div><div><span>${i.text}</span><span class="atime">${i.time}</span></div></div>`
-    ).join("") || `<div class="activity-item"><div class="dot"></div><div><span>अभी कोई गतिविधि नहीं</span></div></div>`;
-}
+// 11. Stats & Activity — render.js se import ho raha hai
 
 // ── 12. UI Tab Switching ─────────────────────────────────
 function switchMainTab(tab, el) {
@@ -736,91 +599,11 @@ function switchSubTab(tab, el) {
     el.classList.add("active");
     filterListings();
 }
-function switchFormTab(sec, el) {
-    document.querySelectorAll(".modal-tab").forEach(t  => t.classList.remove("active"));
-    document.querySelectorAll(".form-section").forEach(s => s.classList.remove("active"));
-    el.classList.add("active");
-    document.getElementById(sec).classList.add("active");
-}
+// switchFormTab — forms.js mein define hai
 
-// ── 13. Form Open / Close ────────────────────────────────
-function openForm(defaultTab) {
-    // Shop tab active hai to shop.html par redirect
-    if (G.mainTab === "shop") {
-        window.location.href = "shop.html";
-        return;
-    }
+// // ── 13. Form Open / Close ────────────────────── — forms.js mein hai
 
-    // "फसल खरीदें" — form kholo with type=खरीदना है
-    if (defaultTab === "kharido") {
-        DOM.modalOverlay().classList.add("active");
-        DOM.successMsg().style.display      = "none";
-        DOM.savingIndicator().style.display = "none";
-        const tabs = document.querySelectorAll(".modal-tab");
-        switchFormTab("anaaj-form", tabs[0]);
-        const typeSel = document.getElementById("fType");
-        if (typeSel) { typeSel.value = "खरीदना है"; updateSubtypeDropdown(); }
-        return;
-    }
-
-    DOM.modalOverlay().classList.add("active");
-    DOM.successMsg().style.display      = "none";
-    DOM.savingIndicator().style.display = "none";
-    const tabs = document.querySelectorAll(".modal-tab");
-    if (G.mainTab === "suchna") switchFormTab("suchna-form", tabs[2]);
-    else                        switchFormTab("anaaj-form",  tabs[0]);
-
-    // Default type = becho
-    const typeSel = document.getElementById("fType");
-    if (typeSel) typeSel.value = "बेचना है";
-}
-function closeForm() { DOM.modalOverlay().classList.remove("active"); }
-
-// Login required popup — contact/submit ke waqt
-function requireLogin(msg) {
-    const box = document.createElement("div");
-    box.id = "loginRequiredBox";
-    box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
-    box.innerHTML = `
-        <div style="background:white;border-radius:20px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-            <div style="font-size:40px;margin-bottom:10px;">🔐</div>
-            <div style="font-size:17px;font-weight:800;color:#1b5e20;margin-bottom:8px;">${msg || "Login करें"}</div>
-            <div style="font-size:13px;color:#888;margin-bottom:20px;">Google account से एक क्लिक में Login</div>
-            <button id="loginRequiredBtn" style="width:100%;padding:13px;background:#1b5e20;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;">
-                🔐 Google से Login करें
-            </button>
-            <button id="loginRequiredClose" style="width:100%;padding:10px;background:#f5f5f5;color:#666;border:none;border-radius:12px;font-size:14px;cursor:pointer;">
-                अभी नहीं
-            </button>
-        </div>`;
-    document.body.appendChild(box);
-    document.getElementById("loginRequiredBtn").onclick   = () => { box.remove(); googleLogin(); };
-    document.getElementById("loginRequiredClose").onclick = () => box.remove();
-    box.addEventListener("click", e => { if (e.target === box) box.remove(); });
-}
-
-// ── 14. Location ─────────────────────────────────────────
-function openLocationPopup()  { DOM.locationPopup().classList.add("active"); }
-function closeLocationPopup() { DOM.locationPopup().classList.remove("active"); }
-
-function autoLocation() {
-    const btn = document.querySelector(".btn-gps");
-    btn.textContent = "📡 लोकेशन मिल रही है..."; btn.disabled = true;
-    navigator.geolocation.getCurrentPosition(
-        p  => { G.userLat=p.coords.latitude; G.userLng=p.coords.longitude; G.userLocName="आपके पास"; updateLocBar(); closeLocationPopup(); filterListings(); },
-        () => { alert("GPS नहीं मिला।"); btn.textContent="📡 GPS से लोकेशन लें"; btn.disabled=false; }
-    );
-}
-function setManualLocation() {
-    const s=DOM.stateSelect(), o=s.options[s.selectedIndex];
-    if (!o.value) { alert("राज्य चुनें"); return; }
-    G.userLat=parseFloat(o.dataset.lat); G.userLng=parseFloat(o.dataset.lng); G.userLocName=o.text;
-    updateLocBar(); closeLocationPopup(); filterListings();
-}
-function updateLocBar() {
-    DOM.locationName().textContent = "📍 " + G.userLocName;
-    DOM.locationSub().textContent  = DOM.distanceSelect().value + " किमी के अंदर";
-}
+// // ── 14. Location ─────────────────────────────── — forms.js mein hai
 
 // ── 15. Phone Validation ─────────────────────────────────
 function validatePhone(input, errId, okId) {
@@ -832,121 +615,9 @@ function validatePhone(input, errId, okId) {
     err.style.display="block"; ok.style.display="none"; input.classList.remove("input-ok"); input.classList.add("input-error"); return false;
 }
 
-// ── 16. Missed Call ──────────────────────────────────────
-function openMissedCall()  { DOM.missedOverlay().classList.add("active"); }
-function closeMissedCall() { DOM.missedOverlay().classList.remove("active"); }
+// // ── 16. Missed Call ──────────────────────────── — forms.js mein hai
 
-// ── 17. Form Submit ──────────────────────────────────────
-function setLoading(btnId, on) {
-    const btn = document.getElementById(btnId);
-    if (btn) btn.disabled = on;
-    DOM.savingIndicator().style.display = on ? "block" : "none";
-}
-
-async function addAnaajListing(e) {
-    e.preventDefault();
-    // Login check — sirf submit par
-    if (!G.currentUser) {
-        requireLogin("लिस्टिंग डालने के लिए Login करें");
-        return;
-    }
-    const inp = DOM.fWA();
-    if (!validatePhone(inp,"fWAErr","fWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
-    const wa = inp.value.trim();
-    if (!checkSpam(wa)) return;
-    setLoading("fSubmitBtn", true);
-
-    const listingType = document.getElementById("fType")?.value || "बेचना है";
-    const subtype     = document.getElementById("fSubtype")?.value || "";
-    const collection_name = listingType === "खरीदना है" ? "buy" : "sell";
-
-    try {
-        await addDoc(collection(db, collection_name), {
-            name:  DOM.fName().value,
-            grain: DOM.fGrain().value,
-            subtype: subtype,
-            type:  listingType,
-            qty:   parseInt(DOM.fQty().value),
-            price: parseInt(DOM.fPrice().value),
-            loc:   DOM.fLoc().value,
-            wa:    encPhone(wa),
-            desc:  DOM.fDesc().value,
-            tag:   "naya", verified: false,
-            uid:   G.currentUser.uid,
-            lat:   G.userLat||28.40, lng: G.userLng||77.85,
-            createdAt: serverTimestamp()
-        });
-        DOM.successMsg().style.display = "block";
-        // email ke liye values reset se PEHLE save karo
-        const emailData = {
-            type:  listingType,
-            grain: DOM.fGrain().value,
-            qty:   DOM.fQty().value   || '',
-            price: DOM.fPrice().value || '',
-            loc:   DOM.fLoc().value,
-            name:  DOM.fName().value,
-        };
-        e.target.reset();
-        updateSubtypeDropdown();
-        sendListingEmail(G.currentUser, emailData);
-        setTimeout(() => { closeForm(); openMissedCall(); }, 1500);
-    } catch(err) { alert("❌ Error: " + err.message); }
-    setLoading("fSubmitBtn", false);
-}
-
-async function addShopListing(e) {
-    e.preventDefault();
-    if (!G.currentUser) {
-        requireLogin("दुकान लिस्टिंग के लिए Login करें");
-        return;
-    }
-    const inp = DOM.sWA();
-    if (!validatePhone(inp,"sWAErr","sWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
-    const wa = inp.value.trim();
-    if (!checkSpam(wa)) return;
-    setLoading("sSubmitBtn", true);
-    try {
-        await addDoc(collection(db,"shop"), {
-            name: DOM.sName().value, cat: DOM.sCategory().value,
-            product: DOM.sProduct().value, price: DOM.sPrice().value,
-            loc: DOM.sLoc().value, wa: encPhone(wa), desc: DOM.sDesc().value,
-            uid: G.currentUser.uid,
-            lat: G.userLat||28.40, lng: G.userLng||77.85,
-            createdAt: serverTimestamp()
-        });
-        DOM.successMsg().style.display = "block";
-        e.target.reset();
-        setTimeout(() => { closeForm(); switchMainTab("shop", document.querySelectorAll(".main-tab")[1]); openMissedCall(); }, 1500);
-    } catch(err) { alert("❌ Error: " + err.message); }
-    setLoading("sSubmitBtn", false);
-}
-
-async function addSuchnaListing(e) {
-    e.preventDefault();
-    if (!G.currentUser) {
-        requireLogin("सूचना प्रकाशित करने के लिए Login करें");
-        return;
-    }
-    const inp = DOM.nPhone();
-    if (!validatePhone(inp,"nPhErr","nPhOk")) { alert("कृपया सही संपर्क नंबर डालें"); return; }
-    const ph = inp.value.trim();
-    if (!checkSpam(ph)) return;
-    setLoading("nSubmitBtn", true);
-    try {
-        await addDoc(collection(db,"suchna"), {
-            name: DOM.nName().value, type: DOM.nType().value,
-            title: DOM.nTitle().value, desc: DOM.nDesc().value,
-            loc: DOM.nLoc().value, phone: encPhone(ph),
-            valid: DOM.nValid().value||"", urgent: DOM.nUrgent().value==="yes",
-            lat: G.userLat||28.40, lng: G.userLng||77.85,
-            createdAt: serverTimestamp()
-        });
-        DOM.successMsg().style.display = "block";
-        e.target.reset();
-        setTimeout(() => { closeForm(); switchMainTab("suchna", document.querySelectorAll(".main-tab")[2]); }, 2000);
-    } catch(err) { alert("❌ Error: " + err.message); }
-    setLoading("nSubmitBtn", false);
-}
+// // ── 17. Form Submit ──────────────────────────── — forms.js mein hai
 
 // ── 18. Event Listeners (Event Delegation) ───────────────
 function bindEvents() {
@@ -1194,92 +865,39 @@ window.submitFeedback = async function() {
 };
 
 
-// ── Google Auth ───────────────────────────────────────────
-async function googleLogin() {
-    try {
-        await signInWithPopup(auth, provider);
-    } catch(e) {
-        const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
-        if (!ignore.includes(e.code)) alert("Login failed: " + e.message);
-    }
-}
+// // ── Google Auth ──────────────────────────────── — forms.js mein hai
 
-function updateAuthUI(user) {
-    G.currentUser = user;
-    const authBtn  = document.getElementById("authBtn");
-    const userInfo = document.getElementById("userInfo");
-    if (!authBtn || !userInfo) return;
-    if (user) {
-        authBtn.style.display  = "none";
-        userInfo.style.display = "flex";
-        const photo = document.getElementById("userPhoto");
-        const name  = document.getElementById("userName");
-        if (photo) { photo.src = user.photoURL || ""; photo.style.display = user.photoURL ? "block" : "none"; }
-        if (name)  name.textContent = user.displayName ? user.displayName.split(" ")[0] : "User";
-    } else {
-        authBtn.style.display  = "flex";
-        userInfo.style.display = "none";
-    }
-}
+// ── Window Exports ───────────────────────────────────────
+// Global state expose karo sub-files ke liye
+window._G   = G;
+window._DOM = DOM;
 
-function startAuthListener() {
-    onAuthStateChanged(auth, user => updateAuthUI(user));
-}
-
-function openMyListings() {
-    const panel = document.getElementById("myListingsPanel");
-    if (!panel) return;
-    panel.classList.add("active");
-    renderMyListings();
-}
-function closeMyListings() {
-    const panel = document.getElementById("myListingsPanel");
-    if (panel) panel.classList.remove("active");
-}
-
-function renderMyListings() {
-    const body = document.getElementById("myListingsBody");
-    if (!body || !G.currentUser) return;
-    const uid = G.currentUser.uid;
-    const all = [...(G.allSell||[]), ...(G.allBuy||[]), ...(G.allShop||[]), ...(G.allSuchna||[])]
-        .filter(i => i.uid === uid);
-    if (!all.length) {
-        body.innerHTML = '<p style="text-align:center;color:#888;padding:20px">अभी कोई listing नहीं</p>';
-        return;
-    }
-    body.innerHTML = all.map(i => `
-        <div class="my-listing-item">
-            <div>
-                <div class="my-listing-title">${i.name||i.title||"—"}</div>
-                <div class="my-listing-meta">${i.grain||i.product||i.type||""} • ${i.loc||""}</div>
-            </div>
-        </div>`).join("");
-}
-
-
-// ── Window Exports (type=module ke liye zaroori) ─────────
+// Core functions
+window.switchMainTab         = switchMainTab;
+window.switchSubTab          = switchSubTab;
+window.filterListings        = filterListings;
 window.updateSubtypeDropdown = updateSubtypeDropdown;
-window.runShopSearch     = runShopSearch;
+
+// Sub-module functions (imported)
 window.openForm          = openForm;
 window.closeForm         = closeForm;
-window.closeFormOutside  = (e) => { if(e.target===DOM.modalOverlay()) closeForm(); };
-window.switchMainTab     = switchMainTab;
-window.switchSubTab      = switchSubTab;
+window.closeFormOutside  = (e) => { if(e.target===document.getElementById('modalOverlay')) closeForm(); };
 window.switchFormTab     = switchFormTab;
-window.filterListings    = filterListings;
+window.addAnaajListing   = addAnaajListing;
+window.addShopListing    = addShopListing;
+window.addSuchnaListing  = addSuchnaListing;
 window.openLocationPopup = openLocationPopup;
 window.closeLocationPopup= closeLocationPopup;
 window.autoLocation      = autoLocation;
 window.setManualLocation = setManualLocation;
-window.validatePhone     = validatePhone;
 window.openMissedCall    = openMissedCall;
 window.closeMissedCall   = closeMissedCall;
-window.addAnaajListing   = addAnaajListing;
-window.addShopListing    = addShopListing;
-window.addSuchnaListing  = addSuchnaListing;
+window.validatePhone     = validatePhone;
+window.runShopSearch     = runShopSearch;
+window.filterShops       = runShopSearch;
+window.googleLogin       = googleLogin;
 window.openMyListings    = openMyListings;
 window.closeMyListings   = closeMyListings;
-window.googleLogin       = googleLogin;
 
 
 // ── 21. Report Problem ───────────────────────────────────
