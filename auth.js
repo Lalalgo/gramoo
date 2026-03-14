@@ -5,8 +5,6 @@
 
 import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { db, auth, provider } from "./firebase-config.js";
 import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
 import { sendListingEmail } from "./email.js";
@@ -23,23 +21,14 @@ const DOM = window._DOM || {};
 
 // ── Google Auth ───────────────────────────────────────────
 async function googleLogin() {
-    // Already logged in hai to kuch mat karo
-    const G = window._G || {};
-    if (G.currentUser) {
-        const box = document.getElementById("loginRequiredBox");
-        if (box) box.remove();
-        return;
-    }
     try {
+        // Mobile pe redirect — COOP error nahi aata
+        // Desktop pe popup — better UX
         const isMobile = /mobile|android|iphone|ipad/i.test(navigator.userAgent);
         if (isMobile) {
             await signInWithRedirect(auth, provider);
         } else {
-            const result = await signInWithPopup(auth, provider);
-            if (result?.user) {
-                const box = document.getElementById("loginRequiredBox");
-                if (box) box.remove();
-            }
+            await signInWithPopup(auth, provider);
         }
     } catch(e) {
         const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
@@ -66,22 +55,9 @@ function updateAuthUI(user) {
 }
 
 function startAuthListener() {
-    // Mobile redirect ke baad result handle karo
-    getRedirectResult(auth).then(result => {
-        if (result?.user) {
-            const box = document.getElementById("loginRequiredBox");
-            if (box) box.remove();
-        }
-    }).catch(() => {});
-
-    onAuthStateChanged(auth, user => {
-        updateAuthUI(user);
-        // Login hote hi loginRequiredBox hata do
-        if (user) {
-            const box = document.getElementById("loginRequiredBox");
-            if (box) box.remove();
-        }
-    });
+    // Mobile redirect ke baad result catch karo
+    getRedirectResult(auth).catch(() => {});
+    onAuthStateChanged(auth, user => updateAuthUI(user));
 }
 
 function openMyListings() {
@@ -116,10 +92,28 @@ function renderMyListings() {
 
 
 // ── Window Exports (type=module ke liye zaroori) ─────────
-// Sirf auth.js ke apne functions window pe
-window.googleLogin    = googleLogin;
-window.openMyListings = openMyListings;
-window.closeMyListings= closeMyListings;
+window.updateSubtypeDropdown = updateSubtypeDropdown;
+window.runShopSearch     = runShopSearch;
+window.openForm          = openForm;
+window.closeForm         = closeForm;
+window.closeFormOutside  = (e) => { if(e.target===DOM.modalOverlay()) closeForm(); };
+window.switchMainTab     = switchMainTab;
+window.switchSubTab      = switchSubTab;
+window.switchFormTab     = switchFormTab;
+window.filterListings    = filterListings;
+window.openLocationPopup = openLocationPopup;
+window.closeLocationPopup= closeLocationPopup;
+window.autoLocation      = autoLocation;
+window.setManualLocation = setManualLocation;
+window.validatePhone     = validatePhone;
+window.openMissedCall    = openMissedCall;
+window.closeMissedCall   = closeMissedCall;
+window.addAnaajListing   = addAnaajListing;
+window.addShopListing    = addShopListing;
+window.addSuchnaListing  = addSuchnaListing;
+window.openMyListings    = openMyListings;
+window.closeMyListings   = closeMyListings;
+window.googleLogin       = googleLogin;
 
 
 
