@@ -3,6 +3,8 @@
 // Google login, auth UI, My Listings panel
 // ════════════════════════════════════════
 
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { db, auth, provider } from "./firebase-config.js";
 import { getDist, timeAgo, encPhone, decPhone, checkSpam, validatePhone, getDeviceType, getBrowserName } from "./utils.js";
 import { sendListingEmail } from "./email.js";
@@ -20,7 +22,14 @@ const DOM = window._DOM || {};
 // ── Google Auth ───────────────────────────────────────────
 async function googleLogin() {
     try {
-        await signInWithPopup(auth, provider);
+        // Mobile pe redirect — COOP error nahi aata
+        // Desktop pe popup — better UX
+        const isMobile = /mobile|android|iphone|ipad/i.test(navigator.userAgent);
+        if (isMobile) {
+            await signInWithRedirect(auth, provider);
+        } else {
+            await signInWithPopup(auth, provider);
+        }
     } catch(e) {
         const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
         if (!ignore.includes(e.code)) alert("Login failed: " + e.message);
@@ -46,6 +55,8 @@ function updateAuthUI(user) {
 }
 
 function startAuthListener() {
+    // Mobile redirect ke baad result catch karo
+    getRedirectResult(auth).catch(() => {});
     onAuthStateChanged(auth, user => updateAuthUI(user));
 }
 
