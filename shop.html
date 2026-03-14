@@ -811,7 +811,7 @@ body {
 
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, collectionGroup, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
          deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp }
@@ -904,11 +904,14 @@ let editingStock  = true;
 // ── Auth ──
 document.getElementById('btnLogin').addEventListener('click', async () => {
     try {
-        await signInWithPopup(auth, new GoogleAuthProvider());
+        await signInWithRedirect(auth, new GoogleAuthProvider());
     } catch(e) {
         if (e.code !== 'auth/popup-closed-by-user') alert('Login failed: ' + e.message);
     }
 });
+
+// Redirect ke baad result handle karo
+getRedirectResult(auth).catch(e => console.log("Redirect result:", e?.message));
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
 onAuthStateChanged(auth, async user => {

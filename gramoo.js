@@ -25,7 +25,7 @@
 // ════════════════════════════════════════════════════════
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, doc, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -290,12 +290,15 @@ function timeAgo(ts) {
 function encPhone(p) {
     const k="GRAMOO26"; let e="";
     for(let i=0;i<p.length;i++) e+=String.fromCharCode(p.charCodeAt(i)^k.charCodeAt(i%k.length));
-    return btoa(e);
+    // Base64 padding (==) hatao — 16 chars -> 14 chars, rules ka validString(8,15) pass hoga
+    return btoa(e).replace(/=+$/, '');
 }
 function decPhone(e) {
     if (!e || e==="SAMPLE") return "";
     try {
-        const d=atob(e), k="GRAMOO26"; let p="";
+        // Padding wapas add karo decrypt ke liye
+        const pad = e.length % 4 === 0 ? e : e + '='.repeat(4 - e.length % 4);
+        const d=atob(pad), k="GRAMOO26"; let p="";
         for(let i=0;i<d.length;i++) p+=String.fromCharCode(d.charCodeAt(i)^k.charCodeAt(i%k.length));
         return p;
     } catch(x) { return e; }
@@ -869,17 +872,22 @@ async function addAnaajListing(e) {
     const subtype     = document.getElementById("fSubtype")?.value || "";
     const collection_name = listingType === "खरीदना है" ? "buy" : "sell";
 
+    const qtyVal   = parseInt(DOM.fQty().value);
+    const priceVal = parseInt(DOM.fPrice().value);
+    if (!qtyVal   || isNaN(qtyVal))   { alert("कृपया सही मात्रा (KG) डालें"); setLoading("fSubmitBtn", false); return; }
+    if (!priceVal || isNaN(priceVal)) { alert("कृपया सही कीमत डालें");        setLoading("fSubmitBtn", false); return; }
+
     try {
         await addDoc(collection(db, collection_name), {
-            name:  DOM.fName().value,
+            name:  DOM.fName().value.trim(),
             grain: DOM.fGrain().value,
             subtype: subtype,
             type:  listingType,
-            qty:   parseInt(DOM.fQty().value),
-            price: parseInt(DOM.fPrice().value),
-            loc:   DOM.fLoc().value,
+            qty:   qtyVal,
+            price: priceVal,
+            loc:   DOM.fLoc().value.trim(),
             wa:    encPhone(wa),
-            desc:  DOM.fDesc().value,
+            desc:  DOM.fDesc().value.trim(),
             tag:   "naya", verified: false,
             uid:   G.currentUser.uid,
             lat:   G.userLat||28.40, lng: G.userLng||77.85,
@@ -1206,7 +1214,7 @@ window.submitFeedback = async function() {
 // ── Google Auth ───────────────────────────────────────────
 async function googleLogin() {
     try {
-        await signInWithPopup(auth, provider);
+        await signInWithRedirect(auth, provider);
     } catch(e) {
         const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
         if (!ignore.includes(e.code)) alert("Login failed: " + e.message);
@@ -1414,6 +1422,11 @@ window.submitReportProblem= submitReportProblem;
 
 // ── 20. Init ─────────────────────────────────────────────
 function init() {
+    // Redirect login ke baad result check karo
+    getRedirectResult(auth).catch(e => {
+        const ignore = ["auth/popup-closed-by-user","auth/cancelled-popup-request"];
+        if (!ignore.includes(e.code)) console.log("Redirect result error:", e.message);
+    });
     loadTabSettings();
     startAuthListener();
     bindEvents();
