@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin.html
+Disallow: /gramoo_test.html
 
 Sitemap: https://gramoo.in/sitemap.xml
