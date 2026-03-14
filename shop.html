@@ -811,7 +811,7 @@ body {
 
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, collectionGroup, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
          deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp }
@@ -904,14 +904,11 @@ let editingStock  = true;
 // ── Auth ──
 document.getElementById('btnLogin').addEventListener('click', async () => {
     try {
-        await signInWithRedirect(auth, new GoogleAuthProvider());
+        await signInWithPopup(auth, new GoogleAuthProvider());
     } catch(e) {
         if (e.code !== 'auth/popup-closed-by-user') alert('Login failed: ' + e.message);
     }
 });
-
-// Redirect ke baad result handle karo
-getRedirectResult(auth).catch(e => console.log("Redirect result:", e?.message));
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
 onAuthStateChanged(auth, async user => {
@@ -935,29 +932,21 @@ onAuthStateChanged(auth, async user => {
                 getDoc(doc(db, 'shops', user.uid))
             ]);
 
-            const regData  = regSnap.exists()  ? regSnap.data()  : null;
-            const shopData = shopSnap.exists() ? shopSnap.data() : null;
-
-            // shopRequests status PEHLE check karo — yahi source of truth hai
-            if (regData && regData.status === 'approved') {
-                // Admin ne approve kiya — welcome screen ya main app
+            if (shopSnap.exists() && shopSnap.data().status === 'approved') {
+                const regData = regSnap.exists() ? regSnap.data() : {};
                 if (regData.welcomeSeen) {
                     showMainApp(user);
                 } else {
                     showApprovedScreen(user, regData);
                 }
-            } else if (regData && regData.status === 'pending') {
-                // Request pending hai — pending screen dikhao
-                showPendingScreen(regData.shopName);
-            } else if (regData && regData.status === 'rejected') {
-                // Request reject hui — register screen + message
+            } else if (shopSnap.exists() && !shopSnap.data().status) {
+                showMainApp(user); // purana shop
+            } else if (regSnap.exists() && regSnap.data().status === 'pending') {
+                showPendingScreen(regSnap.data().shopName);
+            } else if (regSnap.exists() && regSnap.data().status === 'rejected') {
                 showRegisterScreen();
                 showToast('⚠️ पिछली request reject हुई थी। फिर से apply करें।');
-            } else if (!regData && shopData && !shopData.status) {
-                // Purana shop — bina request ke directly approved tha
-                showMainApp(user);
             } else {
-                // Koi request nahi — registration form dikhao
                 showRegisterScreen();
             }
         } catch(e) {
