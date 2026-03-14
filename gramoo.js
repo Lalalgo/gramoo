@@ -41,7 +41,8 @@ import { openForm, closeForm, switchFormTab, addAnaajListing, addShopListing, ad
 import { googleLogin, updateAuthUI, startAuthListener, openMyListings, closeMyListings } from "./auth.js";
 
 
-// ── 2b. Grain Subtypes Master ─────────────────────────────
+
+// ── Grain Subtype Dropdown ──────────────────────────────
 
 function updateSubtypeDropdown() {
     const grain   = document.getElementById("fGrain")?.value || "";
@@ -81,22 +82,7 @@ function updateSubtypeDropdown() {
     } else if (descLbl) {
         descLbl.innerHTML = `कोई खास बात? <span style="font-weight:400;color:#aaa;font-size:11px;">(optional)</span>`;
     }
-}const shopMeta = {
-    "खाद":          {icon:"🌿",bg:"#e8f5e9"}, "बीज":          {icon:"🌱",bg:"#f1f8e9"},
-    "कीटनाशक":      {icon:"💊",bg:"#fff3e0"}, "कृषि यंत्र":  {icon:"🚜",bg:"#e3f2fd"},
-    "सिंचाई उपकरण": {icon:"💧",bg:"#e0f7fa"}, "पशु आहार":    {icon:"🐄",bg:"#fce4ec"},
-    "अन्य":         {icon:"🌾",bg:"#f5f5f5"}
-};
-// ── 3. Sample Data ───────────────────────────────────────const sampleBuy = [
-    {id:"b1",name:"दिल्ली आटा मिल",grain:"गेहूं",qty:5000,price:27,loc:"डिलीवरी — बुलंदशहर",wa:"SAMPLE",tag:"",desc:"नियमित सप्लायर चाहिए",       createdAt:null,lat:28.40,lng:77.85},
-    {id:"b2",name:"राकेश किराना", grain:"चावल", qty:200, price:43,loc:"बुलंदशहर शहर",      wa:"SAMPLE",tag:"",desc:"दुकान के लिए अच्छी क्वालिटी",createdAt:null,lat:28.40,lng:77.85}
-];const sampleSuchna = [
-    {id:"n1",name:"IFFCO सहकारी समिति",  type:"खाद उपलब्धता", title:"DAP और यूरिया खाद आ गई है",            desc:"अनूपशहर गोदाम में DAP उपलब्ध है। ₹1350/बोरी सरकारी दर।",    loc:"अनूपशहर",      phone:"SAMPLE",valid:"30 नवंबर",  urgent:true, createdAt:null,lat:28.40,lng:77.85},
-    {id:"n2",name:"ग्राम पंचायत",        type:"PM किसान सूची",title:"PM किसान 18वीं किस्त — सूची देखें",   desc:"18वीं किस्त जारी हो गई है। पंचायत कार्यालय में नाम जांचें।",loc:"बुलंदशहर",     phone:"SAMPLE",valid:"15 दिसंबर", urgent:false,createdAt:null,lat:28.40,lng:77.85},
-    {id:"n3",name:"कृषि विभाग बुलंदशहर",type:"फसल बीमा",     title:"रबी फसल बीमा — अंतिम तारीख 31 दिसंबर",desc:"PMFBY के तहत रबी फसल का बीमा करवाएं।",                       loc:"बुलंदशहर जिला",phone:"SAMPLE",valid:"31 दिसंबर", urgent:true, createdAt:null,lat:28.40,lng:77.85}
-];
-
-// ── Demo Shops (hamesha dikhenge) ────────────────────────const DEMO_SHOP = DEMO_SHOPS[0]; // backward compat
+}
 
 // ── 4. Global State ──────────────────────────────────────
 const G = {
@@ -156,15 +142,11 @@ const DOM = {
     nUrgent:() => document.getElementById("nUrgent"),
 };
 
-// ── 6-8. Helpers, Phone, Spam ── (utils.js mein move ho gaye) ──
-
-// ── 9. Render Functions ──────────────────────────────────
 
 
 
-// ── 10. Filter & Display ─────────────────────────────────
 
-// ── 11. Stats & Activity ─────────────────────────────────
+
 
 // ── 12. UI Tab Switching ─────────────────────────────────
 function switchMainTab(tab, el) {
@@ -219,14 +201,10 @@ function switchMainTab(tab, el) {
 
     filterListings();
 }
-// ── Master Item List (same as shop.html) ─────────────────
 
 // Search state
-const SEARCH = { cat: '', item: '', text: '' };
 
 
-
-// ── Shop Section Render ───────────────────────────────────
 
 
 window.filterShops    = runShopSearch;
@@ -234,7 +212,6 @@ window.runShopSearch  = runShopSearch;
 
 let _shopSearchInited = false;
 
-// ── Load Approved Shops from Firebase ───────────────────
 
 function switchSubTab(tab, el) {
     G.subTab = tab;
@@ -243,18 +220,13 @@ function switchSubTab(tab, el) {
     filterListings();
 }
 
-// ── 13. Form Open / Close ────────────────────────────────
 
 // Login required popup — contact/submit ke waqt
 
-// ── 14. Location ─────────────────────────────────────────
 
 
-// ── 15. Phone Validation ── (utils.js mein move ho gayi) ──
 
-// ── 16. Missed Call ──────────────────────────────────────
 
-// ── 17. Form Submit ──────────────────────────────────────
 
 
 
@@ -505,7 +477,6 @@ window.submitFeedback = async function() {
 };
 
 
-// ── Google Auth ───────────────────────────────────────────
 
 
 
