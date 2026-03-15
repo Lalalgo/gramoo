@@ -988,6 +988,7 @@ async function addSuchnaListing(e) {
             title: DOM.nTitle().value, desc: DOM.nDesc().value,
             loc: DOM.nLoc().value, phone: encPhone(ph),
             valid: DOM.nValid().value||"", urgent: DOM.nUrgent().value==="yes",
+            uid: G.currentUser.uid,
             lat: G.userLat||28.40, lng: G.userLng||77.85,
             createdAt: serverTimestamp()
         });
