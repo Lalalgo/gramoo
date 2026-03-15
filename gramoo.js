@@ -1258,7 +1258,7 @@ async function googleLogin() {
     }
 }
 
-function updateAuthUI(user) {
+async function updateAuthUI(user) {
     G.currentUser = user;
     const authBtn  = document.getElementById("authBtn");
     const userInfo = document.getElementById("userInfo");
@@ -1270,10 +1270,83 @@ function updateAuthUI(user) {
         const name  = document.getElementById("userName");
         if (photo) { photo.src = user.photoURL || ""; photo.style.display = user.photoURL ? "block" : "none"; }
         if (name)  name.textContent = user.displayName ? user.displayName.split(" ")[0] : "User";
+
+        // ── DUKANDAAR CHECK & UI UPDATE ──
+        try {
+            const shopSnap = await getDoc(doc(db, "shops", user.uid));
+            if (shopSnap.exists() && shopSnap.data().status === 'approved') {
+                const sData = shopSnap.data();
+
+                // 1. Header mein "Meri Dukaan" Button add karo
+                if (!document.getElementById("btnMyShopNav")) {
+                    const btn = document.createElement("a");
+                    btn.id = "btnMyShopNav";
+                    btn.href = "shop.html";
+                    btn.className = "btn-my-shop-nav";
+                    btn.innerHTML = "🏪 मेरी दुकान";
+                    // Logout button se pehle insert karo
+                    const btnLogout = document.getElementById("btnLogout");
+                    userInfo.insertBefore(btn, btnLogout);
+                    
+                    // Naam ke aage badge lagao
+                    if (name) name.innerHTML += ` <span class="badge-shopkeeper">Owner</span>`;
+                }
+
+                // 2. Hero Section mein Greeting (Namaste Shop Name)
+                const heroDiv = document.querySelector(".hero > div");
+                if (heroDiv && !document.getElementById("shopGreeting")) {
+                    const greet = document.createElement("div");
+                    greet.id = "shopGreeting";
+                    greet.className = "shop-hero-greeting";
+                    greet.innerHTML = `👋 नमस्ते, <b>${sData.naam}</b>! &nbsp;<span style="font-size:11px;opacity:0.8">आपकी दुकान Live है 🟢</span>`;
+                    heroDiv.insertBefore(greet, heroDiv.firstChild);
+                }
+
+                // 3. First Time Celebration (Local Storage Check)
+                const key = "gramoo_shop_welcome_home_" + user.uid;
+                if (!localStorage.getItem(key)) {
+                    showShopWelcomeModal(sData.naam);
+                    localStorage.setItem(key, "true");
+                }
+            }
+        } catch(e) { console.log("Shop check error:", e); }
+        // ─────────────────────────────────
+
     } else {
         authBtn.style.display  = "flex";
         userInfo.style.display = "none";
+        // Cleanup UI elements on logout
+        const btn = document.getElementById("btnMyShopNav"); if (btn) btn.remove();
+        const greet = document.getElementById("shopGreeting"); if (greet) greet.remove();
     }
+}
+
+function showShopWelcomeModal(shopName) {
+    const div = document.createElement("div");
+    div.id = "shopWelcomeModal";
+    div.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s;";
+    div.innerHTML = `
+        <div style="background:white;border-radius:24px;padding:32px;text-align:center;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;">
+            <div style="font-size:60px;margin-bottom:10px;animation:popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);">🎉</div>
+            <h2 style="color:#1b5e20;margin-bottom:8px;font-size:24px;">बधाई हो!</h2>
+            <p style="font-size:15px;color:#555;line-height:1.5;margin-bottom:20px;">
+                आपकी दुकान <b>"${shopName}"</b> अब Gramoo पर Live है।
+            </p>
+            <div style="background:#f1f8e9;padding:12px;border-radius:12px;border:1px solid #c8e6c9;margin-bottom:20px;font-size:13px;color:#2e7d32;">
+                🌾 अब किसान आपको देख सकते हैं और आपसे संपर्क कर सकते हैं।
+            </div>
+            <button onclick="window.location.href='shop.html'" 
+                style="width:100%;padding:14px;background:linear-gradient(135deg, #e65100, #f57c00);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(230,81,0,0.3);">
+                🏪 अपनी दुकान संभालें
+            </button>
+            <button onclick="document.getElementById('shopWelcomeModal').remove()" 
+                style="margin-top:16px;background:none;border:none;color:#777;font-size:13px;cursor:pointer;text-decoration:underline;">
+                अभी यहीं रहें
+            </button>
+        </div>
+    `;
+    document.body.appendChild(div);
+    // Add CSS animation for popIn if not exists (index.html usually has keyframes but let's assume it works or add inline style for simplicity if needed, but existing CSS has keyframes)
 }
 
 function startAuthListener() {
