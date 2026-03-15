@@ -651,6 +651,12 @@ window.approveShop = async function(uid, naam, phone, district, area, lat, lng, 
         });
 
         alert(`✅ "${naam}" approve ho gayi!\nDukandaar ko portal access mil gaya.`);
+        // Manually update UI for instant feedback
+        const req = DATA.shopReqs.find(r => r.id === uid);
+        if (req) req.status = 'approved';
+        renderShopRequests();
+        updateShopBadge();
+
     } catch(e) { alert("Error: " + e.message); }
 };
 
@@ -675,6 +681,14 @@ window.confirmReject = async function() {
         await updateDoc(doc(db, "shops", uid), { status: "rejected" }).catch(()=>{});
         closeRejectModal();
         alert("Request reject ho gayi.");
+        // Manually update UI for instant feedback
+        const req = DATA.shopReqs.find(r => r.id === uid);
+        if (req) {
+            req.status = 'rejected';
+            req.rejectReason = reason || "Admin ne reject kiya";
+        }
+        renderShopRequests();
+        updateShopBadge();
     } catch(e) { alert("Error: " + e.message); }
 };
 
@@ -683,6 +697,10 @@ window.deleteShopReq = async function(uid, naam) {
     try {
         await deleteDoc(doc(db, "shopRequests", uid));
         alert("✅ Delete ho gayi!");
+        // Manually update UI for instant feedback
+        DATA.shopReqs = DATA.shopReqs.filter(r => r.id !== uid);
+        renderShopRequests();
+        updateShopBadge();
     } catch(e) { alert("Error: " + e.message); }
 };
 
