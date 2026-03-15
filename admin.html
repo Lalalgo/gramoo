@@ -398,6 +398,7 @@
         <h3>❌ Request Reject Karo</h3>
         <p style="font-size:13px;color:#555;margin-bottom:14px;">Reject karne ka karan likho — dukandaar ko WhatsApp pe bata sakte ho.</p>
         <input type="hidden" id="rejectUid">
+        <input type="hidden" id="rejectReqId">
         <div class="fgroup">
             <label>Reject Karan (optional)</label>
             <textarea id="rejectReason" placeholder="Jaise: Document sahi nahi, location galat hai..."></textarea>
@@ -577,11 +578,13 @@ function renderShopRequests() {
 
     el.innerHTML = list.map(r => {
         const status = r.status || "pending";
+        const reqId = r.id; // Correct Document ID for DB operations
+        const userId = r.uid || r.id; // User ID for shop linking
         const mapLink = r.lat && r.lng
             ? `<a href="https://maps.google.com/?q=${r.lat},${r.lng}" target="_blank" class="map-link">📍 Map pe dekho</a>`
             : "📍 Location nahi";
         return `
-        <div class="reg-card ${status}" id="regcard-${r.uid||r.id}">
+        <div class="reg-card ${status}" id="regcard-${reqId}">
             <div class="reg-card-top">
                 <div>
                     <div class="reg-shop-name">🏪 ${r.shopName||"—"}</div>
@@ -600,15 +603,15 @@ function renderShopRequests() {
             ${r.rejectReason ? `<div style="background:#ffebee;border-radius:8px;padding:10px;font-size:12px;color:#c62828;margin-bottom:10px;">❌ Reject Karan: ${r.rejectReason}</div>` : ""}
             <div class="reg-actions">
                 ${status === "pending" ? `
-                    <button class="btn-approve" onclick="approveShop('${r.uid||r.id}','${(r.shopName||"").replace(/'/g,"\\'")}','${r.phone||""}','${r.district||""}','${r.area||""}','${r.lat||""}','${r.lng||""}','${r.category||"general"}')">
+                    <button class="btn-approve" onclick="approveShop('${reqId}','${userId}','${(r.shopName||"").replace(/'/g,"\\'")}','${r.phone||""}','${r.district||""}','${r.area||""}','${r.lat||""}','${r.lng||""}','${r.category||"general"}')">
                         ✅ Approve करें
                     </button>
-                    <button class="btn-reject" onclick="openRejectModal('${r.uid||r.id}')">
+                    <button class="btn-reject" onclick="openRejectModal('${reqId}','${userId}')">
                         ❌ Reject करें
                     </button>
                 ` : ""}
                 ${status === "approved" ? `
-                    <button class="btn-reject" onclick="openRejectModal('${r.uid||r.id}')">❌ Revoke करें</button>
+                    <button class="btn-reject" onclick="openRejectModal('${reqId}','${userId}')">❌ Revoke करें</button>
                 ` : ""}
                 ${r.phone ? `
                     <a href="https://wa.me/91${r.phone}?text=${encodeURIComponent(`नमस्ते! आपकी Gramoo दुकान registration के बारे में बात करनी है।`)}"
@@ -617,26 +620,26 @@ function renderShopRequests() {
                         💬 WhatsApp
                     </a>
                 ` : ""}
-                <button class="btn-del" onclick="deleteShopReq('${r.uid||r.id}','${(r.shopName||"").replace(/'/g,"\\'")}')">🗑️ Delete</button>
+                <button class="btn-del" onclick="deleteShopReq('${reqId}','${(r.shopName||"").replace(/'/g,"\\'")}')">🗑️ Delete</button>
             </div>
         </div>`;
     }).join("");
 }
 
-window.approveShop = async function(uid, naam, phone, district, area, lat, lng, category) {
+window.approveShop = async function(reqId, userId, naam, phone, district, area, lat, lng, category) {
     if (!confirm(`"${naam}" ko APPROVE karna chahte ho?\n\nYeh dukaan ab Gramoo par live ho jaayegi.`)) return;
     try {
         const now = serverTimestamp();
 
         // 1. shopRequests mein status update karo
-        await updateDoc(doc(db, "shopRequests", uid), {
+        await updateDoc(doc(db, "shopRequests", reqId), {
             status:     "approved",
             approvedAt: now,
             approvedBy: "admin"
         });
 
-        // 2. shops/{uid} document create karo — shop.html isi se check karta hai
-        await setDoc(doc(db, "shops", uid), {
+        // 2. shops/{userId} document create karo — shop.html isi se check karta hai
+        await setDoc(doc(db, "shops", userId), {
             naam:      naam,
             phone:     phone,
             district:  district,
@@ -645,14 +648,14 @@ window.approveShop = async function(uid, naam, phone, district, area, lat, lng, 
             lng:       parseFloat(lng) || 0,
             category:  category || "general",
             status:    "approved",
-            uid:       uid,
+            uid:       userId,
             approvedAt: now,
             createdAt:  now
         });
 
         alert(`✅ "${naam}" approve ho gayi!\nDukandaar ko portal access mil gaya.`);
         // Manually update UI for instant feedback
-        const req = DATA.shopReqs.find(r => r.id === uid);
+        const req = DATA.shopReqs.find(r => r.id === reqId);
         if (req) req.status = 'approved';
         renderShopRequests();
         updateShopBadge();
@@ -660,8 +663,9 @@ window.approveShop = async function(uid, naam, phone, district, area, lat, lng, 
     } catch(e) { alert("Error: " + e.message); }
 };
 
-window.openRejectModal = function(uid) {
-    document.getElementById("rejectUid").value = uid;
+window.openRejectModal = function(reqId, userId) {
+    document.getElementById("rejectReqId").value = reqId;
+    document.getElementById("rejectUid").value = userId;
     document.getElementById("rejectReason").value = "";
     document.getElementById("rejectModal").classList.add("active");
 };
@@ -669,20 +673,21 @@ window.closeRejectModal = function() {
     document.getElementById("rejectModal").classList.remove("active");
 };
 window.confirmReject = async function() {
-    const uid    = document.getElementById("rejectUid").value;
+    const reqId  = document.getElementById("rejectReqId").value;
+    const userId = document.getElementById("rejectUid").value;
     const reason = document.getElementById("rejectReason").value.trim();
     try {
-        await updateDoc(doc(db, "shopRequests", uid), {
+        await updateDoc(doc(db, "shopRequests", reqId), {
             status: "rejected",
             rejectReason: reason || "Admin ne reject kiya",
             rejectedAt: serverTimestamp()
         });
         // shops collection se bhi hata do agar tha
-        await updateDoc(doc(db, "shops", uid), { status: "rejected" }).catch(()=>{});
+        await updateDoc(doc(db, "shops", userId), { status: "rejected" }).catch(()=>{});
         closeRejectModal();
         alert("Request reject ho gayi.");
         // Manually update UI for instant feedback
-        const req = DATA.shopReqs.find(r => r.id === uid);
+        const req = DATA.shopReqs.find(r => r.id === reqId);
         if (req) {
             req.status = 'rejected';
             req.rejectReason = reason || "Admin ne reject kiya";
@@ -692,13 +697,13 @@ window.confirmReject = async function() {
     } catch(e) { alert("Error: " + e.message); }
 };
 
-window.deleteShopReq = async function(uid, naam) {
+window.deleteShopReq = async function(reqId, naam) {
     if (!confirm(`"${naam}" ki request permanently delete karna chahte ho?`)) return;
     try {
-        await deleteDoc(doc(db, "shopRequests", uid));
+        await deleteDoc(doc(db, "shopRequests", reqId));
         alert("✅ Delete ho gayi!");
         // Manually update UI for instant feedback
-        DATA.shopReqs = DATA.shopReqs.filter(r => r.id !== uid);
+        DATA.shopReqs = DATA.shopReqs.filter(r => r.id !== reqId);
         renderShopRequests();
         updateShopBadge();
     } catch(e) { alert("Error: " + e.message); }
