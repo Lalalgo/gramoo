@@ -159,6 +159,10 @@
         .badge-pending  { background:#fff8e1; color:#f57f17; border:1px solid #ffe082; }
         .badge-approved { background:#e8f5e9; color:var(--green); border:1px solid var(--border); }
         .badge-rejected { background:#ffebee; color:var(--red); border:1px solid #ffcdd2; }
+        .badge-deleted  { background:#eceff1; color:#546e7a; border:1px solid #cfd8dc; }
+        .badge-demo     { background:#f5f5f5; color:#616161; border:1px solid #e0e0e0; }
+        .reg-card.deleted { border-left-color:#90a4ae; opacity:0.6; }
+        .reg-card.demo { border-left-color:#78909c; }
         .badge-resolved { background:#e8f5e9; color:var(--green); }
 
         .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
@@ -246,6 +250,8 @@
                 <button class="reg-filter-tab active" data-filter="pending"  onclick="filterShopReqs('pending',this)">⏳ Pending</button>
                 <button class="reg-filter-tab"        data-filter="approved" onclick="filterShopReqs('approved',this)">✅ Approved</button>
                 <button class="reg-filter-tab"        data-filter="rejected" onclick="filterShopReqs('rejected',this)">❌ Rejected</button>
+                <button class="reg-filter-tab"        data-filter="deleted"  onclick="filterShopReqs('deleted',this)">🗑️ Deleted</button>
+                <button class="reg-filter-tab"        data-filter="demo"     onclick="filterShopReqs('demo',this)">🤖 Demo</button>
                 <button class="reg-filter-tab"        data-filter="all"      onclick="filterShopReqs('all',this)">📋 Sabhi</button>
             </div>
 
@@ -421,6 +427,13 @@ import { getFirestore, collection, getDocs, getDoc, doc, deleteDoc, updateDoc,
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const ADMIN_EMAIL = "kr.deepak2509@gmail.com";
+const ADMIN_DEMO_SHOPS = [
+    { id:"demo1", shopName:"रामलाल एग्रो सेंटर", area:"अनूपशहर", district:"बुलंदशहर", phone:"SAMPLE", lat:28.40, lng:77.85, category: 'general' },
+    { id:"demo2", shopName:"किसान बीज भण्डार", area:"खुर्जा", district:"बुलंदशहर", phone:"SAMPLE", lat:28.25, lng:77.85, category: 'बीज' },
+    { id:"demo3", shopName:"श्याम कृषि सेवा केंद्र", area:"सियाना", district:"बुलंदशहर", phone:"SAMPLE", lat:28.35, lng:77.90, category: 'कीटनाशक' },
+];
+
+
 
 const app = initializeApp({
     apiKey:            "AIzaSyAeeN9ijnSuA3IyV43QQsiEshTrRdEjL0A",
@@ -564,20 +577,48 @@ window.filterShopReqs = function(filter, el) {
 
 function renderShopRequests() {
     const el = document.getElementById("shopRequestsList");
-    let list = DATA.shopReqs;
-    if (shopReqFilter !== "all") list = list.filter(r => (r.status||"pending") === shopReqFilter);
+
+    // Create demo requests
+    const demoReqs = ADMIN_DEMO_SHOPS.map(d => ({
+        id: d.id, shopName: d.shopName, userName: 'Demo User', userEmail: 'demo@gramoo.in',
+        area: d.area, district: d.district, phone: d.phone, category: d.category,
+        lat: d.lat, lng: d.lng, status: 'demo', createdAt: null
+    }));
+
+    // Combine with Firestore requests
+    let allData = [...DATA.shopReqs, ...demoReqs];
+
+    // Apply filter
+    let list = allData;
+    if (shopReqFilter !== "all") {
+        list = list.filter(r => (r.status||"pending") === shopReqFilter);
+    }
+
+    // Sort (put demos at the end, then by date)
+    list.sort((a, b) => {
+        const aTime = a.createdAt?.toMillis() || 0;
+        const bTime = b.createdAt?.toMillis() || 0;
+        if (a.status === 'demo' && b.status !== 'demo') return 1;
+        if (a.status !== 'demo' && b.status === 'demo') return -1;
+        return bTime - aTime;
+    });
 
     document.getElementById("shopCount").textContent =
         `(${list.length} ${shopReqFilter === "all" ? "kul" : shopReqFilter})`;
 
     if (!list.length) {
-        el.innerHTML = `<div class="empty"><div>${shopReqFilter==="pending"?"⏳":"✅"}</div>
-            <p>${shopReqFilter==="pending"?"Koi pending request nahi!":shopReqFilter==="approved"?"Koi approved dukan nahi":"Koi rejected request nahi"}</p></div>`;
+        const emptyMessages = {
+            pending: "Koi pending request nahi!", approved: "Koi approved dukan nahi",
+            rejected: "Koi rejected request nahi", deleted: "Koi deleted request nahi",
+            demo: "Koi demo dukan nahi", all: "Koi dukan request nahi"
+        };
+        const icons = { pending: "⏳", approved: "✅", rejected: "❌", deleted: "🗑️", demo: "🤖", all: "📋" };
+        el.innerHTML = `<div class="empty"><div>${icons[shopReqFilter]||"📋"}</div><p>${emptyMessages[shopReqFilter]||"Koi request nahi"}</p></div>`;
         return;
     }
 
     el.innerHTML = list.map(r => {
-        const status = r.status || "pending";
+        const status = r.status || (r.id.startsWith('demo') ? 'demo' : 'pending');
         const reqId = r.id; // Correct Document ID for DB operations
         const userId = r.uid || r.id; // User ID for shop linking
         const mapLink = r.lat && r.lng
@@ -596,9 +637,13 @@ function renderShopRequests() {
                         ${mapLink} &nbsp;•&nbsp; 🕐 ${timeAgo(r.createdAt)}
                     </div>
                 </div>
-                <span class="badge badge-${status}">
-                    ${status==="pending"?"⏳ Pending":status==="approved"?"✅ Approved":"❌ Rejected"}
-                </span>
+                <span class="badge badge-${status}">${
+                    {
+                        pending:  "⏳ Pending",  approved: "✅ Approved",
+                        rejected: "❌ Rejected", deleted:  "🗑️ Deleted",
+                        demo:     "🤖 Demo"
+                    }[status] || status
+                }</span>
             </div>
             ${r.rejectReason ? `<div style="background:#ffebee;border-radius:8px;padding:10px;font-size:12px;color:#c62828;margin-bottom:10px;">❌ Reject Karan: ${r.rejectReason}</div>` : ""}
             <div class="reg-actions">
@@ -613,6 +658,7 @@ function renderShopRequests() {
                 ${status === "approved" ? `
                     <button class="btn-reject" onclick="openRejectModal('${reqId}','${userId}')">❌ Revoke करें</button>
                 ` : ""}
+                ${status === 'demo' ? `<span style="font-size:12px; color: #888;">यह एक डेमो दुकान है।</span>` : ''}
                 ${r.phone ? `
                     <a href="https://wa.me/91${r.phone}?text=${encodeURIComponent(`नमस्ते! आपकी Gramoo दुकान registration के बारे में बात करनी है।`)}"
                         target="_blank"
@@ -620,7 +666,7 @@ function renderShopRequests() {
                         💬 WhatsApp
                     </a>
                 ` : ""}
-                <button class="btn-del" onclick="deleteShopReq('${reqId}','${(r.shopName||"").replace(/'/g,"\\'")}')">🗑️ Delete</button>
+                ${status !== 'demo' && status !== 'deleted' ? `<button class="btn-del" onclick="deleteShopReq('${reqId}','${(r.shopName||"").replace(/'/g,"\\'")}')">🗑️ Delete</button>` : ''}
             </div>
         </div>`;
     }).join("");
@@ -698,14 +744,16 @@ window.confirmReject = async function() {
 };
 
 window.deleteShopReq = async function(reqId, naam) {
-    if (!confirm(`"${naam}" ki request permanently delete karna chahte ho?`)) return;
+    if (!confirm(`"${naam}" ki request ko 'Deleted' mark karna chahte ho?\n\nयह लिस्ट से हट जाएगी पर database में record रहेगा।`)) return;
     try {
-        await deleteDoc(doc(db, "shopRequests", reqId));
-        alert("✅ Delete ho gayi!");
+        await updateDoc(doc(db, "shopRequests", reqId), { status: 'deleted' });
+        alert("✅ Request 'deleted' mark ho gayi!");
         // Manually update UI for instant feedback
-        DATA.shopReqs = DATA.shopReqs.filter(r => r.id !== reqId);
+        const req = DATA.shopReqs.find(r => r.id === reqId);
+        if (req) req.status = 'deleted';
+        // Re-render to apply filter
         renderShopRequests();
-        updateShopBadge();
+        updateShopBadge(); // Badge count update hoga
     } catch(e) { alert("Error: " + e.message); }
 };
 
