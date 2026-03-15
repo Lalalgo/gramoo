@@ -954,7 +954,7 @@ onAuthStateChanged(auth, async user => {
             const sData = shopSnap.exists() ? shopSnap.data() : null;
             const rData = regSnap.exists() ? regSnap.data() : null;
             
-            if (sData && (sData.status === 'deleted' || sData.status === 'rejected')) {
+            if ((sData && (sData.status === 'deleted' || sData.status === 'rejected')) || (rData && rData.status === 'deleted')) {
                 showBlockedScreen(sData.rejectReason || (rData && rData.rejectReason) || "Admin removed this shop");
                 return;
             }
