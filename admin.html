@@ -581,6 +581,7 @@ function renderShopRequests() {
     // Create demo requests
     const demoReqs = ADMIN_DEMO_SHOPS.map(d => ({
         id: d.id, shopName: d.shopName, userName: 'Demo User', userEmail: 'demo@gramoo.in',
+        uid: d.id, // UID bhi add kar diya
         area: d.area, district: d.district, phone: d.phone, category: d.category,
         lat: d.lat, lng: d.lng, status: 'demo', createdAt: null
     }));
@@ -619,7 +620,7 @@ function renderShopRequests() {
 
     el.innerHTML = list.map(r => {
         const status = r.status || (r.id.startsWith('demo') ? 'demo' : 'pending');
-        const reqId = r.id; // Correct Document ID for DB operations
+        const reqId = r.id;
         const userId = r.uid || r.id; // User ID for shop linking
         const mapLink = r.lat && r.lng
             ? `<a href="https://maps.google.com/?q=${r.lat},${r.lng}" target="_blank" class="map-link">📍 Map pe dekho</a>`
