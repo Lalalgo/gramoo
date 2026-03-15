@@ -47,6 +47,16 @@ header { background:linear-gradient(135deg,#1a6b3c,#2d9e5f); color:white;
 .fb-online  { background:#e8f5e9; color:#2e7d32; }
 .fb-offline { background:#ffebee; color:#c62828; }
 
+/* Help Button & Modal Content */
+.btn-help-nav { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:6px 10px; border-radius:12px; font-size:12px; font-weight:600; cursor:pointer; }
+.btn-help-nav:hover { background:rgba(255,255,255,0.25); }
+
+.help-step { display:flex; gap:12px; margin-bottom:16px; align-items:flex-start; border-bottom:1px dashed #eee; padding-bottom:12px; }
+.help-step:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+.help-num { background:#e8f5e9; color:#1b5e20; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0; font-size:14px; border:1px solid #c8e6c9; }
+.help-content h4 { margin-bottom:4px; font-size:15px; color:#2e7d32; }
+.help-content p { font-size:13px; color:#555; line-height:1.5; margin:0; }
+
 /* ── 4. Location Bar ── */
 .location-bar { background:#fff8e1; border-bottom:2px solid #FFC107;
     padding:9px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
