@@ -202,6 +202,7 @@
         <button class="nav-tab" data-sec="settings">⚙️ Settings</button>
         <button class="nav-tab" data-sec="feedback">💬 Feedback</button>
         <button class="nav-tab" data-sec="reports">🚨 Reports</button>
+        <button class="nav-tab" data-sec="guides">📚 Guides</button>
         <button class="nav-tab" data-sec="traffic">📈 Traffic</button>
     </div>
 
@@ -357,6 +358,26 @@
             </div>
         </div>
 
+        <!-- GUIDES -->
+        <div class="section" id="sec-guides">
+            <div class="sec-title">📚 User Guides Manager</div>
+            <div class="settings-note" style="margin-bottom:20px;">
+                यहाँ आप User Guide और Shopkeeper Guide का content बदल सकते हैं। यह content सीधे live website पर दिखेगा। HTML tags (जैसे &lt;b&gt;, &lt;ul&gt;, &lt;li&gt;) का इस्तेमाल कर सकते हैं।
+            </div>
+    
+            <div class="cat-section">
+                <div class="cat-title">👤 User Guide (guide-user.html)</div>
+                <textarea id="guideUserContent" style="width:100%;min-height:400px;padding:15px;font-family:monospace;font-size:13px;border-radius:10px;border:1px solid var(--border);resize:vertical;"></textarea>
+                <button class="btn-green" style="margin-top:10px;" onclick="saveGuide('user')">💾 Save User Guide</button>
+            </div>
+    
+            <div class="cat-section">
+                <div class="cat-title">🏪 Shopkeeper Guide (guide-shopkeeper.html)</div>
+                <textarea id="guideShopkeeperContent" style="width:100%;min-height:400px;padding:15px;font-family:monospace;font-size:13px;border-radius:10px;border:1px solid var(--border);resize:vertical;"></textarea>
+                <button class="btn-green" style="margin-top:10px;" onclick="saveGuide('shopkeeper')">💾 Save Shopkeeper Guide</button>
+            </div>
+        </div>
+
         <!-- TRAFFIC -->
         <div class="section" id="sec-traffic">
             <div class="sec-title">📈 Website Traffic</div>
@@ -499,6 +520,7 @@ function loadAll() {
     loadReports();
     loadFeedback();
     loadSettings();
+    loadGuides();
     document.getElementById("listingSearch").addEventListener("input", renderListingsTable);
     document.getElementById("listingType").addEventListener("change", renderListingsTable);
 }
@@ -852,6 +874,120 @@ window.deleteCat = async (id, name) => {
     try { await deleteDoc(doc(db,"categories",id)); }
     catch(e) { alert("Error: "+e.message); }
 };
+
+// ── GUIDES ──
+async function loadGuides() {
+    const userGuideTextarea = document.getElementById("guideUserContent");
+    const shopGuideTextarea = document.getElementById("guideShopkeeperContent");
+
+    const defaultUserGuide = `<h2>🎯 Gramoo क्यों? (हमारा उद्देश्य)</h2>
+<p>Gramoo को बनाने का मुख्य उद्देश्य भारत के किसानों और स्थानीय कृषि-दुकानदारों को डिजिटल रूप से जोड़ना है, ताकि बिचौलियों को हटाकर दोनों को सीधा फायदा मिल सके।</p>
+<ul>
+    <li><b>किसानों के लिए फायदा:</b> अपनी फसल का सही दाम पाएं, सीधे खरीदारों से जुड़ें, और अपने आस-पास की दुकानों से खाद-बीज की जानकारी घर बैठे पाएं।</li>
+    <li><b>दुकानदारों के लिए फायदा:</b> अपनी दुकान को ऑनलाइन लाकर ज़्यादा किसानों तक पहुंचें, अपने क्षेत्र की डिमांड को समझें, और सीधे किसानों से जुड़कर अपना व्यापार बढ़ाएं।</li>
+</ul>
+<h2>👤 किसान / आम उपयोगकर्ता</h2>
+<h3>1. फसल बेचना या खरीदना</h3>
+<p>होम पेज पर <span class="key">🌾 फसल बेचें</span> या <span class="key">🛒 फसल खरीदें</span> बटन दबाएं। एक फॉर्म खुलेगा:</p>
+<ul>
+    <li>अपना नाम, अनाज का प्रकार, मात्रा (KG में), और कीमत (₹/KG) भरें।</li>
+    <li>अपना क्षेत्र और WhatsApp नंबर सही-सही डालें।</li>
+    <li><span class="key">लिस्टिंग जोड़ें</span> बटन दबाते ही, Google Login के बाद, आपकी लिस्टिंग सभी को दिखने लगेगी।</li>
+</ul>
+<h3>2. अपनी डाली हुई लिस्टिंग बदलना या हटाना</h3>
+<p>लिस्टिंग डालने के बाद उसे बदलने या हटाने के लिए:</p>
+<ul>
+    <li>सबसे पहले <span class="key">🔐 Login</span> करें।</li>
+    <li>ऊपर आपके नाम के पास <span class="key">📋 मेरी Listings</span> बटन दिखेगा, उसे दबाएं।</li>
+    <li>आपकी सभी लिस्टिंग की सूची दिखेगी, जिसके सामने <span class="key">✏️ Edit</span> (बदलें) और <span class="key">🗑️ Delete</span> (हटाएं) के बटन होंगे।</li>
+</ul>
+<h3>3. नज़दीकी दुकान खोजना</h3>
+<p><span class="key">🏪 नज़दीकी दुकान</span> टैब पर जाकर आप अपने आस-पास की खाद, बीज, और कीटनाशक की दुकानें खोज सकते हैं। आप श्रेणी (Category) के हिसाब से भी फ़िल्टर कर सकते हैं।</p>
+<h2>🛠️ अन्य महत्वपूर्ण सुविधाएँ</h2>
+<h3>1. कोई Problem रिपोर्ट करें</h3>
+<p>अगर वेबसाइट इस्तेमाल करते समय कोई तकनीकी समस्या आती है (जैसे - बटन काम नहीं कर रहा, पेज नहीं खुल रहा), तो आप हमें तुरंत बता सकते हैं:</p>
+<ul>
+    <li>स्क्रीन पर नीचे दाईं ओर एक लाल रंग का बटन <span class="key" style="background:#ffebee;color:#c62828;border-color:#ffcdd2;">🚨 Problem?</span> दिखेगा।</li>
+    <li>उसे दबाएं, अपनी समस्या चुनें और भेज दें। इससे हमें समस्या को जल्दी ठीक करने में मदद मिलती है।</li>
+</ul>
+<h3>2. सुझाव दें</h3>
+<p>Gramoo को और बेहतर बनाने के लिए आपका सुझाव बहुत कीमती है।</p>
+<ul>
+    <li>होम पेज पर सबसे नीचे "<b>💡 आपका सुझाव हमारे लिए ज़रूरी है</b>" सेक्शन है।</li>
+    <li>वहां बॉक्स में अपना सुझाव लिखें और <span class="key">📨 सुझाव भेजें</span> बटन दबाएं।</li>
+</ul>`;
+
+    const defaultShopGuide = `<h2>🎯 Gramoo क्यों? (दुकानदारों के लिए)</h2>
+<p>Gramoo को बनाने का मुख्य उद्देश्य भारत के किसानों और स्थानीय कृषि-दुकानदारों को डिजिटल रूप से जोड़ना है, ताकि बिचौलियों को हटाकर दोनों को सीधा फायदा मिल सके।</p>
+<ul>
+    <li><b>दुकानदारों के लिए फायदा:</b> अपनी दुकान को ऑनलाइन लाकर ज़्यादा किसानों तक पहुंचें, अपने क्षेत्र की डिमांड को समझें, और सीधे किसानों से जुड़कर अपना व्यापार बढ़ाएं।</li>
+    <li><b>किसानों के लिए फायदा:</b> अपनी फसल का सही दाम पाएं, सीधे खरीदारों से जुड़ें, और अपने आस-पास की दुकानों से खाद-बीज की जानकारी घर बैठे पाएं।</li>
+</ul>
+<h2>🏪 दुकानदार के लिए सुविधाएँ</h2>
+<h3>1. दुकान का Registration</h3>
+<p>अपनी दुकान को Gramoo पर लाने के लिए:</p>
+<ul>
+    <li>होम पेज पर <span class="key">🏪 नज़दीकी दुकान</span> टैब पर जाएं और <span class="key">🏪 अपनी दुकान जोड़ें →</span> बटन दबाएं।</li>
+    <li>Google से Login करें।</li>
+    <li>Registration फॉर्म में दुकान का नाम, पता, WhatsApp नंबर और GPS Location सही-सही भरें।</li>
+    <li>Request भेजने के बाद हमारी टीम 24 घंटे के अंदर आपकी दुकान को Approve कर देगी।</li>
+</ul>
+<h3>2. दुकान का Dashboard संभालना</h3>
+<p>Approval के बाद, <a href="shop.html">shop.html</a> पर जाकर Login करें। आपको आपका Dashboard दिखेगा:</p>
+<ul>
+    <li><b>📦 Inventory:</b> यहाँ आपकी दुकान के सभी items दिखेंगे। आप यहीं से उनकी कीमत और स्टॉक (Available है / नहीं) बदल सकते हैं।</li>
+    <li><b>➕ Items जोड़ें:</b> इस टैब में आपको खाद, बीज, कीटनाशक आदि की एक Master List मिलेगी। आप अपनी दुकान में उपलब्ध items को यहाँ से चुनकर जोड़ सकते हैं।</li>
+    <li><b>🤝 किसान Demand:</b> देखें कि आपके क्षेत्र के किसान कौन-सा सामान खरीदना चाहते हैं और उनसे सीधे संपर्क करें।</li>
+    <li><b>🏪 Profile:</b> अपनी दुकान का नाम, पता या नंबर बदलें।</li>
+</ul>
+<h3>3. नया Item नहीं मिला? Request भेजें!</h3>
+<p>अगर आपकी दुकान में कोई ऐसा सामान है जो <span class="key">➕ Items जोड़ें</span> टैब की Master List में नहीं है, तो आप उसे जुड़वा सकते हैं:</p>
+<ul>
+    <li><span class="key">➕ Items जोड़ें</span> टैब में सबसे नीचे जाएं।</li>
+    <li>वहां "<b>🙋 नया Item नहीं मिला?</b>" सेक्शन में फॉर्म भरें।</li>
+    <li>Item का नाम और Brand का नाम लिखकर <span class="key">📨 Request भेजें</span>।</li>
+    <li>हमारी टीम उसे जांचकर Master List में जोड़ देगी, जिसके बाद आप उसे अपनी Inventory में शामिल कर पाएंगे।</li>
+</ul>
+<h3>4. कोई Problem रिपोर्ट करें</h3>
+<p>अगर वेबसाइट इस्तेमाल करते समय कोई तकनीकी समस्या आती है (जैसे - बटन काम नहीं कर रहा, पेज नहीं खुल रहा), तो आप हमें तुरंत बता सकते हैं:</p>
+<ul>
+    <li>स्क्रीन पर नीचे दाईं ओर एक लाल रंग का बटन <span class="key" style="background:#ffebee;color:#c62828;border-color:#ffcdd2;">🚨 Problem?</span> दिखेगा।</li>
+    <li>उसे दबाएं, अपनी समस्या चुनें और भेज दें। इससे हमें समस्या को जल्दी ठीक करने में मदद मिलती है।</li>
+</ul>`;
+
+    try {
+        const snap = await getDoc(doc(db, "settings", "guides"));
+        if (snap.exists()) {
+            const data = snap.data();
+            userGuideTextarea.value = data.userGuide || defaultUserGuide;
+            shopGuideTextarea.value = data.shopkeeperGuide || defaultShopGuide;
+        } else {
+            userGuideTextarea.value = defaultUserGuide;
+            shopGuideTextarea.value = defaultShopGuide;
+        }
+    } catch (e) {
+        console.error("Error loading guides:", e);
+        alert("Guides load nahi ho sakeen.");
+    }
+}
+
+window.saveGuide = async function(type) {
+    const contentId = type === 'user' ? 'guideUserContent' : 'guideShopkeeperContent';
+    const fieldName = type === 'user' ? 'userGuide' : 'shopkeeperGuide';
+    const content = document.getElementById(contentId).value;
+
+    if (!confirm(`Kya aap ${type} guide save karna chahte hain? Yeh badlav live ho jaayega.`)) return;
+
+    try {
+        await setDoc(doc(db, "settings", "guides"), {
+            [fieldName]: content,
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+        alert(`✅ ${type.charAt(0).toUpperCase() + type.slice(1)} Guide save ho gayi!`);
+    } catch (e) {
+        alert("Error saving guide: " + e.message);
+    }
+}
 
 // ── SITE SETTINGS ──
 async function loadSettings() {
