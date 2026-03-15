@@ -963,8 +963,11 @@ onAuthStateChanged(auth, async user => {
             }
 
             if (sData && sData.status === 'approved') {
-                const regData = regSnap.exists() ? regSnap.data() : {};
-                if (regData.welcomeSeen) {
+                const regData = regSnap.exists() ? regSnap.data() : null;
+                // LocalStorage check for fallback (taaki loop mein na phase)
+                const localSeen = localStorage.getItem('gramoo_shop_welcome_' + user.uid);
+
+                if (!regData || regData.welcomeSeen || localSeen) {
                     showMainApp(user);
                 } else {
                     showApprovedScreen(user, regData);
@@ -1029,6 +1032,8 @@ const EJS_PUBKEY       = 'OAlzCN74cs01xSoZH';
 async function showApprovedScreen(user, regData) {
     hideAll();
     document.getElementById('approvedScreen').style.display = 'flex';
+    // Set local flag immediately to prevent loop if DB write fails
+    localStorage.setItem('gramoo_shop_welcome_' + user.uid, 'true');
     const naam = regData.shopName || 'आपकी दुकान';
     document.getElementById('approvedShopName').textContent = '🏪 ' + naam;
     const timeEl = document.getElementById('approvedTime');
