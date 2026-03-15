@@ -1,842 +1,441 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gramoo Dukan — कृषि दुकान पोर्टल</title>
-<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-S9HNMVR99Z"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date()); gtag('config', 'G-S9HNMVR99Z');
-</script>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-:root {
-    --green:       #1b5e20;
-    --green-mid:   #2e7d32;
-    --green-light: #43a047;
-    --green-pale:  #e8f5e9;
-    --orange:      #e65100;
-    --orange-pale: #fff3e0;
-    --blue:        #1565c0;
-    --blue-pale:   #e3f2fd;
-    --red:         #c62828;
-    --red-pale:    #ffebee;
-    --gold:        #f9a825;
-    --bg:          #f1f8e9;
-    --card:        #ffffff;
-    --border:      #c8e6c9;
-    --text:        #1b2a1b;
-    --muted:       #5a7a5a;
-    --shadow:      0 4px 20px rgba(27,94,32,0.10);
-}
-body {
-    font-family: 'Baloo 2', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gramoo Admin</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-S9HNMVR99Z"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-S9HNMVR99Z');
+    </script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --green: #2e7d32; --green-light: #43a047; --orange: #e65100;
+            --bg: #f1f8e9; --card: #ffffff; --text: #1b2a1b;
+            --muted: #6a7b6a; --border: #c8e6c9; --red: #c62828; --blue: #1565c0;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-/* ══ LOADING ══ */
-#pageLoader {
-    position: fixed; inset: 0; background: var(--green);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 9999; flex-direction: column; gap: 12px;
-    transition: opacity 0.4s;
-}
-#pageLoader .loader-logo { font-size: 48px; animation: bounce 1s infinite; }
-#pageLoader p { color: rgba(255,255,255,0.8); font-size: 14px; }
-@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        /* LOGIN */
+        #loginScreen { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,#1b5e20,#2e7d32,#388e3c); }
+        .login-box { background:white; border-radius:20px; padding:48px 40px; text-align:center; width:360px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+        .login-logo { font-size:48px; margin-bottom:8px; }
+        .login-title { font-size:28px; font-weight:700; color:var(--green); margin-bottom:24px; }
+        .btn-google { width:100%; padding:14px; background:var(--green); border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; color:white; transition:all 0.2s; }
+        .btn-google:hover { background:var(--green-light); }
 
-/* ══ LOGIN SCREEN ══ */
-#loginScreen {
-    display: none;
-    min-height: 100vh;
-    background: linear-gradient(160deg, #1b5e20 0%, #2e7d32 40%, #388e3c 100%);
-    align-items: center; justify-content: center;
-    padding: 20px;
-}
-.login-card {
-    background: white; border-radius: 24px; padding: 40px 32px;
-    width: 100%; max-width: 380px; text-align: center;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.25);
-}
-.login-icon { font-size: 52px; margin-bottom: 8px; }
-.login-title { font-size: 26px; font-weight: 800; color: var(--green); margin-bottom: 4px; }
-.login-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
-.btn-google-login {
-    width: 100%; padding: 14px; background: var(--green-mid); color: white;
-    border: none; border-radius: 14px; font-size: 16px; font-weight: 700;
-    cursor: pointer; font-family: inherit; transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-}
-.btn-google-login:hover { background: var(--green-light); transform: translateY(-1px); }
-.login-note { font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.6; }
+        /* ADMIN */
+        #adminPanel { display:none; }
+        .top-bar { background:var(--green); color:white; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+        .top-bar-left { font-size:20px; font-weight:700; }
+        .top-bar-left span { font-size:13px; opacity:0.8; margin-left:8px; font-weight:400; }
+        .btn-logout { background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:6px 16px; border-radius:8px; cursor:pointer; font-size:13px; }
+        .btn-logout:hover { background:rgba(255,255,255,0.3); }
 
-/* ══ MAIN APP ══ */
-#mainApp { display: none; }
+        /* NAV */
+        .nav-tabs { background:white; display:flex; gap:4px; padding:8px 16px; border-bottom:2px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+        .nav-tabs::-webkit-scrollbar { display:none; }
+        .nav-tab { padding:8px 16px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500; white-space:nowrap; color:var(--muted); border:none; background:none; transition:all 0.2s; position:relative; }
+        .nav-tab.active { background:var(--green); color:white; }
+        .nav-tab:hover:not(.active) { background:var(--bg); color:var(--green); }
+        .nav-badge { position:absolute; top:4px; right:4px; background:#c62828; color:white; border-radius:50%; width:18px; height:18px; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
 
-/* ══ HEADER ══ */
-.header {
-    background: var(--green);
-    padding: 0 20px;
-    height: 58px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-}
-.header-logo { font-size: 18px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
-.header-logo a { color: white; text-decoration: none; font-size: 13px; opacity: 0.7; margin-left: 4px; }
-.header-logo a:hover { opacity: 1; }
-.header-right { display: flex; align-items: center; gap: 10px; }
-.user-chip {
-    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 8px;
-}
-.user-chip img { width: 26px; height: 26px; border-radius: 50%; border: 2px solid white; }
-.user-chip span { color: white; font-size: 13px; font-weight: 600; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.btn-logout {
-    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-    color: white; padding: 6px 14px; border-radius: 10px; cursor: pointer;
-    font-size: 13px; font-family: inherit;
-}
-.btn-logout:hover { background: rgba(255,255,255,0.25); }
+        /* CONTENT */
+        .content { padding:20px; max-width:1100px; margin:0 auto; }
+        .section { display:none; }
+        .section.active { display:block; }
 
-/* ══ NAV TABS ══ */
-.nav-tabs {
-    background: white; display: flex; gap: 2px;
-    padding: 8px 12px; border-bottom: 2px solid var(--border);
-    overflow-x: auto; scrollbar-width: none;
-}
-.nav-tabs::-webkit-scrollbar { display: none; }
-.nav-tab {
-    padding: 8px 16px; border-radius: 10px; cursor: pointer;
-    font-size: 14px; font-weight: 600; white-space: nowrap;
-    color: var(--muted); border: none; background: none;
-    font-family: inherit; transition: all 0.2s;
-}
-.nav-tab.active { background: var(--green); color: white; }
-.nav-tab:hover:not(.active) { background: var(--green-pale); color: var(--green); }
+        /* STATS */
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; margin-bottom:24px; }
+        .stat-card { background:white; border-radius:12px; padding:20px; text-align:center; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05); cursor:pointer; transition:all 0.2s; }
+        .stat-card:hover { transform:translateY(-2px); box-shadow:0 4px 16px rgba(0,0,0,0.1); }
+        .stat-card .num { font-size:32px; font-weight:700; color:var(--green); }
+        .stat-card .lbl { font-size:13px; color:var(--muted); margin-top:4px; }
+        .stat-card.alert .num { color:var(--orange); }
 
-/* ══ CONTENT ══ */
-.content { padding: 16px; max-width: 900px; margin: 0 auto; }
-.tab-sec { display: none; }
-.tab-sec.active { display: block; }
+        /* SEC TITLE */
+        .sec-title { font-size:18px; font-weight:700; color:var(--green); margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px; }
 
-/* ══ SETUP BANNER ══ */
-.setup-banner {
-    background: linear-gradient(135deg, var(--orange) 0%, #ff7043 100%);
-    border-radius: 16px; padding: 20px; margin-bottom: 20px;
-    color: white; display: flex; align-items: center; gap: 16px;
-}
-.setup-banner .icon { font-size: 36px; flex-shrink: 0; }
-.setup-banner h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-.setup-banner p { font-size: 13px; opacity: 0.9; }
-.btn-setup {
-    background: white; color: var(--orange); border: none;
-    padding: 10px 20px; border-radius: 10px; font-size: 14px;
-    font-weight: 700; cursor: pointer; white-space: nowrap;
-    font-family: inherit; margin-left: auto; flex-shrink: 0;
-}
+        /* TABLE */
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+        th { background:var(--green); color:white; padding:12px 16px; text-align:left; font-size:13px; font-weight:600; }
+        td { padding:12px 16px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+        tr:last-child td { border-bottom:none; }
+        tr:hover td { background:var(--bg); }
 
-/* ══ SHOP PROFILE CARD ══ */
-.shop-profile-card {
-    background: white; border-radius: 16px; padding: 20px;
-    border: 1px solid var(--border); box-shadow: var(--shadow);
-    margin-bottom: 20px; display: flex; align-items: center; gap: 16px;
-}
-.shop-avatar {
-    width: 56px; height: 56px; border-radius: 14px;
-    background: var(--green-pale); display: flex; align-items: center;
-    justify-content: center; font-size: 28px; flex-shrink: 0;
-    border: 2px solid var(--border);
-}
-.shop-info h2 { font-size: 18px; font-weight: 800; color: var(--green); }
-.shop-info p { font-size: 13px; color: var(--muted); margin-top: 2px; }
-.shop-status { margin-left: auto; flex-shrink: 0; }
-.status-badge {
-    padding: 5px 14px; border-radius: 20px; font-size: 12px;
-    font-weight: 700; display: flex; align-items: center; gap: 6px;
-}
-.status-live { background: #e8f5e9; color: var(--green-mid); border: 1px solid var(--border); }
-.status-setup { background: var(--orange-pale); color: var(--orange); border: 1px solid #ffccbc; }
+        /* BUTTONS */
+        .btn-del     { background:#ffebee; color:var(--red);   border:1px solid #ffcdd2; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; }
+        .btn-del:hover { background:#ffcdd2; }
+        .btn-edit    { background:#e3f2fd; color:var(--blue);  border:1px solid #bbdefb; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
+        .btn-edit:hover { background:#bbdefb; }
+        .btn-approve { background:#e8f5e9; color:var(--green); border:1px solid var(--border); padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
+        .btn-approve:hover { background:#c8e6c9; }
+        .btn-reject  { background:#fff3e0; color:var(--orange); border:1px solid #ffe0b2; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
+        .btn-reject:hover { background:#ffe0b2; }
+        .btn-green   { background:var(--green); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; }
+        .btn-green:hover { background:var(--green-light); }
 
-/* ══ STATS ROW ══ */
-.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 12px; margin-bottom: 20px; }
-.stat-card {
-    background: white; border-radius: 14px; padding: 16px;
-    text-align: center; border: 1px solid var(--border);
-}
-.stat-card .s-num { font-size: 28px; font-weight: 800; color: var(--green); }
-.stat-card .s-lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        /* SHOP REQUESTS */
+        .reg-card {
+            background:white; border-radius:14px; padding:18px; margin-bottom:14px;
+            border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05);
+            border-left:4px solid #ff9800;
+        }
+        .reg-card.approved { border-left-color:var(--green); }
+        .reg-card.rejected { border-left-color:var(--red); opacity:0.7; }
+        .reg-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+        .reg-shop-name { font-size:17px; font-weight:800; color:var(--green); }
+        .reg-meta { font-size:12px; color:var(--muted); margin-top:4px; line-height:1.8; }
+        .reg-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+        .reg-filter-tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+        .reg-filter-tab { padding:7px 16px; border-radius:20px; border:1px solid var(--border); background:white; color:var(--muted); font-size:13px; cursor:pointer; font-family:inherit; }
+        .reg-filter-tab.active { background:var(--green); color:white; border-color:var(--green); }
 
-/* ══ SECTION TITLE ══ */
-.sec-title {
-    font-size: 16px; font-weight: 800; color: var(--green);
-    margin-bottom: 14px; display: flex; align-items: center;
-    justify-content: space-between; gap: 8px;
-}
+        /* REJECT MODAL */
+        .reject-modal { background:white; border-radius:16px; padding:28px; width:100%; max-width:420px; }
+        .reject-modal h3 { font-size:16px; color:var(--red); margin-bottom:16px; }
+        .reject-modal textarea { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; min-height:80px; resize:vertical; }
+        .reject-modal textarea:focus { outline:none; border-color:var(--red); }
 
-/* ══ INVENTORY GRID ══ */
-.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 12px; }
-.inv-card {
-    background: white; border-radius: 14px; padding: 16px;
-    border: 1px solid var(--border); box-shadow: var(--shadow);
-    transition: all 0.2s;
-}
-.inv-card:hover { box-shadow: 0 8px 24px rgba(27,94,32,0.12); transform: translateY(-2px); }
-.inv-card.out-of-stock { opacity: 0.6; }
-.inv-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
-.inv-name { font-size: 15px; font-weight: 700; color: var(--text); }
-.inv-cat { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.inv-brand { background: var(--blue-pale); color: var(--blue); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-.inv-details { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-.inv-tag { background: var(--green-pale); color: var(--green-mid); padding: 3px 10px; border-radius: 20px; font-size: 11px; }
-.inv-price-row { display: flex; align-items: center; justify-content: space-between; }
-.inv-price { font-size: 20px; font-weight: 800; color: var(--green); }
-.inv-price span { font-size: 12px; font-weight: 400; color: var(--muted); }
-.inv-actions { display: flex; gap: 6px; }
-.btn-edit-price {
-    background: var(--green-pale); color: var(--green-mid); border: 1px solid var(--border);
-    padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px;
-    font-weight: 600; font-family: inherit;
-}
-.btn-edit-price:hover { background: var(--border); }
-.btn-toggle-stock {
-    padding: 6px 12px; border-radius: 8px; cursor: pointer;
-    font-size: 12px; font-weight: 600; border: none; font-family: inherit;
-}
-.btn-toggle-stock.in { background: #e8f5e9; color: var(--green-mid); border: 1px solid var(--border); }
-.btn-toggle-stock.out { background: var(--red-pale); color: var(--red); border: 1px solid #ffcdd2; }
-.btn-remove-item {
-    background: none; border: none; color: #ccc; cursor: pointer;
-    font-size: 16px; padding: 4px; transition: color 0.2s;
-}
-.btn-remove-item:hover { color: var(--red); }
+        /* CATEGORY */
+        .cat-section { background:white; border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid var(--border); }
+        .cat-title { font-weight:700; margin-bottom:12px; color:var(--green); font-size:15px; }
+        .cat-list { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; min-height:36px; }
+        .cat-tag { background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:6px 14px; font-size:13px; display:flex; align-items:center; gap:8px; }
+        .cat-tag .del-cat { cursor:pointer; color:var(--red); font-weight:700; font-size:18px; line-height:1; padding:0 2px; }
+        .cat-tag .del-cat:hover { color:#b71c1c; }
+        .add-cat-row { display:flex; gap:8px; }
+        .add-cat-row input { flex:1; padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-size:14px; }
+        .add-cat-row input:focus { outline:none; border-color:var(--green); }
 
-/* ══ ADD ITEM SECTION ══ */
-.add-item-box {
-    background: white; border-radius: 16px; padding: 20px;
-    border: 2px dashed var(--border); margin-bottom: 20px;
-}
-.add-item-box h3 { font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 14px; }
-.filter-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-.filter-row select, .filter-row input {
-    padding: 9px 14px; border: 1px solid var(--border); border-radius: 10px;
-    font-size: 13px; font-family: inherit; background: white; flex: 1; min-width: 140px;
-}
-.filter-row select:focus, .filter-row input:focus { outline: none; border-color: var(--green-mid); }
-.master-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 8px; max-height: 400px; overflow-y: auto; }
-.master-item {
-    border: 1px solid var(--border); border-radius: 10px; padding: 12px;
-    cursor: pointer; transition: all 0.2s; background: white;
-}
-.master-item:hover { border-color: var(--green-mid); background: var(--green-pale); }
-.master-item.selected { border-color: var(--green-mid); background: var(--green-pale); }
-.master-item.already-added { opacity: 0.4; cursor: not-allowed; }
-.mi-name { font-size: 13px; font-weight: 700; }
-.mi-name-en { font-size: 11px; color: var(--muted); }
-.mi-cat { font-size: 10px; background: var(--green-pale); color: var(--green-mid); padding: 2px 8px; border-radius: 10px; display: inline-block; margin-top: 4px; }
+        /* SITE SETTINGS */
+        .settings-box { background:white; border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid var(--border); }
+        .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--border); }
+        .toggle-row:last-child { border-bottom:none; }
+        .toggle-info h4 { font-size:14px; font-weight:600; margin-bottom:4px; }
+        .toggle-info p { font-size:12px; color:var(--muted); }
+        .toggle-switch { position:relative; width:52px; height:28px; flex-shrink:0; }
+        .toggle-switch input { opacity:0; width:0; height:0; }
+        .toggle-slider { position:absolute; cursor:pointer; inset:0; background:#ccc; border-radius:28px; transition:0.3s; }
+        .toggle-slider:before { content:""; position:absolute; height:20px; width:20px; left:4px; bottom:4px; background:white; border-radius:50%; transition:0.3s; }
+        input:checked + .toggle-slider { background:var(--green); }
+        input:checked + .toggle-slider:before { transform:translateX(24px); }
+        .settings-note { background:#fff8e1; border:1px solid #ffe082; border-radius:10px; padding:14px; font-size:13px; color:#e65100; margin-top:8px; }
 
-/* ══ ITEM CONFIG FORM ══ */
-.item-config {
-    display: none; background: var(--green-pale); border-radius: 14px;
-    padding: 18px; margin-top: 14px; border: 1px solid var(--border);
-}
-.item-config.show { display: block; }
-.item-config h4 { font-size: 14px; font-weight: 700; color: var(--green); margin-bottom: 14px; }
-.cfg-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-.cfg-group { flex: 1; min-width: 160px; }
-.cfg-group label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
-.cfg-group select, .cfg-group input {
-    width: 100%; padding: 9px 12px; border: 1px solid var(--border);
-    border-radius: 9px; font-size: 13px; font-family: inherit; background: white;
-}
-.cfg-group select:focus, .cfg-group input:focus { outline: none; border-color: var(--green-mid); }
-.btn-add-to-inv {
-    background: var(--green-mid); color: white; border: none;
-    padding: 11px 24px; border-radius: 10px; font-size: 14px;
-    font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 4px;
-}
-.btn-add-to-inv:hover { background: var(--green-light); }
+        /* FEEDBACK */
+        .feedback-card { background:white; border-radius:12px; padding:16px; border:1px solid var(--border); margin-bottom:12px; }
+        .feedback-stars { font-size:20px; margin-bottom:6px; }
+        .feedback-text { font-size:14px; color:var(--text); margin-bottom:8px; line-height:1.6; font-style:italic; }
+        .feedback-meta { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 
-/* ══ REQUEST FORM ══ */
-.request-box {
-    background: white; border-radius: 16px; padding: 20px;
-    border: 1px solid var(--border); margin-top: 20px;
-}
-.request-box h3 { font-size: 15px; font-weight: 700; color: var(--orange); margin-bottom: 6px; }
-.request-box p { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
-.req-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.req-row input, .req-row textarea {
-    flex: 1; min-width: 160px; padding: 9px 12px;
-    border: 1px solid var(--border); border-radius: 9px;
-    font-size: 13px; font-family: inherit;
-}
-.req-row input:focus, .req-row textarea:focus { outline: none; border-color: var(--orange); }
-.btn-send-req {
-    background: var(--orange); color: white; border: none;
-    padding: 11px 20px; border-radius: 10px; font-size: 14px;
-    font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap;
-}
-.btn-send-req:hover { background: #f4511e; }
-.req-done { display: none; color: var(--green-mid); font-size: 13px; font-weight: 600; margin-top: 8px; }
+        /* MODAL */
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+        .modal-overlay.active { display:flex; }
+        .modal { background:white; border-radius:16px; padding:28px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; }
+        .modal h3 { font-size:18px; color:var(--green); margin-bottom:20px; }
+        .fgroup { margin-bottom:14px; }
+        .fgroup label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--muted); }
+        .fgroup input, .fgroup textarea { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; }
+        .fgroup input:focus, .fgroup textarea:focus { outline:none; border-color:var(--green); }
+        .modal-btns { display:flex; gap:8px; margin-top:20px; }
+        .btn-cancel { flex:1; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:14px; }
 
-/* ══ SHOP SETUP MODAL ══ */
-.modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5); z-index: 500;
-    align-items: center; justify-content: center; padding: 16px;
-}
-.modal-overlay.active { display: flex; }
-.modal {
-    background: white; border-radius: 20px; padding: 28px;
-    width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
-}
-.modal h3 { font-size: 18px; font-weight: 800; color: var(--green); margin-bottom: 6px; }
-.modal p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-.fgroup { margin-bottom: 14px; }
-.fgroup label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 5px; }
-.fgroup input, .fgroup select, .fgroup textarea {
-    width: 100%; padding: 10px 14px; border: 1px solid var(--border);
-    border-radius: 10px; font-size: 14px; font-family: inherit;
-}
-.fgroup input:focus, .fgroup select:focus, .fgroup textarea:focus { outline: none; border-color: var(--green-mid); }
-.phone-wrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.phone-prefix { background: var(--green-pale); padding: 10px 12px; font-size: 14px; font-weight: 600; color: var(--green-mid); border-right: 1px solid var(--border); }
-.phone-wrap input { border: none; border-radius: 0; flex: 1; }
-.phone-wrap input:focus { outline: none; }
-.modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-.btn-cancel { flex: 1; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; font-size: 14px; font-family: inherit; }
-.btn-save { flex: 2; padding: 12px; background: var(--green-mid); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 700; font-family: inherit; }
-.btn-save:hover { background: var(--green-light); }
+        /* TRAFFIC */
+        .traffic-note { background:white; border-radius:12px; padding:24px; border:1px solid var(--border); text-align:center; margin-top:20px; }
+        .today-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; }
+        .today-card { background:var(--bg); border-radius:10px; padding:16px; text-align:center; border:1px solid var(--border); }
+        .today-card .t-num { font-size:28px; font-weight:700; color:var(--green); }
+        .today-card .t-lbl { font-size:12px; color:var(--muted); }
 
-/* ══ PRICE EDIT MODAL ══ */
-.price-modal {
-    background: white; border-radius: 20px; padding: 28px;
-    width: 100%; max-width: 360px;
-}
-.price-modal h3 { font-size: 16px; font-weight: 800; color: var(--green); margin-bottom: 16px; }
-.price-input-big {
-    width: 100%; padding: 14px; border: 2px solid var(--border);
-    border-radius: 12px; font-size: 28px; font-weight: 800;
-    text-align: center; font-family: inherit; margin-bottom: 16px;
-}
-.price-input-big:focus { outline: none; border-color: var(--green-mid); }
+        /* BADGE */
+        .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+        .badge-sell     { background:#e8f5e9; color:var(--green); }
+        .badge-buy      { background:#e3f2fd; color:var(--blue); }
+        .badge-pending  { background:#fff8e1; color:#f57f17; border:1px solid #ffe082; }
+        .badge-approved { background:#e8f5e9; color:var(--green); border:1px solid var(--border); }
+        .badge-rejected { background:#ffebee; color:var(--red); border:1px solid #ffcdd2; }
+        .badge-deleted  { background:#eceff1; color:#546e7a; border:1px solid #cfd8dc; }
+        .badge-demo     { background:#f5f5f5; color:#616161; border:1px solid #e0e0e0; }
+        .reg-card.deleted { border-left-color:#90a4ae; opacity:0.6; }
+        .reg-card.demo { border-left-color:#78909c; }
+        .badge-resolved { background:#e8f5e9; color:var(--green); }
 
-/* ══ EMPTY STATE ══ */
-.empty-state {
-    text-align: center; padding: 48px 20px; color: var(--muted);
-}
-.empty-state .e-icon { font-size: 48px; margin-bottom: 12px; }
-.empty-state h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-.empty-state p { font-size: 13px; line-height: 1.6; }
-
-/* ══ TOAST ══ */
-.toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
-    background: #1b5e20; color: white; padding: 12px 24px;
-    border-radius: 20px; font-size: 14px; font-weight: 600;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 9000;
-    transition: transform 0.3s; white-space: nowrap;
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
-
-/* ══ LOADING SKELETON ══ */
-.skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%; animation: shimmer 1.5s infinite;
-    border-radius: 8px;
-}
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-/* ══ PENDING REQUESTS ══ */
-.req-item {
-    background: var(--orange-pale); border: 1px solid #ffccbc;
-    border-radius: 12px; padding: 14px; margin-bottom: 8px;
-    display: flex; align-items: center; gap: 12px;
-}
-.req-item .req-icon { font-size: 24px; }
-.req-item .req-info h4 { font-size: 13px; font-weight: 700; }
-.req-item .req-info p { font-size: 12px; color: var(--muted); }
-.req-status { margin-left: auto; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
-.req-status.pending { background: var(--orange-pale); color: var(--orange); border: 1px solid #ffccbc; }
-.req-status.approved { background: #e8f5e9; color: var(--green-mid); border: 1px solid var(--border); }
-.req-status.rejected { background: var(--red-pale); color: var(--red); border: 1px solid #ffcdd2; }
-
-@media (max-width: 600px) {
-    .content { padding: 12px; }
-    .inv-grid { grid-template-columns: 1fr; }
-    .master-grid { grid-template-columns: 1fr 1fr; }
-    .login-card { padding: 28px 20px; }
-    .shop-profile-card { flex-wrap: wrap; }
-    .setup-banner { flex-wrap: wrap; }
-    .btn-setup { margin-left: 0; width: 100%; text-align: center; margin-top: 8px; }
-}
-
-/* ── Report Problem Floating Button ── */
-.btn-report-problem {
-    position: fixed; bottom: 24px; right: 20px; z-index: 9000;
-    background: #c62828; color: white; border: none;
-    padding: 12px 18px; border-radius: 28px;
-    font-size: 13px; font-weight: 700; cursor: pointer;
-    box-shadow: 0 4px 16px rgba(198,40,40,0.4);
-    display: flex; align-items: center; gap: 7px;
-    font-family: inherit; transition: all 0.2s;
-    animation: rpulse 3s infinite;
-}
-.btn-report-problem:hover { background:#b71c1c; transform:translateY(-2px); animation:none; }
-@keyframes rpulse { 0%,100%{box-shadow:0 4px 16px rgba(198,40,40,0.4)} 50%{box-shadow:0 4px 22px rgba(198,40,40,0.7)} }
-.rp-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9001; align-items:center; justify-content:center; padding:16px; }
-.rp-overlay.active { display:flex; }
-.rp-box { background:white; border-radius:20px; width:100%; max-width:460px; max-height:92vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.25); }
-.rp-header { background:linear-gradient(135deg,#c62828,#e53935); color:white; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; border-radius:20px 20px 0 0; }
-.rp-header h3 { font-size:16px; font-weight:800; }
-.rp-close { background:rgba(255,255,255,0.2); border:none; color:white; width:30px; height:30px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.rp-body { padding:20px; }
-.rp-auto-info { background:#f8f9fa; border:1px solid #e0e0e0; border-radius:10px; padding:12px 14px; margin-bottom:16px; font-size:11.5px; color:#666; line-height:1.8; }
-.rp-auto-info strong { color:#333; font-size:12px; display:block; margin-bottom:6px; }
-.rp-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px 12px; }
-.rp-info-item { display:flex; gap:4px; font-size:11px; }
-.rp-info-label { color:#999; white-space:nowrap; }
-.rp-info-value { color:#333; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.rp-fgroup { margin-bottom:14px; }
-.rp-fgroup label { display:block; font-size:12px; font-weight:700; color:#555; margin-bottom:5px; }
-.rp-fgroup select,.rp-fgroup textarea,.rp-fgroup input { width:100%; padding:10px 12px; border:1.5px solid #e0e0e0; border-radius:10px; font-size:13px; font-family:inherit; color:#333; }
-.rp-fgroup select:focus,.rp-fgroup textarea:focus,.rp-fgroup input:focus { outline:none; border-color:#c62828; }
-.rp-submit { width:100%; padding:13px; background:#c62828; color:white; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; }
-.rp-submit:hover { background:#b71c1c; }
-.rp-submit:disabled { background:#aaa; }
-.rp-success { display:none; text-align:center; padding:30px 20px; }
-.rp-success .rp-ok-icon { font-size:48px; margin-bottom:12px; }
-.rp-success h4 { font-size:17px; font-weight:800; color:#2e7d32; margin-bottom:8px; }
-.rp-success p { font-size:13px; color:#666; line-height:1.6; }
-</style>
+        .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
+        .empty { text-align:center; padding:40px; color:var(--muted); }
+        .empty div { font-size:36px; margin-bottom:8px; }
+        .filter-bar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+        .filter-bar input, .filter-bar select { padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:white; }
+        .filter-bar input { flex:1; min-width:180px; }
+        .map-link { color:var(--blue); font-size:12px; text-decoration:none; }
+        .map-link:hover { text-decoration:underline; }
+        @media (max-width:600px) { .content{padding:12px;} .login-box{width:90%;padding:32px 20px;} th,td{padding:8px 10px;} }
+    </style>
 </head>
 <body>
 
-<!-- PAGE LOADER -->
-<div id="pageLoader">
-    <div class="loader-logo">🌾</div>
-    <p>Gramoo Dukan load ho rahi hai...</p>
-</div>
-
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="loginScreen">
-    <div class="login-card">
-        <div class="login-icon">🏪</div>
-        <div class="login-title">Gramoo Dukan</div>
-        <div class="login-sub">अपनी कृषि दुकान ऑनलाइन करें — बिल्कुल मुफ्त</div>
-        <button class="btn-google-login" id="btnLogin">
-            🔐 Google से Login करें
-        </button>
-        <p class="login-note">
-            Login करके आप Gramoo की<br>
-            <a href="index.html" style="color:var(--green-mid)">Terms & Privacy Policy</a> से सहमत हैं।
-        </p>
+    <div class="login-box">
+        <div class="login-logo">🌾</div>
+        <div class="login-title">Gramoo Admin</div>
+        <button class="btn-google" id="btnGoogleLogin">🔐 Admin Login</button>
     </div>
 </div>
 
-<!-- BLOCKED/DELETED SCREEN -->
-<div id="blockedScreen" style="display:none; min-height:100vh; background:linear-gradient(160deg,#c62828,#b71c1c); align-items:center; justify-content:center; padding:20px;">
-    <div style="background:white;border-radius:24px;padding:40px 28px;width:100%;max-width:400px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.3);">
-        <div style="font-size:56px;margin-bottom:16px;">🚫</div>
-        <div style="font-size:22px;font-weight:800;color:#c62828;margin-bottom:10px;">Account Blocked</div>
-        <div style="font-size:14px;color:#333;margin-bottom:16px;">
-            आपकी दुकान को Admin द्वारा हटा दिया गया है।
-        </div>
-        <div id="blockedReason" style="background:#ffebee;border:1px solid #ffcdd2;color:#b71c1c;padding:12px;border-radius:10px;font-size:13px;margin-bottom:24px;">
-            Reason: Violation of terms
-        </div>
-        <button onclick="doSignOut()"
-            style="width:100%;padding:12px;background:#f5f5f5;border:1px solid #ddd;color:#555;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">
-            Logout
-        </button>
-    </div>
-</div>
-
-<!-- PENDING APPROVAL SCREEN -->
-<div id="pendingScreen" style="display:none; min-height:100vh; background:linear-gradient(160deg,#1b5e20,#2e7d32); align-items:center; justify-content:center; padding:20px;">
-    <div style="background:white;border-radius:24px;padding:36px 28px;width:100%;max-width:400px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
-        <div style="font-size:56px;margin-bottom:12px;">⏳</div>
-        <div style="font-size:22px;font-weight:800;color:#e65100;margin-bottom:8px;">Approval Pending</div>
-        <div style="font-size:14px;color:#555;line-height:1.7;margin-bottom:20px;">
-            आपकी दुकान registration request भेज दी गई है।<br>
-            Admin जल्द verify करेगा — आमतौर पर <strong>24 घंटे</strong> में।<br><br>
-            Approve होने के बाद आप यहाँ items add कर सकेंगे।
-        </div>
-        <div id="pendingShopName" style="background:#fff3e0;border-radius:12px;padding:14px;margin-bottom:20px;font-weight:700;color:#e65100;font-size:15px;"></div>
-        <button onclick="doSignOut()" style="width:100%;padding:12px;background:#f5f5f5;border:1px solid #ddd;border-radius:12px;font-size:14px;cursor:pointer;font-family:inherit;">
-            Logout
-        </button>
-        <p style="font-size:12px;color:#aaa;margin-top:16px;">
-            सहायता के लिए WhatsApp करें: <a href="https://wa.me/91XXXXXXXXXX" style="color:#2e7d32;">Gramoo Support</a>
-        </p>
-    </div>
-</div>
-
-<!-- APPROVED SCREEN -->
-<div id="approvedScreen" style="display:none; min-height:100vh; background:linear-gradient(160deg,#1b5e20,#2e7d32); align-items:center; justify-content:center; padding:20px;">
-    <div style="background:white;border-radius:24px;padding:40px 28px;width:100%;max-width:420px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
-        <div style="font-size:64px;margin-bottom:8px;animation:popIn 0.5s ease;">🎉</div>
-        <div style="font-size:24px;font-weight:800;color:#1b5e20;margin-bottom:8px;">बधाई हो!</div>
-        <div style="font-size:15px;font-weight:700;color:#2e7d32;margin-bottom:16px;" id="approvedShopName"></div>
-        <div style="font-size:14px;color:#555;line-height:1.8;margin-bottom:16px;background:#f1f8e9;border-radius:12px;padding:16px;">
-            ✅ आपकी दुकान <b>Gramoo पर Live</b> हो गई है!<br>
-            अब आप items add कर सकते हैं,<br>
-            किसानों की demand देख सकते हैं।
-        </div>
-        <div id="approvedTime" style="font-size:12px;color:#888;margin-bottom:8px;"></div>
-        <div style="font-size:12px;color:#aaa;margin-bottom:24px;">
-            📧 Confirmation email आपके registered email पर भेज दी गई है।
-        </div>
-        <button onclick="goToPortal()"
-            style="width:100%;padding:14px;background:#1b5e20;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">
-            🏪 अपना Portal खोलें →
-        </button>
-    </div>
-</div>
-<style>
-@keyframes popIn { 0%{transform:scale(0.5);opacity:0} 70%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
-</style>
-
-<!-- REGISTRATION FORM SCREEN -->
-<div id="registerScreen" style="display:none; min-height:100vh; background:linear-gradient(160deg,#1b5e20,#2e7d32); align-items:center; justify-content:center; padding:20px;">
-    <div style="background:white;border-radius:24px;padding:32px 24px;width:100%;max-width:440px;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
-        <div style="text-align:center;margin-bottom:24px;">
-            <div style="font-size:48px;">🏪</div>
-            <div style="font-size:20px;font-weight:800;color:#1b5e20;margin-top:6px;">दुकान Registration</div>
-            <div style="font-size:13px;color:#777;margin-top:4px;">एक बार भरें — Admin verify करेगा</div>
-        </div>
-        <div class="fgroup"><label>दुकान का नाम *</label><input type="text" id="regShopName" placeholder="जैसे: रामलाल एग्रो सेंटर"></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <div class="fgroup" style="flex:1;min-width:140px"><label>जिला *</label><input type="text" id="regDistrict" placeholder="बुलंदशहर"></div>
-            <div class="fgroup" style="flex:1;min-width:140px"><label>क्षेत्र/गांव *</label><input type="text" id="regArea" placeholder="अनूपशहर"></div>
-        </div>
-        <div class="fgroup">
-            <label>WhatsApp नंबर *</label>
-            <div class="phone-wrap">
-                <span class="phone-prefix">+91</span>
-                <input type="tel" id="regPhone" placeholder="10 अंक" maxlength="10" onkeypress="return event.charCode>=48&&event.charCode<=57">
-            </div>
-        </div>
-        <div class="fgroup"><label>दुकान Category *</label>
-            <select id="regCategory">
-                <option value="general">🌾 General Agri Store</option>
-                <option value="fertilizer">🌿 खाद भण्डार</option>
-                <option value="seeds">🌱 बीज भण्डार</option>
-                <option value="pesticide">💊 कीटनाशक Store</option>
-                <option value="equipment">🚜 कृषि यंत्र</option>
-                <option value="animal">🐄 पशु आहार Store</option>
-            </select>
-        </div>
-        <div class="fgroup">
-            <label>📍 दुकान की GPS Location *</label>
-            <input type="hidden" id="regLat"><input type="hidden" id="regLng">
-            <div id="regGpsStatus" style="display:none;background:#e8f5e9;border-radius:8px;padding:8px 12px;font-size:12px;color:#2e7d32;margin-bottom:8px;"></div>
-            <button type="button" id="btnRegGps" onclick="getGpsForReg()"
-                style="width:100%;padding:10px;background:#1565c0;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">
-                📡 GPS से Location लें (जरूरी)
-            </button>
-        </div>
-        <div class="fgroup"><label>दुकान का पूरा पता</label><textarea id="regAddress" rows="2" placeholder="जैसे: मुख्य बाजार, अनूपशहर..."></textarea></div>
-        <button onclick="submitRegistration()"
-            style="width:100%;padding:14px;background:#1b5e20;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;">
-            📨 Registration Request भेजें
-        </button>
-        <button onclick="doSignOut()"
-            style="width:100%;padding:10px;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;font-family:inherit;margin-top:10px;">
-            Logout
-        </button>
-    </div>
-</div>
-
-<!-- MAIN APP -->
-<div id="mainApp">
-
-    <div class="header">
-        <div class="header-logo">
-            🌾 Gramoo Dukan
-            <a href="index.html">← मुख्य साइट</a>
-        </div>
-        <div class="header-right">
-            <div class="user-chip">
-                <img id="userPhoto" src="" alt="">
-                <span id="userName">...</span>
-            </div>
-            <button class="btn-logout" id="btnLogout">Logout</button>
-        </div>
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+    <div class="top-bar">
+        <div class="top-bar-left">🌾 Gramoo Admin <span id="adminEmail"></span></div>
+        <button class="btn-logout" id="btnLogout">Logout</button>
     </div>
 
     <div class="nav-tabs">
-        <button class="nav-tab active" data-tab="dashboard">📊 Dashboard</button>
-        <button class="nav-tab" data-tab="inventory">📦 Inventory</button>
-        <button class="nav-tab" data-tab="add-items">➕ Items जोड़ें</button>
-        <button class="nav-tab" data-tab="mandi">🤝 किसान Demand</button>
-        <button class="nav-tab" data-tab="prices">💰 Price Compare</button>
-        <button class="nav-tab" data-tab="requests">📋 Requests</button>
-        <button class="nav-tab" data-tab="profile">🏪 Profile</button>
+        <button class="nav-tab active" data-sec="dashboard">📊 Dashboard</button>
+        <button class="nav-tab" data-sec="shops">🏪 Dukan Requests <span class="nav-badge" id="shopBadge" style="display:none">0</span></button>
+        <button class="nav-tab" data-sec="listings">📋 Listings</button>
+        <button class="nav-tab" data-sec="categories">🏷️ Categories</button>
+        <button class="nav-tab" data-sec="settings">⚙️ Settings</button>
+        <button class="nav-tab" data-sec="feedback">💬 Feedback</button>
+        <button class="nav-tab" data-sec="reports">🚨 Reports</button>
+        <button class="nav-tab" data-sec="traffic">📈 Traffic</button>
     </div>
 
     <div class="content">
 
-        <!-- ── DASHBOARD ── -->
-        <div class="tab-sec active" id="tab-dashboard">
-            <div id="setupBannerWrap"></div>
-            <div id="shopProfileWrap"></div>
-            <div class="stats-row">
-                <div class="stat-card"><div class="s-num" id="dTotalItems">—</div><div class="s-lbl">📦 Total Items</div></div>
-                <div class="stat-card"><div class="s-num" id="dInStock">—</div><div class="s-lbl">✅ In Stock</div></div>
-                <div class="stat-card"><div class="s-num" id="dOutStock">—</div><div class="s-lbl">❌ Out of Stock</div></div>
-                <div class="stat-card"><div class="s-num" id="dPendingReq">—</div><div class="s-lbl">⏳ Pending Requests</div></div>
-            </div>
-            <div class="sec-title">⚡ जल्दी Stock Update करें</div>
-            <div id="quickUpdateGrid" class="inv-grid"></div>
-        </div>
-
-        <!-- ── INVENTORY ── -->
-        <div class="tab-sec" id="tab-inventory">
-            <div class="sec-title">
-                📦 मेरी Inventory
-                <button class="btn-add-to-inv" style="font-size:13px;padding:7px 14px;" onclick="switchTab('add-items')">+ Item जोड़ें</button>
-            </div>
-            <div id="inventoryGrid" class="inv-grid"></div>
-        </div>
-
-        <!-- ── ADD ITEMS ── -->
-        <div class="tab-sec" id="tab-add-items">
-            <div class="add-item-box">
-                <h3>📋 Master List से Item चुनें</h3>
-                <div class="filter-row">
-                    <select id="catFilter">
-                        <option value="">सभी Category</option>
-                        <option value="खाद">🌿 खाद / Fertilizers</option>
-                        <option value="बीज">🌱 बीज / Seeds</option>
-                        <option value="कीटनाशक">💊 कीटनाशक / Pesticides</option>
-                        <option value="यंत्र">🚜 कृषि यंत्र / Equipment</option>
-                        <option value="पशु आहार">🐄 पशु आहार / Animal Feed</option>
-                        <option value="अन्य">🧪 अन्य / Other</option>
-                    </select>
-                    <input type="text" id="itemSearch" placeholder="🔍 Item खोजें...">
+        <!-- DASHBOARD -->
+        <div class="section active" id="sec-dashboard">
+            <div class="stats-grid">
+                <div class="stat-card" onclick="goTo('shops')">
+                    <div class="num alert" id="dPendingShops">—</div>
+                    <div class="lbl">⏳ Pending Dukan</div>
                 </div>
-                <div class="master-grid" id="masterGrid"></div>
-
-                <!-- Item Config Form -->
-                <div class="item-config" id="itemConfig">
-                    <h4 id="configTitle">Item Configure करें</h4>
-                    <div class="cfg-row">
-                        <div class="cfg-group">
-                            <label>Brand / Company *</label>
-                            <select id="cfgBrand"></select>
-                        </div>
-                        <div class="cfg-group">
-                            <label>Pack Size *</label>
-                            <select id="cfgPack"></select>
-                        </div>
-                    </div>
-                    <div class="cfg-row">
-                        <div class="cfg-group">
-                            <label>कीमत (₹) *</label>
-                            <input type="number" id="cfgPrice" placeholder="जैसे: 1350" min="1">
-                        </div>
-                        <div class="cfg-group">
-                            <label>उपलब्ध मात्रा</label>
-                            <input type="number" id="cfgQty" placeholder="जैसे: 50 (bags/kg)" min="0">
-                        </div>
-                    </div>
-                    <div class="cfg-row">
-                        <div class="cfg-group">
-                            <label>Stock Status</label>
-                            <select id="cfgStock">
-                                <option value="true">✅ Available है</option>
-                                <option value="false">❌ Available नहीं</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button class="btn-add-to-inv" onclick="addItemToInventory()">✅ Inventory में जोड़ें</button>
+                <div class="stat-card">
+                    <div class="num" id="dApprovedShops">—</div>
+                    <div class="lbl">✅ Approved Dukan</div>
                 </div>
+                <div class="stat-card"><div class="num" id="dTotalSell">—</div><div class="lbl">🌾 Sell Listings</div></div>
+                <div class="stat-card"><div class="num" id="dTotalBuy">—</div><div class="lbl">🛒 Buy Listings</div></div>
+                <div class="stat-card"><div class="num" id="dTotalShop">—</div><div class="lbl">🏪 Shop Listings</div></div>
+                <div class="stat-card"><div class="num" id="dTotalSuchna">—</div><div class="lbl">📢 Suchna</div></div>
+                <div class="stat-card"><div class="num" id="dTotalFeedback">—</div><div class="lbl">💬 Feedback</div></div>
+                <div class="stat-card"><div class="num" id="dTotalReports">—</div><div class="lbl">🚨 Pending Reports</div></div>
             </div>
 
-            <!-- Request New Item -->
-            <div class="request-box">
-                <h3>🙋 नया Item नहीं मिला?</h3>
-                <p>अगर आपके पास ऐसा item है जो ऊपर list में नहीं है — हमें बताएं। Admin approve करेगा तो सभी दुकानदारों को मिलेगा।</p>
-                <div class="req-row" style="margin-bottom:10px">
-                    <input type="text" id="reqItemName" placeholder="Item का नाम (Hindi/English) *">
-                    <input type="text" id="reqBrand" placeholder="Brand/Company नाम">
-                </div>
-                <div class="req-row">
-                    <input type="text" id="reqReason" placeholder="यह item क्यों जरूरी है?">
-                    <button class="btn-send-req" onclick="sendItemRequest()">📨 Request भेजें</button>
-                </div>
-                <div class="req-done" id="reqDone">✅ Request भेज दी! Admin जल्द देखेगा।</div>
-            </div>
-        </div>
-
-        <!-- ── MANDI BUYER CONNECTION ── -->
-        <div class="tab-sec" id="tab-mandi">
-            <div class="sec-title">🤝 किसान Demand — नज़दीकी ज़रूरतें</div>
-            <div style="background:#fff3e0;border-radius:12px;padding:14px;margin-bottom:16px;border-left:4px solid #e65100;">
-                <div style="font-size:13px;color:#e65100;font-weight:700;">📢 इस क्षेत्र के किसानों की ज़रूरतें</div>
-                <div style="font-size:12px;color:#777;margin-top:4px;">जो किसान कुछ खरीदना चाहते हैं — उनकी demand यहाँ दिखती है</div>
-            </div>
-            <div id="mandiDemandList"></div>
-        </div>
-
-        <!-- ── PRICE COMPARISON ── -->
-        <div class="tab-sec" id="tab-prices">
-            <div class="sec-title">💰 नज़दीकी दुकानों के भाव</div>
-            <div style="background:#e3f2fd;border-radius:12px;padding:14px;margin-bottom:16px;border-left:4px solid #1565c0;">
-                <div style="font-size:13px;color:#1565c0;font-weight:700;">📊 Same item — अलग-अलग दुकानों का भाव</div>
-                <div style="font-size:12px;color:#777;margin-top:4px;">देखें कि आपका भाव बाजार में कहाँ है</div>
-            </div>
-            <div style="margin-bottom:14px;">
-                <select id="priceCompareItem" onchange="loadPriceComparison()"
-                    style="width:100%;padding:10px 14px;border:1px solid #c8e6c9;border-radius:10px;font-size:14px;font-family:inherit;">
-                    <option value="">— Item चुनें —</option>
-                </select>
-            </div>
-            <div id="priceCompareResult"></div>
-        </div>
-
-        <!-- ── REQUESTS ── -->
-        <div class="tab-sec" id="tab-requests">
-            <div class="sec-title">📋 मेरी Item Requests</div>
-            <div id="requestsList"></div>
-        </div>
-
-        <!-- ── PROFILE ── -->
-        <div class="tab-sec" id="tab-profile">
-            <div class="sec-title">🏪 दुकान की जानकारी</div>
-            <div style="background:white;border-radius:16px;padding:24px;border:1px solid var(--border);">
-                <div class="fgroup"><label>दुकान का नाम *</label><input type="text" id="pShopName" placeholder="जैसे: रामलाल एग्रो सेंटर"></div>
-                <div style="display:flex;gap:12px;flex-wrap:wrap">
-                    <div class="fgroup" style="flex:1;min-width:160px"><label>जिला *</label><input type="text" id="pDistrict" placeholder="जैसे: बुलंदशहर"></div>
-                    <div class="fgroup" style="flex:1;min-width:160px"><label>क्षेत्र / गांव *</label><input type="text" id="pArea" placeholder="जैसे: अनूपशहर"></div>
-                </div>
-                <div class="fgroup">
-                    <label>WhatsApp नंबर *</label>
-                    <div class="phone-wrap">
-                        <span class="phone-prefix">+91</span>
-                        <input type="tel" id="pPhone" placeholder="10 अंक" maxlength="10" onkeypress="return event.charCode>=48&&event.charCode<=57">
-                    </div>
-                </div>
-                <div class="fgroup"><label>दुकान का पता</label><textarea id="pAddress" rows="2" placeholder="पूरा पता लिखें..."></textarea></div>
-                <div class="fgroup">
-                    <label>📍 Location Update करें (GPS)</label>
-                    <div id="gpsStatusProfile" style="background:#f1f8e9;border:1px solid #c8e6c9;border-radius:10px;padding:10px 14px;font-size:13px;color:#2e7d32;margin-bottom:8px;display:none;"></div>
-                    <input type="hidden" id="pLat">
-                    <input type="hidden" id="pLng">
-                    <button type="button" onclick="getGpsProfile()"
-                        style="width:100%;padding:10px;background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">
-                        📡 GPS से Location Update करें
-                    </button>
-                </div>
-                <div class="fgroup"><label>दुकान की Category</label>
-                    <select id="pCategory">
-                        <option value="general">🌾 General Agri Store</option>
-                        <option value="seeds">🌱 Beej Bhandar</option>
-                        <option value="fertilizer">🌿 Khad Bhandar</option>
-                        <option value="pesticide">💊 Keetnaashak Store</option>
-                        <option value="equipment">🚜 Krishi Yantra</option>
-                        <option value="animal">🐄 Pashu Aahar Store</option>
-                    </select>
-                </div>
-                <button class="btn-add-to-inv" style="width:100%;padding:13px;font-size:15px;" onclick="saveShopProfile()">
-                    💾 Profile Save करें
+            <!-- Pending requests alert -->
+            <div id="pendingAlert" style="display:none;background:#fff3e0;border:2px solid #ff9800;border-radius:12px;padding:16px;margin-bottom:20px;">
+                <div style="font-size:15px;font-weight:700;color:#e65100;margin-bottom:4px;">⚠️ Dukan Registration Pending!</div>
+                <div id="pendingAlertText" style="font-size:13px;color:#555;margin-bottom:10px;"></div>
+                <button class="btn-approve" onclick="goTo('shops')" style="font-size:13px;padding:7px 16px;">
+                    🏪 Requests Dekhein →
                 </button>
             </div>
+
+            <div class="sec-title">🕐 Aaj Ki Nayi Listings</div>
+            <div id="recentListings"><div class="loading">Load ho raha hai...</div></div>
         </div>
 
-    </div><!-- /content -->
-</div><!-- /mainApp -->
+        <!-- SHOP REGISTRATION REQUESTS -->
+        <div class="section" id="sec-shops">
+            <div class="sec-title">
+                🏪 Dukan Registration Requests
+                <span id="shopCount" style="font-size:13px;font-weight:400;color:var(--muted);"></span>
+            </div>
 
-<!-- SHOP SETUP MODAL -->
-<div class="modal-overlay" id="setupModal">
+            <div class="reg-filter-tabs">
+                <button class="reg-filter-tab active" data-filter="pending"  onclick="filterShopReqs('pending',this)">⏳ Pending</button>
+                <button class="reg-filter-tab"        data-filter="approved" onclick="filterShopReqs('approved',this)">✅ Approved</button>
+                <button class="reg-filter-tab"        data-filter="rejected" onclick="filterShopReqs('rejected',this)">❌ Rejected</button>
+                <button class="reg-filter-tab"        data-filter="deleted"  onclick="filterShopReqs('deleted',this)">🗑️ Deleted</button>
+                <button class="reg-filter-tab"        data-filter="demo"     onclick="filterShopReqs('demo',this)">🤖 Demo</button>
+                <button class="reg-filter-tab"        data-filter="all"      onclick="filterShopReqs('all',this)">📋 Sabhi</button>
+            </div>
+
+            <div id="shopRequestsList"><div class="loading">Load ho raha hai...</div></div>
+        </div>
+
+        <!-- LISTINGS -->
+        <div class="section" id="sec-listings">
+            <div class="filter-bar">
+                <input type="text" id="listingSearch" placeholder="🔍 Naam, jagah dhundho...">
+                <select id="listingType">
+                    <option value="sell">🌾 Sell</option>
+                    <option value="buy">🛒 Buy</option>
+                    <option value="shop">🏪 Shop</option>
+                    <option value="suchna">📢 Suchna</option>
+                </select>
+            </div>
+            <div class="table-wrap">
+                <div id="listingsTable"><div class="loading">Load ho raha hai...</div></div>
+            </div>
+        </div>
+
+        <!-- CATEGORIES -->
+        <div class="section" id="sec-categories">
+            <div class="sec-title">🏷️ Categories Manager</div>
+            <div class="cat-section">
+                <div class="cat-title">🌾 Anaaj Categories</div>
+                <div class="cat-list" id="catGrain"></div>
+                <div class="add-cat-row">
+                    <input type="text" id="newGrain" placeholder="Nayi category... जैसे: ज्वार">
+                    <button class="btn-green" onclick="addCategory('grain')">+ Add</button>
+                </div>
+            </div>
+            <div class="cat-section">
+                <div class="cat-title">🏪 Shop Categories</div>
+                <div class="cat-list" id="catShop"></div>
+                <div class="add-cat-row">
+                    <input type="text" id="newShop" placeholder="Nayi category... जैसे: जैविक खाद">
+                    <button class="btn-green" onclick="addCategory('shop')">+ Add</button>
+                </div>
+            </div>
+            <div class="cat-section">
+                <div class="cat-title">📢 Suchna Categories</div>
+                <div class="cat-list" id="catSuchna"></div>
+                <div class="add-cat-row">
+                    <input type="text" id="newSuchna" placeholder="Nayi category... जैसे: मौसम सूचना">
+                    <button class="btn-green" onclick="addCategory('suchna')">+ Add</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SITE SETTINGS -->
+        <div class="section" id="sec-settings">
+            <div class="sec-title">⚙️ Site Settings — Tabs On/Off</div>
+            <div class="settings-box">
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>🌾 Anaaj Mandi</h4>
+                        <p>Sell/Buy listings tab — hamesha on rahega</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked disabled>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>🏪 Naz̤diki Kisan Dukan</h4>
+                        <p>Registered dukaanon ki listing tab</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleShop">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>📢 Sarkari Suchna Patt</h4>
+                        <p>Sarkari yojana, khad uplabdhata suchna tab</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleSuchna">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="settings-note">
+                ⚠️ Tab band karne par woh tab <b>users ko nahi dikhega</b>. Baad mein kabhi bhi on kar sakte hain.
+            </div>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div class="section" id="sec-feedback">
+            <div class="sec-title">💬 User Feedback</div>
+            <div id="feedbackList"><div class="loading">Load ho raha hai...</div></div>
+        </div>
+
+        <!-- REPORTS -->
+        <div class="section" id="sec-reports">
+            <div class="sec-title">🚨 Reported Listings</div>
+            <div class="table-wrap">
+                <div id="reportsTable"><div class="loading">Load ho raha hai...</div></div>
+            </div>
+        </div>
+
+        <!-- TRAFFIC -->
+        <div class="section" id="sec-traffic">
+            <div class="sec-title">📈 Website Traffic</div>
+            <div class="today-stats">
+                <div class="today-card"><div class="t-num" id="tSell">—</div><div class="t-lbl">Total Sell</div></div>
+                <div class="today-card"><div class="t-num" id="tBuy">—</div><div class="t-lbl">Total Buy</div></div>
+                <div class="today-card"><div class="t-num" id="tShop">—</div><div class="t-lbl">Total Shop</div></div>
+                <div class="today-card"><div class="t-num" id="tSuchna">—</div><div class="t-lbl">Total Suchna</div></div>
+            </div>
+            <div class="traffic-note">
+                <div style="font-size:48px;margin-bottom:12px">📊</div>
+                <h3 style="margin-bottom:8px">Google Analytics — Visitor Data</h3>
+                <p style="color:#6a7b6a;font-size:14px;margin-bottom:16px">Kitne log aaye, kahan se aaye — sab Google Analytics mein dikhega.</p>
+                <a href="https://analytics.google.com" target="_blank"
+                   style="display:inline-block;background:#2e7d32;color:white;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">
+                    📊 Google Analytics Kholo
+                </a>
+                <div style="margin-top:16px;padding:14px;background:#f1f8e9;border-radius:10px;border:1px solid #c8e6c9;text-align:left;font-size:13px;">
+                    <b style="color:#2e7d32">Measurement ID:</b> G-S9HNMVR99Z<br>
+                    <b style="color:#2e7d32">Property:</b> gramoo-44d83
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
     <div class="modal">
-        <h3>🏪 अपनी दुकान Setup करें</h3>
-        <p>पहले अपनी दुकान की जानकारी भरें — फिर items add करें</p>
-        <div class="fgroup"><label>दुकान का नाम *</label><input type="text" id="mShopName" placeholder="जैसे: रामलाल एग्रो सेंटर"></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <div class="fgroup" style="flex:1;min-width:140px"><label>जिला *</label><input type="text" id="mDistrict" placeholder="बुलंदशहर"></div>
-            <div class="fgroup" style="flex:1;min-width:140px"><label>क्षेत्र *</label><input type="text" id="mArea" placeholder="अनूपशहर"></div>
+        <h3>✏️ Listing Edit Karo</h3>
+        <input type="hidden" id="editId">
+        <input type="hidden" id="editCollection">
+        <div id="editFields"></div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeEdit()">Cancel</button>
+            <button class="btn-green" style="flex:1" onclick="saveEdit()">✅ Save Karo</button>
         </div>
+    </div>
+</div>
+
+<!-- REJECT MODAL -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="reject-modal">
+        <h3>❌ Request Reject Karo</h3>
+        <p style="font-size:13px;color:#555;margin-bottom:14px;">Reject karne ka karan likho — dukandaar ko WhatsApp pe bata sakte ho.</p>
+        <input type="hidden" id="rejectUid">
+        <input type="hidden" id="rejectReqId">
         <div class="fgroup">
-            <label>WhatsApp नंबर *</label>
-            <div class="phone-wrap">
-                <span class="phone-prefix">+91</span>
-                <input type="tel" id="mPhone" placeholder="10 अंक" maxlength="10" onkeypress="return event.charCode>=48&&event.charCode<=57">
-            </div>
+            <label>Reject Karan (optional)</label>
+            <textarea id="rejectReason" placeholder="Jaise: Document sahi nahi, location galat hai..."></textarea>
         </div>
-        <div class="fgroup"><label>दुकान Category</label>
-            <select id="mCategory">
-                <option value="general">🌾 General Agri Store</option>
-                <option value="seeds">🌱 Beej Bhandar</option>
-                <option value="fertilizer">🌿 Khad Bhandar</option>
-                <option value="pesticide">💊 Keetnaashak Store</option>
-                <option value="equipment">🚜 Krishi Yantra</option>
-                <option value="animal">🐄 Pashu Aahar Store</option>
-            </select>
-        </div>
-        <!-- GPS Location -->
-        <div class="fgroup">
-            <label>📍 दुकान की Location (GPS) *</label>
-            <div id="gpsStatusSetup" style="background:#f1f8e9;border:1px solid #c8e6c9;border-radius:10px;padding:10px 14px;font-size:13px;color:#2e7d32;margin-bottom:8px;display:none;">
-                ✅ Location मिल गई!
-            </div>
-            <input type="hidden" id="mLat">
-            <input type="hidden" id="mLng">
-            <button type="button" id="btnGetGpsSetup" onclick="getGpsSetup()"
-                style="width:100%;padding:11px;background:#1565c0;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">
-                📡 GPS से Location लें (जरूरी)
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
+            <button style="flex:2;padding:10px;background:#c62828;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;" onclick="confirmReject()">
+                ❌ Reject Karo
             </button>
-            <div style="font-size:11px;color:#888;margin-top:5px;">⚠️ दुकान की सही जगह सेव होगी — किसान नज़दीकी दुकान देख सकेंगे</div>
-        </div>
-        <div class="modal-btns">
-            <button class="btn-cancel" onclick="closeSetupModal()">बाद में</button>
-            <button class="btn-save" onclick="saveShopSetup()">✅ दुकान बनाएं</button>
         </div>
     </div>
 </div>
-
-<!-- PRICE EDIT MODAL -->
-<div class="modal-overlay" id="priceModal">
-    <div class="price-modal">
-        <h3 id="priceModalTitle">कीमत Update करें</h3>
-        <input type="number" class="price-input-big" id="priceInput" placeholder="₹0">
-        <div style="margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:700;color:#5a7a5a;display:block;margin-bottom:6px;">उपलब्ध मात्रा (bags/kg)</label>
-            <input type="number" id="qtyInput" placeholder="जैसे: 50" min="0"
-                style="width:100%;padding:10px 14px;border:1px solid #c8e6c9;border-radius:10px;font-size:16px;font-family:inherit;">
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:12px;">
-            <button class="btn-toggle-stock in" id="priceStockBtn" onclick="togglePriceStock()">✅ In Stock</button>
-        </div>
-        <div class="modal-btns">
-            <button class="btn-cancel" onclick="closePriceModal()">Cancel</button>
-            <button class="btn-save" onclick="savePriceUpdate()">💾 Update करें</button>
-        </div>
-    </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, collectionGroup, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
-         deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp }
+import { getFirestore, collection, getDocs, getDoc, doc, deleteDoc, updateDoc,
+         addDoc, onSnapshot, query, orderBy, where, serverTimestamp, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ── Firebase ──
-const app  = initializeApp({
+const ADMIN_EMAIL = "kr.deepak2509@gmail.com";
+const ADMIN_DEMO_SHOPS = [
+    { id:"demo1", shopName:"रामलाल एग्रो सेंटर", area:"अनूपशहर", district:"बुलंदशहर", phone:"SAMPLE", lat:28.40, lng:77.85, category: 'general' },
+    { id:"demo2", shopName:"किसान बीज भण्डार", area:"खुर्जा", district:"बुलंदशहर", phone:"SAMPLE", lat:28.25, lng:77.85, category: 'बीज' },
+    { id:"demo3", shopName:"श्याम कृषि सेवा केंद्र", area:"सियाना", district:"बुलंदशहर", phone:"SAMPLE", lat:28.35, lng:77.90, category: 'कीटनाशक' },
+];
+
+
+
+const app = initializeApp({
     apiKey:            "AIzaSyAeeN9ijnSuA3IyV43QQsiEshTrRdEjL0A",
     authDomain:        "gramoo-44d83.firebaseapp.com",
     projectId:         "gramoo-44d83",
@@ -847,960 +446,514 @@ const app  = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// Window globals — Report Problem script ke liye (module scope ke bahar accessible)
-window._db              = db;
-window._addDoc          = addDoc;
-window._collection      = collection;
-window._serverTimestamp = serverTimestamp;
-
-// ── Master List ──
-const MASTER = [
-    // खाद / Fertilizers
-    { id:'dap',    hi:'डीएपी',           en:'DAP',              cat:'खाद',      brands:['IFFCO','KRIBHCO','Zuari','NFL','Coromandel'],         packs:['50kg'] },
-    { id:'urea',   hi:'यूरिया',           en:'Urea',             cat:'खाद',      brands:['IFFCO','KRIBHCO','NFL','Chambal'],                    packs:['45kg'] },
-    { id:'npk',    hi:'एनपीके',           en:'NPK',              cat:'खाद',      brands:['IFFCO','Coromandel','Zuari','Khaitan'],               packs:['50kg'] },
-    { id:'ssp',    hi:'एसएसपी',           en:'SSP',              cat:'खाद',      brands:['IFFCO','Zuari','Khaitan','Local'],                    packs:['50kg'] },
-    { id:'mop',    hi:'पोटाश (MOP)',       en:'MOP/Potash',       cat:'खाद',      brands:['IFFCO','SQM','Local'],                               packs:['50kg'] },
-    { id:'zinc',   hi:'जिंक सल्फेट',       en:'Zinc Sulphate',    cat:'खाद',      brands:['Aries','IFFCO','Swal'],                              packs:['1kg','25kg'] },
-    { id:'vermi',  hi:'वर्मी कम्पोस्ट',    en:'Vermi Compost',    cat:'खाद',      brands:['Local','Organic India'],                             packs:['5kg','10kg','50kg'] },
-    { id:'humic',  hi:'ह्यूमिक एसिड',      en:'Humic Acid',       cat:'खाद',      brands:['Multiplex','Aries','Anand'],                         packs:['500g','1kg','5kg'] },
-    { id:'boron',  hi:'बोरोन',             en:'Boron',            cat:'खाद',      brands:['Aries','Swal','Multiplex'],                          packs:['500g','1kg'] },
-
-    // बीज / Seeds
-    { id:'wheat',  hi:'गेहूं बीज',         en:'Wheat Seed',       cat:'बीज',      brands:['HD-2967','DBW-187','PBW-725','UP-2338'],              packs:['5kg','10kg','40kg'] },
-    { id:'paddy',  hi:'धान बीज',           en:'Paddy Seed',       cat:'बीज',      brands:['Pusa Basmati','Swarna','MTU-7029','Syngenta'],        packs:['5kg','10kg'] },
-    { id:'mustard',hi:'सरसों बीज',          en:'Mustard Seed',     cat:'बीज',      brands:['Pusa Bold','NPJ-93','Pioneer','Advanta'],             packs:['1kg','5kg'] },
-    { id:'maize',  hi:'मक्का बीज',          en:'Maize Seed',       cat:'बीज',      brands:['Pioneer','Syngenta','DKC'],                          packs:['1kg','5kg'] },
-    { id:'bajra',  hi:'बाजरा बीज',          en:'Bajra Seed',       cat:'बीज',      brands:['HHB-67','Pioneer','Nuziveedu'],                       packs:['1kg','5kg'] },
-    { id:'tomato', hi:'टमाटर बीज',          en:'Tomato Seed',      cat:'बीज',      brands:['Syngenta','Mahyco','Nunhems','Namdhari'],             packs:['10g','50g'] },
-    { id:'onion',  hi:'प्याज बीज',          en:'Onion Seed',       cat:'बीज',      brands:['Nasik Red','Agrifound','Mahyco'],                     packs:['500g','1kg'] },
-    { id:'chilli', hi:'मिर्च बीज',           en:'Chilli Seed',      cat:'बीज',      brands:['Syngenta','Indo-American','Mahyco'],                  packs:['10g','50g'] },
-    { id:'moong',  hi:'मूंग/उड़द बीज',       en:'Moong/Urad Seed',  cat:'बीज',      brands:['PDM-139','SML-668','Local'],                         packs:['5kg','10kg'] },
-
-    // कीटनाशक / Pesticides
-    { id:'chlor',  hi:'क्लोरपाइरीफॉस',      en:'Chlorpyrifos',     cat:'कीटनाशक', brands:['Dursban','Coroban','Dorsan'],                         packs:['500ml','1L'] },
-    { id:'imida',  hi:'इमिडाक्लोप्रिड',      en:'Imidacloprid',     cat:'कीटनाशक', brands:['Confidor','Tatamida','Admire'],                       packs:['100ml','250ml'] },
-    { id:'cyper',  hi:'साइपरमेथ्रिन',        en:'Cypermethrin',     cat:'कीटनाशक', brands:['Cyper','Ripcord','Demon'],                           packs:['500ml','1L'] },
-    { id:'manco',  hi:'मैंकोज़ेब',            en:'Mancozeb',         cat:'कीटनाशक', brands:['Dithane M-45','Indofil','Kavach'],                    packs:['250g','500g','1kg'] },
-    { id:'carb',   hi:'कार्बेन्डाजिम',        en:'Carbendazim',      cat:'कीटनाशक', brands:['Bavistin','Derosal','Roko'],                         packs:['100g','500g'] },
-    { id:'glyph',  hi:'ग्लाइफोसेट',           en:'Glyphosate',       cat:'कीटनाशक', brands:['Roundup','Glycel','Spark'],                          packs:['500ml','1L'] },
-    { id:'tricho', hi:'ट्राइकोडर्मा',          en:'Trichoderma (Bio)',cat:'कीटनाशक', brands:['Biofit','Ecosom','Multiplex'],                        packs:['250g','1kg'] },
-
-    // यंत्र / Equipment
-    { id:'knap',   hi:'नैपसैक स्प्रेयर',     en:'Knapsack Sprayer', cat:'यंत्र',   brands:['Neptune','Swan','Aspee'],                            packs:['16L','20L'] },
-    { id:'power',  hi:'पावर स्प्रेयर',        en:'Power Sprayer',    cat:'यंत्र',   brands:['Neptune','Kisankraft','Aspee'],                       packs:['16L','20L'] },
-    { id:'drip',   hi:'ड्रिप सिस्टम',          en:'Drip System',      cat:'यंत्र',   brands:['Netafim','Jain','Finolex'],                          packs:['Per Acre Kit'] },
-    { id:'tarp',   hi:'तिरपाल',               en:'Tarpaulin',        cat:'यंत्र',   brands:['Garware','SRF','Local'],                             packs:['12x9ft','18x12ft','24x18ft'] },
-    { id:'pipe',   hi:'पाइप सेट',              en:'Pipe Set',         cat:'यंत्र',   brands:['Supreme','Finolex','Prince'],                        packs:['Per Meter','Per Set'] },
-    { id:'tools',  hi:'खुरपी/दरांती',           en:'Hand Tools',       cat:'यंत्र',   brands:['Local','Nimbkar'],                                   packs:['Per Piece'] },
-
-    // पशु आहार / Animal Feed
-    { id:'cattle', hi:'कैटल फीड',             en:'Cattle Feed',      cat:'पशु आहार',brands:['Godrej Agrovet','Amul','Purina','Khanna'],            packs:['25kg','50kg'] },
-    { id:'poultry',hi:'पोल्ट्री फीड',           en:'Poultry Feed',     cat:'पशु आहार',brands:["Venky's",'Godrej','Suguna'],                          packs:['25kg','50kg'] },
-    { id:'mineral',hi:'मिनरल मिक्सचर',          en:'Mineral Mixture',  cat:'पशु आहार',brands:['Godrej','Tata Rallis','Provimi'],                     packs:['1kg','5kg'] },
-    { id:'mustcake',hi:'सरसों खल',             en:'Mustard Cake',     cat:'पशु आहार',brands:['Local','Patanjali'],                                  packs:['25kg','50kg'] },
-    { id:'bypass', hi:'बाईपास प्रोटीन',         en:'Bypass Protein',   cat:'पशु आहार',brands:['Godrej','Kemin','Provimi'],                           packs:['25kg'] },
-
-    // अन्य / Other
-    { id:'mulch',  hi:'मल्चिंग फिल्म',          en:'Mulching Film',    cat:'अन्य',    brands:['Garware','SRF'],                                     packs:['25 micron','30 micron'] },
-    { id:'soil',   hi:'मिट्टी जांच किट',          en:'Soil Testing Kit', cat:'अन्य',    brands:['IFFCO','Local'],                                     packs:['Per Kit'] },
-    { id:'coco',   hi:'कोको पीट',               en:'Coco Peat',        cat:'अन्य',    brands:['Classimax','Local'],                                 packs:['5kg','50L'] },
-    { id:'pherom', hi:'फेरोमोन ट्रैप',            en:'Pheromone Trap',   cat:'अन्य',    brands:['Pheromon','Local'],                                  packs:['Per Set'] },
-];
-
-const catIcons = { 'खाद':'🌿','बीज':'🌱','कीटनाशक':'💊','यंत्र':'🚜','पशु आहार':'🐄','अन्य':'🧪' };
-
-// ── State ──
-let currentUser = null;
-let shopData    = null;
-let inventory   = [];
-let requests    = [];
-let selectedItem = null;
-let editingItemId = null;
-let editingStock  = true;
-
-// ── Auth ──
-document.getElementById('btnLogin').addEventListener('click', async () => {
+// ── AUTH ──
+document.getElementById("btnGoogleLogin").addEventListener("click", async () => {
     try {
-        await signInWithPopup(auth, new GoogleAuthProvider());
-    } catch(e) {
-        if (e.code !== 'auth/popup-closed-by-user') alert('Login failed: ' + e.message);
+        const result = await signInWithPopup(auth, new GoogleAuthProvider());
+        if (result.user.email !== ADMIN_EMAIL) {
+            alert("❌ Aap admin nahi hain!");
+            await signOut(auth);
+        }
+    } catch(e) { alert("Login failed: " + e.message); }
+});
+document.getElementById("btnLogout").addEventListener("click", () => signOut(auth));
+
+onAuthStateChanged(auth, user => {
+    if (user && user.email === ADMIN_EMAIL) {
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("adminPanel").style.display  = "block";
+        document.getElementById("adminEmail").textContent    = "(" + user.email + ")";
+        loadAll();
+    } else {
+        document.getElementById("loginScreen").style.display = "flex";
+        document.getElementById("adminPanel").style.display  = "none";
     }
 });
-document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-onAuthStateChanged(auth, async user => {
-    // Loader hide karo
-    const loader = document.getElementById('pageLoader');
-    if (loader) {
-        loader.style.opacity = '0';
-        loader.style.transition = 'opacity 0.3s';
-        setTimeout(() => { if(loader) loader.style.display = 'none'; }, 350);
-    }
-
-    if (user) {
-        // Same user baar baar handle mat karo — login loop fix
-        if (currentUser && currentUser.uid === user.uid) return;
-        currentUser = user;
-        window._currentUser = user;
-
-        try {
-            const [regSnap, shopSnap] = await Promise.all([
-                getDoc(doc(db, 'shopRequests', user.uid)),
-                getDoc(doc(db, 'shops', user.uid))
-            ]);
-
-            // Pehle check karo agar blocked/deleted hai
-            const sData = shopSnap.exists() ? shopSnap.data() : null;
-            const rData = regSnap.exists() ? regSnap.data() : null;
-            
-            if (sData && (sData.status === 'deleted' || sData.status === 'rejected')) {
-                showBlockedScreen(sData.rejectReason || (rData && rData.rejectReason) || "Admin removed this shop");
-                return;
-            }
-
-            if (sData && sData.status === 'approved') {
-                const regData = regSnap.exists() ? regSnap.data() : {};
-                if (regData.welcomeSeen) {
-                    showMainApp(user);
-                } else {
-                    showApprovedScreen(user, regData);
-                }
-            } else if (shopSnap.exists() && !shopSnap.data().status) {
-                showMainApp(user); // purana shop
-            } else if (regSnap.exists() && regSnap.data().status === 'pending') {
-                showPendingScreen(regSnap.data().shopName);
-            } else if (regSnap.exists() && regSnap.data().status === 'rejected') {
-                // Agar sirf request reject hui thi (shop create nahi hui thi), to naya form bharne do
-                showRegisterScreen(); 
-                showToast('⚠️ पिछली request reject हुई थी। नई details भरें।');
-            } else if (regSnap.exists() && regSnap.data().status === 'deleted') {
-                showBlockedScreen("Account deleted by Admin");
-            } else {
-                showRegisterScreen();
-            }
-        } catch(e) {
-            console.error('Auth error:', e);
-            showRegisterScreen();
-        }
-    } else {
-        currentUser = null;
-        window._currentUser = null;
-        hideAll();
-        const ls = document.getElementById('loginScreen');
-        if (ls) ls.style.display = 'flex';
-    }
-});;
-
-function hideAll() {
-    ['loginScreen','pendingScreen','registerScreen','approvedScreen','mainApp','blockedScreen'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
+// ── NAV ──
+document.querySelectorAll(".nav-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById("sec-" + tab.dataset.sec).classList.add("active");
     });
+});
+
+window.goTo = function(sec) {
+    document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    const tab = document.querySelector(`.nav-tab[data-sec="${sec}"]`);
+    if (tab) tab.classList.add("active");
+    const el = document.getElementById("sec-" + sec);
+    if (el) el.classList.add("active");
+};
+
+const DATA = { sell:[], buy:[], shop:[], suchna:[], reports:[], categories:[], feedback:[], shopReqs:[] };
+let shopReqFilter = "pending";
+
+function loadAll() {
+    loadListeners();
+    loadShopRequests();
+    loadCategories();
+    loadReports();
+    loadFeedback();
+    loadSettings();
+    document.getElementById("listingSearch").addEventListener("input", renderListingsTable);
+    document.getElementById("listingType").addEventListener("change", renderListingsTable);
 }
 
-function showBlockedScreen(reason) {
-    hideAll();
-    document.getElementById('blockedScreen').style.display = 'flex';
-    document.getElementById('blockedReason').textContent = "Reason: " + (reason || "Admin Restricted");
-}
-
-function showPendingScreen(naam) {
-    hideAll();
-    const ps = document.getElementById('pendingScreen');
-    ps.style.display = 'flex';
-    document.getElementById('pendingShopName').textContent = '🏪 ' + (naam || 'आपकी दुकान');
-}
-
-function showRegisterScreen() {
-    hideAll();
-    document.getElementById('registerScreen').style.display = 'flex';
-}
-
-// ── EmailJS Config (Gmail service) ───────────────────────
-const EJS_SERVICE      = 'service_un25x5y';
-const EJS_TPL_APPROVAL = 'template_pubasuc';
-const EJS_TPL_LISTING  = 'template_g721f9g';
-const EJS_PUBKEY       = 'OAlzCN74cs01xSoZH';
-
-async function showApprovedScreen(user, regData) {
-    hideAll();
-    document.getElementById('approvedScreen').style.display = 'flex';
-    const naam = regData.shopName || 'आपकी दुकान';
-    document.getElementById('approvedShopName').textContent = '🏪 ' + naam;
-    const timeEl = document.getElementById('approvedTime');
-    if (regData.approvedAt) {
-        try {
-            const d = regData.approvedAt.toDate();
-            timeEl.textContent = '✅ Approved: ' +
-                d.toLocaleDateString('hi-IN', {day:'numeric',month:'long',year:'numeric'}) +
-                ' — ' + d.toLocaleTimeString('hi-IN', {hour:'2-digit',minute:'2-digit'});
-        } catch(e) {}
-    }
-    sendApprovalEmail(user, regData);
-    try {
-        await updateDoc(doc(db,'shopRequests',user.uid), { welcomeSeen: true });
-    } catch(e) { console.log('welcomeSeen error:', e); }
-}
-
-window.goToPortal  = function() { showMainApp(currentUser); };
-window.doSignOut   = function() { signOut(auth); };
-
-function sendApprovalEmail(user, regData) {
-    try {
-        emailjs.init(EJS_PUBKEY);
-        // approvedAt null ho toh crash na ho
-        let approvedTimeStr = 'Aaj';
-        try {
-            if (regData.approvedAt && typeof regData.approvedAt.toDate === 'function') {
-                approvedTimeStr = regData.approvedAt.toDate().toLocaleDateString('hi-IN',
-                    {day:'numeric', month:'long', year:'numeric'});
-            }
-        } catch(dateErr) { approvedTimeStr = 'Aaj'; }
-
-        emailjs.send(EJS_SERVICE, EJS_TPL_APPROVAL, {
-            to_email:      user.email,
-            to_name:       user.displayName || 'Dukandaar',
-            shop_name:     regData.shopName  || 'Aapki Dukaan',
-            shop_area:     (regData.area||'') + ', ' + (regData.district||''),
-            portal_url:    'https://gramoo.in/shop.html',
-            approved_time: approvedTimeStr,
-        }).then(() => console.log('✅ Approval email sent'))
-          .catch(e => console.log('Email error:', e));
-    } catch(e) { console.log('EmailJS error:', e); }
-}
-
-function showMainApp(user) {
-    hideAll();
-    document.getElementById('mainApp').style.display = 'block';
-    const photo = document.getElementById('userPhoto');
-    photo.src = user.photoURL || '';
-    photo.style.display = user.photoURL ? 'block' : 'none';
-    document.getElementById('userName').textContent = user.displayName ? user.displayName.split(' ')[0] : 'User';
-    loadShopData();
-    loadInventory();
-    loadRequests();
-    loadMandiDemands();
-    populatePriceCompareDropdown();
-}
-
-// ── Registration Submit ──
-window.submitRegistration = async function() {
-    const naam  = document.getElementById('regShopName').value.trim();
-    const dist  = document.getElementById('regDistrict').value.trim();
-    const area  = document.getElementById('regArea').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
-    const lat   = parseFloat(document.getElementById('regLat').value);
-    const lng   = parseFloat(document.getElementById('regLng').value);
-    const addr  = document.getElementById('regAddress').value.trim();
-    const cat   = document.getElementById('regCategory').value;
-    if (!naam||!dist||!area||!phone) { showToast('❌ सभी * fields भरें!'); return; }
-    if (phone.length!==10||!['6','7','8','9'].includes(phone[0])) { showToast('❌ सही नंबर डालें!'); return; }
-    if (!lat||!lng) { showToast('⚠️ GPS Location जरूरी है!'); return; }
-    try {
-        await setDoc(doc(db,'shopRequests',currentUser.uid), {
-            uid: currentUser.uid, shopName: naam, district: dist, area,
-            phone, lat, lng, address: addr, category: cat,
-            userEmail: currentUser.email, userName: currentUser.displayName,
-            status: 'pending', createdAt: serverTimestamp()
+// ── REALTIME LISTENERS ──
+function loadListeners() {
+    ["sell","buy","shop","suchna"].forEach(col => {
+        onSnapshot(query(collection(db, col), orderBy("createdAt","desc")), snap => {
+            DATA[col] = snap.docs.map(d => ({id:d.id,...d.data()}));
+            updateDashboard(); renderListingsTable(); updateTraffic();
         });
-        showPendingScreen(naam);
-    } catch(e) { showToast('❌ Error: ' + e.message); }
-};
-
-window.getGpsForReg = function() {
-    const btn = document.getElementById('btnRegGps');
-    const status = document.getElementById('regGpsStatus');
-    btn.textContent = '📡 Location मिल रही है...'; btn.disabled = true;
-    navigator.geolocation.getCurrentPosition(p => {
-        document.getElementById('regLat').value = p.coords.latitude;
-        document.getElementById('regLng').value = p.coords.longitude;
-        status.style.display = 'block';
-        status.textContent = `✅ Location मिल गई! (${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)})`;
-        btn.textContent = '✅ Location मिल गई'; btn.style.background = '#2e7d32'; btn.disabled = false;
-    }, () => {
-        showToast('❌ GPS नहीं मिला। Browser में Location allow करें।');
-        btn.textContent = '📡 फिर से Try करें'; btn.disabled = false;
     });
-};
-
-// ── Load Shop ──
-async function loadShopData() {
-    const snap = await getDoc(doc(db, 'shops', currentUser.uid));
-    shopData = snap.exists() ? snap.data() : null;
-    renderDashboardTop();
 }
 
-function renderDashboardTop() {
-    const bannerEl  = document.getElementById('setupBannerWrap');
-    const profileEl = document.getElementById('shopProfileWrap');
+// ── DASHBOARD ──
+function updateDashboard() {
+    document.getElementById("dTotalSell").textContent   = DATA.sell.length;
+    document.getElementById("dTotalBuy").textContent    = DATA.buy.length;
+    document.getElementById("dTotalShop").textContent   = DATA.shop.length;
+    document.getElementById("dTotalSuchna").textContent = DATA.suchna.length;
 
-    if (!shopData) {
-        bannerEl.innerHTML = `
-            <div class="setup-banner">
-                <div class="icon">🏪</div>
+    const today = new Date(); today.setHours(0,0,0,0);
+    const recent = [...DATA.sell,...DATA.buy,...DATA.shop,...DATA.suchna]
+        .filter(i => i.createdAt && i.createdAt.toDate() >= today)
+        .sort((a,b) => b.createdAt.toMillis()-a.createdAt.toMillis()).slice(0,10);
+
+    const el = document.getElementById("recentListings");
+    if (!recent.length) { el.innerHTML = '<div class="empty"><div>🌾</div><p>Aaj koi nayi listing nahi</p></div>'; return; }
+    el.innerHTML = `<div class="table-wrap"><table>
+        <tr><th>Naam</th><th>Type</th><th>Jagah</th><th>Samay</th></tr>
+        ${recent.map(i=>`<tr>
+            <td>${i.name||i.title||"—"}</td>
+            <td><span class="badge badge-sell">${i.grain||i.product||i.type||"—"}</span></td>
+            <td>${i.loc||"—"}</td><td>${timeAgo(i.createdAt)}</td>
+        </tr>`).join("")}
+    </table></div>`;
+}
+
+// ── SHOP REGISTRATION REQUESTS ─────────────────────────
+function loadShopRequests() {
+    onSnapshot(query(collection(db,"shopRequests"), orderBy("createdAt","desc")), snap => {
+        DATA.shopReqs = snap.docs.map(d => ({id:d.id,...d.data()}));
+        updateShopBadge();
+        renderShopRequests();
+    });
+}
+
+function updateShopBadge() {
+    const pending = DATA.shopReqs.filter(r => r.status === "pending").length;
+    const badge   = document.getElementById("shopBadge");
+    const dPend   = document.getElementById("dPendingShops");
+    const dAppr   = document.getElementById("dApprovedShops");
+    const alert   = document.getElementById("pendingAlert");
+    const alertTx = document.getElementById("pendingAlertText");
+
+    dPend.textContent = pending;
+    dAppr.textContent = DATA.shopReqs.filter(r => r.status === "approved").length;
+
+    if (pending > 0) {
+        badge.style.display = "flex";
+        badge.textContent   = pending;
+        alert.style.display = "block";
+        alertTx.textContent = `${pending} dukaan registration request${pending>1?"en":""} approve karna baaki hai.`;
+    } else {
+        badge.style.display = "none";
+        alert.style.display = "none";
+    }
+}
+
+window.filterShopReqs = function(filter, el) {
+    shopReqFilter = filter;
+    document.querySelectorAll(".reg-filter-tab").forEach(b => b.classList.remove("active"));
+    el.classList.add("active");
+    renderShopRequests();
+};
+
+function renderShopRequests() {
+    const el = document.getElementById("shopRequestsList");
+
+    // Create demo requests
+    const demoReqs = ADMIN_DEMO_SHOPS.map(d => ({
+        id: d.id, shopName: d.shopName, userName: 'Demo User', userEmail: 'demo@gramoo.in',
+        area: d.area, district: d.district, phone: d.phone, category: d.category,
+        lat: d.lat, lng: d.lng, status: 'demo', createdAt: null
+    }));
+
+    // Combine with Firestore requests
+    let allData = [...DATA.shopReqs, ...demoReqs];
+
+    // Apply filter
+    let list = allData;
+    if (shopReqFilter !== "all") {
+        list = list.filter(r => (r.status||"pending") === shopReqFilter);
+    }
+
+    // Sort (put demos at the end, then by date)
+    list.sort((a, b) => {
+        const aTime = a.createdAt?.toMillis() || 0;
+        const bTime = b.createdAt?.toMillis() || 0;
+        if (a.status === 'demo' && b.status !== 'demo') return 1;
+        if (a.status !== 'demo' && b.status === 'demo') return -1;
+        return bTime - aTime;
+    });
+
+    document.getElementById("shopCount").textContent =
+        `(${list.length} ${shopReqFilter === "all" ? "kul" : shopReqFilter})`;
+
+    if (!list.length) {
+        const emptyMessages = {
+            pending: "Koi pending request nahi!", approved: "Koi approved dukan nahi",
+            rejected: "Koi rejected request nahi", deleted: "Koi deleted request nahi",
+            demo: "Koi demo dukan nahi", all: "Koi dukan request nahi"
+        };
+        const icons = { pending: "⏳", approved: "✅", rejected: "❌", deleted: "🗑️", demo: "🤖", all: "📋" };
+        el.innerHTML = `<div class="empty"><div>${icons[shopReqFilter]||"📋"}</div><p>${emptyMessages[shopReqFilter]||"Koi request nahi"}</p></div>`;
+        return;
+    }
+
+    el.innerHTML = list.map(r => {
+        const status = r.status || (r.id.startsWith('demo') ? 'demo' : 'pending');
+        const reqId = r.id; // Correct Document ID for DB operations
+        const userId = r.uid || r.id; // User ID for shop linking
+        const mapLink = r.lat && r.lng
+            ? `<a href="https://maps.google.com/?q=${r.lat},${r.lng}" target="_blank" class="map-link">📍 Map pe dekho</a>`
+            : "📍 Location nahi";
+        return `
+        <div class="reg-card ${status}" id="regcard-${reqId}">
+            <div class="reg-card-top">
                 <div>
-                    <h3>पहले अपनी दुकान Setup करें!</h3>
-                    <p>नाम, पता और नंबर भरें — फिर items add करें</p>
-                </div>
-                <button class="btn-setup" onclick="openSetupModal()">Setup करें →</button>
-            </div>`;
-        profileEl.innerHTML = '';
-    } else {
-        bannerEl.innerHTML = '';
-        profileEl.innerHTML = `
-            <div class="shop-profile-card">
-                <div class="shop-avatar">🏪</div>
-                <div class="shop-info">
-                    <h2>${shopData.naam}</h2>
-                    <p>📍 ${shopData.area}, ${shopData.district} &nbsp;•&nbsp; 📱 +91 ${shopData.phone}</p>
-                </div>
-                <div class="shop-status">
-                    <div class="status-badge status-live">● Live है</div>
-                </div>
-            </div>`;
-        fillProfileForm();
-    }
-}
-
-// ── Inventory ──
-function loadInventory() {
-    if (!currentUser) return;
-    onSnapshot(
-        query(collection(db, 'shops', currentUser.uid, 'inventory'), orderBy('addedAt','desc')),
-        snap => {
-            inventory = snap.docs.map(d => ({id:d.id,...d.data()}));
-            renderInventory();
-            renderQuickUpdate();
-            updateDashboardStats();
-            renderMasterGrid();
-        }
-    );
-}
-
-function renderInventory() {
-    const el = document.getElementById('inventoryGrid');
-    if (!inventory.length) {
-        el.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-            <div class="e-icon">📦</div>
-            <h3>अभी कोई item नहीं</h3>
-            <p>"Items जोड़ें" tab से Master List में से items चुनें</p>
-        </div>`;
-        return;
-    }
-    el.innerHTML = inventory.map(item => renderInvCard(item)).join('');
-}
-
-function renderInvCard(item) {
-    const master = MASTER.find(m => m.id === item.masterId) || {};
-    const qtyText = item.qty ? `<span class="inv-tag">🏷️ ${item.qty} ${item.packSize} उपलब्ध</span>` : '';
-    return `<div class="inv-card ${!item.stock?'out-of-stock':''}">
-        <div class="inv-top">
-            <div>
-                <div class="inv-name">${catIcons[master.cat]||'📦'} ${item.nameHi||item.nameEn}</div>
-                <div class="inv-cat">${item.nameEn} • ${master.cat||''}</div>
-            </div>
-            <button class="btn-remove-item" onclick="removeItem('${item.id}')">✕</button>
-        </div>
-        <div class="inv-details">
-            <span class="inv-brand">${item.brand}</span>
-            <span class="inv-tag">📦 ${item.packSize}</span>
-            ${qtyText}
-        </div>
-        <div class="inv-price-row">
-            <div class="inv-price">₹${item.price}<span> / ${item.packSize}</span></div>
-            <div class="inv-actions">
-                <button class="btn-edit-price" onclick="openPriceModal('${item.id}','${item.nameHi||item.nameEn}',${item.price},${item.stock},${item.qty||0})">✏️ Edit</button>
-                <button class="btn-toggle-stock ${item.stock?'in':'out'}" onclick="toggleStock('${item.id}',${item.stock})">
-                    ${item.stock?'✅ है':'❌ नहीं'}
-                </button>
-            </div>
-        </div>
-    </div>`;
-}
-
-function renderQuickUpdate() {
-    const el = document.getElementById('quickUpdateGrid');
-    if (!inventory.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px">अभी कोई item नहीं है।</p>'; return; }
-    el.innerHTML = inventory.slice(0,6).map(item => renderInvCard(item)).join('');
-}
-
-function updateDashboardStats() {
-    document.getElementById('dTotalItems').textContent = inventory.length;
-    document.getElementById('dInStock').textContent    = inventory.filter(i=>i.stock).length;
-    document.getElementById('dOutStock').textContent   = inventory.filter(i=>!i.stock).length;
-}
-
-// ── Master Grid ──
-function renderMasterGrid() {
-    const cat    = document.getElementById('catFilter').value;
-    const search = document.getElementById('itemSearch').value.toLowerCase();
-    const addedIds = inventory.map(i => i.masterId);
-
-    const filtered = MASTER.filter(m =>
-        (!cat || m.cat === cat) &&
-        (!search || m.hi.includes(search) || m.en.toLowerCase().includes(search))
-    );
-
-    const el = document.getElementById('masterGrid');
-    if (!filtered.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:12px">कोई item नहीं मिला</p>'; return; }
-
-    el.innerHTML = filtered.map(m => {
-        const added = addedIds.includes(m.id);
-        return `<div class="master-item ${added?'already-added':''} ${selectedItem===m.id?'selected':''}"
-            onclick="${added?'':'selectMasterItem(\''+m.id+'\')'}">
-            <div class="mi-name">${catIcons[m.cat]||'📦'} ${m.hi}</div>
-            <div class="mi-name-en">${m.en}</div>
-            <span class="mi-cat">${m.cat}</span>
-            ${added?'<span style="font-size:10px;color:var(--green-mid);display:block;margin-top:4px">✅ Already added</span>':''}
-        </div>`;
-    }).join('');
-}
-
-window.selectMasterItem = function(id) {
-    selectedItem = id;
-    const master = MASTER.find(m => m.id === id);
-    if (!master) return;
-
-    document.getElementById('configTitle').textContent = `${master.hi} (${master.en}) — Configure करें`;
-
-    const brandSel = document.getElementById('cfgBrand');
-    brandSel.innerHTML = master.brands.map(b => `<option>${b}</option>`).join('');
-
-    const packSel = document.getElementById('cfgPack');
-    packSel.innerHTML = master.packs.map(p => `<option>${p}</option>`).join('');
-
-    document.getElementById('cfgPrice').value = '';
-    document.getElementById('itemConfig').classList.add('show');
-    renderMasterGrid();
-    document.getElementById('itemConfig').scrollIntoView({behavior:'smooth', block:'nearest'});
-};
-
-window.addItemToInventory = async function() {
-    if (!selectedItem) return;
-    if (!shopData) { showToast('⚠️ पहले दुकान setup करें!'); openSetupModal(); return; }
-    const master = MASTER.find(m => m.id === selectedItem);
-    const price  = parseInt(document.getElementById('cfgPrice').value);
-    if (!price || price < 1) { showToast('❌ कीमत डालें!'); return; }
-
-    try {
-        await addDoc(collection(db, 'shops', currentUser.uid, 'inventory'), {
-            masterId: master.id,
-            nameHi:   master.hi,
-            nameEn:   master.en,
-            cat:      master.cat,
-            brand:    document.getElementById('cfgBrand').value,
-            packSize: document.getElementById('cfgPack').value,
-            price,
-            qty:      parseInt(document.getElementById('cfgQty').value) || 0,
-            stock:    document.getElementById('cfgStock').value === 'true',
-            addedAt:  serverTimestamp()
-        });
-        selectedItem = null;
-        document.getElementById('itemConfig').classList.remove('show');
-        showToast('✅ Item inventory में जुड़ गया!');
-    } catch(e) { showToast('❌ Error: ' + e.message); }
-};
-
-// ── Price Modal ──
-window.openPriceModal = function(itemId, name, price, stock, qty) {
-    editingItemId = itemId;
-    editingStock  = stock;
-    document.getElementById('priceModalTitle').textContent = name + ' — Update करें';
-    document.getElementById('priceInput').value = price;
-    document.getElementById('qtyInput').value   = qty || 0;
-    const btn = document.getElementById('priceStockBtn');
-    btn.textContent = stock ? '✅ In Stock' : '❌ Out of Stock';
-    btn.className   = 'btn-toggle-stock ' + (stock ? 'in' : 'out');
-    document.getElementById('priceModal').classList.add('active');
-};
-
-window.togglePriceStock = function() {
-    editingStock = !editingStock;
-    const btn = document.getElementById('priceStockBtn');
-    btn.textContent = editingStock ? '✅ In Stock' : '❌ Out of Stock';
-    btn.className   = 'btn-toggle-stock ' + (editingStock ? 'in' : 'out');
-};
-
-window.closePriceModal = function() {
-    document.getElementById('priceModal').classList.remove('active');
-    editingItemId = null;
-};
-
-window.savePriceUpdate = async function() {
-    const price = parseInt(document.getElementById('priceInput').value);
-    const qty   = parseInt(document.getElementById('qtyInput').value) || 0;
-    if (!price || price < 1) { showToast('❌ कीमत डालें!'); return; }
-    try {
-        await updateDoc(doc(db,'shops',currentUser.uid,'inventory',editingItemId), {
-            price, qty, stock: editingStock, updatedAt: serverTimestamp()
-        });
-        closePriceModal();
-        showToast('✅ Update हो गई!');
-    } catch(e) { showToast('❌ Error: ' + e.message); }
-};
-
-// ── Toggle Stock ──
-window.toggleStock = async function(itemId, current) {
-    try {
-        await updateDoc(doc(db,'shops',currentUser.uid,'inventory',itemId), {
-            stock: !current, updatedAt: serverTimestamp()
-        });
-        showToast(!current ? '✅ In Stock mark किया!' : '❌ Out of Stock mark किया!');
-    } catch(e) { showToast('❌ Error: ' + e.message); }
-};
-
-// ── Remove Item ──
-window.removeItem = async function(itemId) {
-    if (!confirm('यह item inventory से हटाना चाहते हो?')) return;
-    try {
-        await deleteDoc(doc(db,'shops',currentUser.uid,'inventory',itemId));
-        showToast('🗑️ Item हटा दिया!');
-    } catch(e) { showToast('❌ Error: ' + e.message); }
-};
-
-// ── Item Requests ──
-function loadRequests() {
-    if (!currentUser) return;
-    onSnapshot(
-        query(collection(db,'shopRequests'), where('uid','==',currentUser.uid), orderBy('createdAt','desc')),
-        snap => {
-            requests = snap.docs.map(d=>({id:d.id,...d.data()}));
-            renderRequests();
-            document.getElementById('dPendingReq').textContent = requests.filter(r=>r.status==='pending').length;
-        }
-    );
-}
-
-function renderRequests() {
-    const el = document.getElementById('requestsList');
-    if (!requests.length) {
-        el.innerHTML = `<div class="empty-state"><div class="e-icon">📋</div><h3>कोई request नहीं</h3><p>"Items जोड़ें" tab से नया item request करें</p></div>`;
-        return;
-    }
-    const statusLabel = {pending:'⏳ Pending', approved:'✅ Approved', rejected:'❌ Rejected'};
-    el.innerHTML = requests.map(r => `
-        <div class="req-item">
-            <div class="req-icon">🙋</div>
-            <div class="req-info">
-                <h4>${r.itemName} ${r.brand?'— '+r.brand:''}</h4>
-                <p>${r.reason||''}</p>
-            </div>
-            <span class="req-status ${r.status||'pending'}">${statusLabel[r.status]||'⏳ Pending'}</span>
-        </div>`).join('');
-}
-
-window.sendItemRequest = async function() {
-    const itemName = document.getElementById('reqItemName').value.trim();
-    if (!itemName) { showToast('❌ Item का नाम लिखें!'); return; }
-    if (!shopData) { showToast('⚠️ पहले दुकान setup करें!'); return; }
-    try {
-        await addDoc(collection(db,'shopRequests'), {
-            uid:      currentUser.uid,
-            shopName: shopData.naam,
-            itemName,
-            brand:    document.getElementById('reqBrand').value.trim(),
-            reason:   document.getElementById('reqReason').value.trim(),
-            status:   'pending',
-            createdAt: serverTimestamp()
-        });
-        document.getElementById('reqItemName').value  = '';
-        document.getElementById('reqBrand').value     = '';
-        document.getElementById('reqReason').value    = '';
-        document.getElementById('reqDone').style.display = 'block';
-        setTimeout(() => document.getElementById('reqDone').style.display='none', 3000);
-    } catch(e) { showToast('❌ Error: ' + e.message); }
-};
-
-// ── Mandi Buyer Demand ───────────────────────────────────
-function loadMandiDemands() {
-    const el = document.getElementById('mandiDemandList');
-    if (!el || !shopData) return;
-    // Listen to buy listings from same district
-    onSnapshot(
-        query(collection(db,'buy'), where('district','==', shopData.district||''), orderBy('createdAt','desc')),
-        snap => {
-            const demands = snap.docs.map(d => ({id:d.id,...d.data()})).slice(0,20);
-            if (!demands.length) {
-                el.innerHTML = `<div style="text-align:center;padding:40px;color:#aaa;">
-                    <div style="font-size:40px;">📭</div>
-                    <p style="margin-top:8px;">अभी आपके जिले में कोई demand नहीं है</p></div>`;
-                return;
-            }
-            el.innerHTML = demands.map(d => `
-                <div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #e8f5e9;border-left:4px solid #1a6b3c;">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
-                        <div>
-                            <div style="font-weight:700;font-size:14px;">🛒 ${d.grain||d.item||'अनाज'}</div>
-                            <div style="font-size:12px;color:#777;margin-top:3px;">
-                                📍 ${d.area||''}, ${d.district||''} &nbsp;•&nbsp; 📦 ${d.qty||'?'} KG चाहिए
-                                ${d.price ? `&nbsp;•&nbsp; ₹${d.price}/KG` : ''}
-                            </div>
-                        </div>
-                        ${d.phone && d.phone!=='SAMPLE' ? `
-                        <a href="https://wa.me/91${d.phone}?text=${encodeURIComponent(`नमस्ते! Gramoo पर आपकी ${d.grain||'item'} की demand देखी। हमारे पास उपलब्ध है।`)}"
-                            target="_blank"
-                            style="background:#25d366;color:white;padding:7px 14px;border-radius:18px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">
-                            💬 Reply करें
-                        </a>` : ''}
+                    <div class="reg-shop-name">🏪 ${r.shopName||"—"}</div>
+                    <div class="reg-meta">
+                        👤 ${r.userName||"—"} &nbsp;•&nbsp; 📧 ${r.userEmail||"—"}<br>
+                        📍 ${r.area||"—"}, ${r.district||"—"}<br>
+                        📱 +91 ${r.phone||"—"} &nbsp;•&nbsp; 🏷️ ${r.category||"general"}<br>
+                        ${r.address ? `🏠 ${r.address}<br>` : ""}
+                        ${mapLink} &nbsp;•&nbsp; 🕐 ${timeAgo(r.createdAt)}
                     </div>
-                </div>`).join('');
-        }, () => {
-            el.innerHTML = `<div style="text-align:center;padding:30px;color:#aaa;font-size:13px;">Demands load नहीं हो सकीं।</div>`;
-        }
-    );
-}
-
-// ── Price Comparison ─────────────────────────────────────
-function populatePriceCompareDropdown() {
-    const sel = document.getElementById('priceCompareItem');
-    if (!sel) return;
-    const opts = MASTER.map(m => `<option value="${m.id}">${m.hi} (${m.en})</option>`).join('');
-    sel.innerHTML = '<option value="">— Item चुनें —</option>' + opts;
-}
-
-window.loadPriceComparison = async function() {
-    const masterId = document.getElementById('priceCompareItem').value;
-    const el = document.getElementById('priceCompareResult');
-    if (!masterId) { el.innerHTML = ''; return; }
-    el.innerHTML = `<div style="text-align:center;padding:20px;color:#aaa;">⏳ Load हो रहा है...</div>`;
-
-    const master = MASTER.find(m => m.id === masterId);
-    // Get all shops' inventory for this item
-    try {
-        // We query each shop's subcollection - simplified: query shopItems collection
-        const snap = await getDocs(query(
-            collectionGroup(db, 'inventory'),
-            where('masterId','==', masterId),
-            where('stock','==', true),
-            orderBy('price','asc')
-        ));
-        const results = snap.docs.map(d => ({...d.data(), shopId: d.ref.parent.parent.id}));
-
-        if (!results.length) {
-            el.innerHTML = `<div style="text-align:center;padding:30px;color:#aaa;">
-                <div style="font-size:36px;">📊</div>
-                <p style="margin-top:8px;">अभी कोई दूसरी दुकान यह item नहीं बेच रही</p></div>`;
-            return;
-        }
-
-        const myPrice = results.find(r => r.shopId === currentUser.uid)?.price;
-
-        el.innerHTML = `
-            <div style="font-size:14px;font-weight:700;color:#1a6b3c;margin-bottom:10px;">
-                🌿 ${master.hi} — ${results.length} दुकानों पर उपलब्ध
-            </div>
-            ${results.map((r, i) => {
-                const isMe = r.shopId === currentUser.uid;
-                const isCheapest = i === 0;
-                return `
-                <div style="background:${isMe?'#e8f5e9':'white'};border-radius:10px;padding:12px 14px;
-                    margin-bottom:8px;border:2px solid ${isMe?'#1a6b3c':isCheapest?'#ffd54f':'#e0e0e0'};
-                    display:flex;align-items:center;justify-content:space-between;gap:8px;">
-                    <div>
-                        <span style="font-size:12px;font-weight:600;color:#555;">${r.brand||''} • ${r.packSize||''}</span>
-                        ${isMe ? '<span style="font-size:11px;background:#1a6b3c;color:white;padding:2px 8px;border-radius:6px;margin-left:6px;">आपकी दुकान</span>' : ''}
-                        ${isCheapest && !isMe ? '<span style="font-size:11px;background:#f9a825;color:white;padding:2px 8px;border-radius:6px;margin-left:6px;">सबसे सस्ता</span>' : ''}
-                    </div>
-                    <div style="font-size:20px;font-weight:800;color:${isCheapest?'#2e7d32':'#333'};">₹${r.price}</div>
-                </div>`;
-            }).join('')}
-            ${myPrice ? `
-            <div style="background:#fff3e0;border-radius:10px;padding:12px;margin-top:8px;font-size:13px;color:#e65100;">
-                💡 आपका भाव ₹${myPrice} है — सबसे सस्ता ₹${results[0].price}
-                ${myPrice > results[0].price ? ` (₹${myPrice-results[0].price} ज़्यादा)` : ' ✅ आप सबसे सस्ते हैं!'}
-            </div>` : ''}`;
-    } catch(e) {
-        el.innerHTML = `<div style="text-align:center;padding:20px;color:#aaa;font-size:12px;">
-            Price comparison के लिए Firestore indexing चाहिए।<br>
-            Admin से collectionGroup index setup करवाएं।</div>`;
-    }
-};
-window.getGpsSetup = function() {
-    const btn = document.getElementById('btnGetGpsSetup');
-    const status = document.getElementById('gpsStatusSetup');
-    btn.textContent = '📡 Location मिल रही है...';
-    btn.disabled = true;
-    navigator.geolocation.getCurrentPosition(
-        p => {
-            document.getElementById('mLat').value = p.coords.latitude;
-            document.getElementById('mLng').value = p.coords.longitude;
-            status.style.display = 'block';
-            status.textContent = `✅ Location मिल गई! (${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)})`;
-            btn.textContent = '✅ Location मिल गई — फिर से लें';
-            btn.style.background = '#2e7d32';
-            btn.disabled = false;
-        },
-        () => {
-            showToast('❌ GPS नहीं मिला। Browser में Location allow करें।');
-            btn.textContent = '📡 फिर से Try करें';
-            btn.disabled = false;
-        }
-    );
-};
-
-window.getGpsProfile = function() {
-    const status = document.getElementById('gpsStatusProfile');
-    status.style.display = 'block';
-    status.textContent = '📡 Location मिल रही है...';
-    navigator.geolocation.getCurrentPosition(
-        p => {
-            document.getElementById('pLat').value = p.coords.latitude;
-            document.getElementById('pLng').value = p.coords.longitude;
-            status.textContent = `✅ Location मिल गई! (${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)})`;
-        },
-        () => {
-            status.textContent = '❌ GPS नहीं मिला।';
-            showToast('Browser में Location allow करें।');
-        }
-    );
-};
-
-// ── Shop Setup Modal ──
-window.openSetupModal = function() {
-    document.getElementById('setupModal').classList.add('active');
-};
-window.closeSetupModal = function() {
-    document.getElementById('setupModal').classList.remove('active');
-};
-window.saveShopSetup = async function() {
-    const naam  = document.getElementById('mShopName').value.trim();
-    const dist  = document.getElementById('mDistrict').value.trim();
-    const area  = document.getElementById('mArea').value.trim();
-    const phone = document.getElementById('mPhone').value.trim();
-    const lat   = parseFloat(document.getElementById('mLat').value);
-    const lng   = parseFloat(document.getElementById('mLng').value);
-    if (!naam||!dist||!area||!phone) { showToast('❌ सभी * fields भरें!'); return; }
-    if (phone.length!==10||!['6','7','8','9'].includes(phone[0])) { showToast('❌ सही नंबर डालें!'); return; }
-    if (!lat || !lng) { showToast('⚠️ पहले GPS से Location लें!'); return; }
-    try {
-        await setDoc(doc(db,'shops',currentUser.uid), {
-            naam, district:dist, area, phone,
-            category: document.getElementById('mCategory').value,
-            lat, lng,
-            uid: currentUser.uid,
-            createdAt: serverTimestamp()
-        });
-        shopData = { naam, district:dist, area, phone, lat, lng };
-        closeSetupModal();
-        renderDashboardTop();
-        showToast('✅ दुकान setup हो गई!');
-    } catch(e) { showToast('❌ Error: ' + e.message); }
-};
-
-// ── Profile Save ──
-window.saveShopProfile = async function() {
-    const naam  = document.getElementById('pShopName').value.trim();
-    const dist  = document.getElementById('pDistrict').value.trim();
-    const area  = document.getElementById('pArea').value.trim();
-    const phone = document.getElementById('pPhone').value.trim();
-    if (!naam||!dist||!area||!phone) { showToast('❌ सभी * fields भरें!'); return; }
-    if (phone.length!==10||!['6','7','8','9'].includes(phone[0])) { showToast('❌ सही नंबर डालें!'); return; }
-    const updateData = {
-        naam, district:dist, area, phone,
-        category:  document.getElementById('pCategory').value,
-        address:   document.getElementById('pAddress').value.trim(),
-        uid: currentUser.uid,
-        updatedAt: serverTimestamp()
-    };
-    const pLat = parseFloat(document.getElementById('pLat').value);
-    const pLng = parseFloat(document.getElementById('pLng').value);
-    if (pLat && pLng) { updateData.lat = pLat; updateData.lng = pLng; }
-    try {
-        await setDoc(doc(db,'shops',currentUser.uid), updateData, {merge:true});
-        shopData = {...shopData, naam, district:dist, area, phone};
-        renderDashboardTop();
-        showToast('✅ Profile save हो गई!');
-    } catch(e) { showToast('❌ Error: ' + e.message); }
-};
-
-function fillProfileForm() {
-    if (!shopData) return;
-    document.getElementById('pShopName').value  = shopData.naam    || '';
-    document.getElementById('pDistrict').value  = shopData.district|| '';
-    document.getElementById('pArea').value      = shopData.area    || '';
-    document.getElementById('pPhone').value     = shopData.phone   || '';
-    document.getElementById('pAddress').value   = shopData.address || '';
-    if (shopData.category) document.getElementById('pCategory').value = shopData.category;
-}
-
-// ── Nav Tabs ──
-document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-        document.querySelectorAll('.tab-sec').forEach(s=>s.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
-    });
-});
-
-window.switchTab = function(name) {
-    document.querySelectorAll('.nav-tab').forEach(t => {
-        if (t.dataset.tab===name) t.classList.add('active');
-        else t.classList.remove('active');
-    });
-    document.querySelectorAll('.tab-sec').forEach(s => {
-        if (s.id==='tab-'+name) s.classList.add('active');
-        else s.classList.remove('active');
-    });
-};
-
-// ── Filters ──
-document.getElementById('catFilter').addEventListener('change', renderMasterGrid);
-document.getElementById('itemSearch').addEventListener('input', renderMasterGrid);
-
-// ── Toast ──
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// Init master grid
-renderMasterGrid();
-</script>
-
-<!-- ── Report Problem Floating Button ── -->
-<button class="btn-report-problem" onclick="openReportProblem()">🚨 Problem?</button>
-
-<!-- ── Report Problem Modal ── -->
-<div class="rp-overlay" id="rpOverlay">
-    <div class="rp-box">
-        <div class="rp-header">
-            <h3>🚨 Problem Report करें</h3>
-            <button class="rp-close" onclick="closeReportProblem()">✕</button>
-        </div>
-        <div class="rp-success" id="rpSuccess">
-            <div class="rp-ok-icon">✅</div>
-            <h4>Report मिल गई!</h4>
-            <p>हम जल्द इसे देखेंगे।<br>आपकी मदद के लिए धन्यवाद 🙏</p>
-        </div>
-        <div class="rp-body" id="rpForm">
-            <div class="rp-auto-info">
-                <strong>📋 Auto Captured Info:</strong>
-                <div class="rp-info-grid">
-                    <div class="rp-info-item"><span class="rp-info-label">Page:</span><span class="rp-info-value" id="rp_page">—</span></div>
-                    <div class="rp-info-item"><span class="rp-info-label">Device:</span><span class="rp-info-value" id="rp_device">—</span></div>
-                    <div class="rp-info-item"><span class="rp-info-label">Browser:</span><span class="rp-info-value" id="rp_browser">—</span></div>
-                    <div class="rp-info-item"><span class="rp-info-label">Screen:</span><span class="rp-info-value" id="rp_screen">—</span></div>
-                    <div class="rp-info-item"><span class="rp-info-label">Login:</span><span class="rp-info-value" id="rp_login">—</span></div>
-                    <div class="rp-info-item"><span class="rp-info-label">Tab:</span><span class="rp-info-value" id="rp_tab">shop.html</span></div>
                 </div>
+                <span class="badge badge-${status}">${
+                    {
+                        pending:  "⏳ Pending",  approved: "✅ Approved",
+                        rejected: "❌ Rejected", deleted:  "🗑️ Deleted",
+                        demo:     "🤖 Demo"
+                    }[status] || status
+                }</span>
             </div>
-            <div class="rp-fgroup">
-                <label>क्या problem आई? *</label>
-                <select id="rpCategory">
-                    <option value="">— problem चुनें —</option>
-                    <option>दुकान load नहीं हो रही</option>
-                    <option>Login नहीं हो रहा</option>
-                    <option>Inventory update नहीं हो रही</option>
-                    <option>Profile save नहीं हो रही</option>
-                    <option>कुछ दिख नहीं रहा / गायब है</option>
-                    <option>Page error आ रहा है</option>
-                    <option>कुछ और</option>
-                </select>
+            ${r.rejectReason ? `<div style="background:#ffebee;border-radius:8px;padding:10px;font-size:12px;color:#c62828;margin-bottom:10px;">❌ Reject Karan: ${r.rejectReason}</div>` : ""}
+            <div class="reg-actions">
+                ${status === "pending" ? `
+                    <button class="btn-approve" onclick="approveShop('${reqId}','${userId}','${(r.shopName||"").replace(/'/g,"\\'")}','${r.phone||""}','${r.district||""}','${r.area||""}','${r.lat||""}','${r.lng||""}','${r.category||"general"}')">
+                        ✅ Approve करें
+                    </button>
+                    <button class="btn-reject" onclick="openRejectModal('${reqId}','${userId}')">
+                        ❌ Reject करें
+                    </button>
+                ` : ""}
+                ${status === "approved" ? `
+                    <button class="btn-reject" onclick="openRejectModal('${reqId}','${userId}')">❌ Revoke करें</button>
+                ` : ""}
+                ${status === 'demo' ? `<span style="font-size:12px; color: #888;">यह एक डेमो दुकान है।</span>` : ''}
+                ${r.phone ? `
+                    <a href="https://wa.me/91${r.phone}?text=${encodeURIComponent(`नमस्ते! आपकी Gramoo दुकान registration के बारे में बात करनी है।`)}"
+                        target="_blank"
+                        style="padding:5px 12px;background:#e8f5f0;color:#128c7e;border:1px solid #b2dfdb;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;">
+                        💬 WhatsApp
+                    </a>
+                ` : ""}
+                ${status !== 'demo' && status !== 'deleted' ? `<button class="btn-del" onclick="deleteShopReq('${reqId}','${(r.shopName||"").replace(/'/g,"\\'")}')">🗑️ Delete</button>` : ''}
             </div>
-            <div class="rp-fgroup">
-                <label>थोड़ा और बताएं</label>
-                <textarea id="rpDesc" rows="3" placeholder="जैसे: Profile save करने पर error आया। या: Inventory tab नहीं खुल रहा..."></textarea>
-            </div>
-            <div class="rp-fgroup">
-                <label>WhatsApp नंबर <span style="font-weight:400;color:#aaa">(optional)</span></label>
-                <input type="tel" id="rpPhone" placeholder="10 अंक" maxlength="10" onkeypress="return event.charCode>=48&&event.charCode<=57">
-            </div>
-            <button class="rp-submit" id="rpSubmitBtn" onclick="submitReportProblem()">🚨 Report भेजें</button>
-        </div>
-    </div>
-</div>
+        </div>`;
+    }).join("");
+}
 
-<script>
-// ── Report Problem (shop.html) ────────────────────────
-function getDeviceType() {
-    const ua = navigator.userAgent;
-    if (/tablet|ipad/i.test(ua)) return 'Tablet';
-    if (/mobile|android|iphone/i.test(ua)) return 'Mobile';
-    return 'Laptop/Desktop';
-}
-function getBrowserName() {
-    const ua = navigator.userAgent;
-    if (ua.includes('Edg/'))  return 'Edge';
-    if (ua.includes('OPR/'))  return 'Opera';
-    if (ua.includes('Chrome/')) return 'Chrome';
-    if (ua.includes('Firefox/')) return 'Firefox';
-    if (ua.includes('Safari/') && !ua.includes('Chrome')) return 'Safari';
-    return 'Unknown';
-}
-function openReportProblem() {
-    const overlay = document.getElementById('rpOverlay');
-    if (!overlay) return;
-    overlay.classList.add('active');
-    document.getElementById('rpForm').style.display    = 'block';
-    document.getElementById('rpSuccess').style.display = 'none';
-    document.getElementById('rpSubmitBtn').disabled    = false;
-    document.getElementById('rpCategory').value = '';
-    document.getElementById('rpDesc').value     = '';
-    document.getElementById('rpPhone').value    = '';
-    // Auto-fill info
-    const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-    set('rp_page',    'shop.html');
-    set('rp_device',  getDeviceType());
-    set('rp_browser', getBrowserName());
-    set('rp_screen',  window.screen.width + '×' + window.screen.height);
-    const u = typeof currentUser !== 'undefined' ? currentUser : null;
-    set('rp_login', u ? ('✅ ' + (u.email||'Logged in')) : '❌ Nahi');
-}
-function closeReportProblem() {
-    const overlay = document.getElementById('rpOverlay');
-    if (overlay) overlay.classList.remove('active');
-}
-async function submitReportProblem() {
-    const category = document.getElementById('rpCategory').value.trim();
-    if (!category) { alert('कृपया problem चुनें'); return; }
-    const btn = document.getElementById('rpSubmitBtn');
-    btn.disabled    = true;
-    btn.textContent = '⏳ भेज रहे हैं...';
-    const u = typeof currentUser !== 'undefined' ? currentUser : null;
-    // window globals use karo — module scope se bahar hain
-    const _db  = window._db;
-    const _add = window._addDoc;
-    const _col = window._collection;
-    const _ts  = window._serverTimestamp;
-    if (!_db || !_add || !_col || !_ts) {
-        btn.disabled = false; btn.textContent = '🚨 Report भेजें';
-        alert('Page abhi load ho raha hai, thodi der baad try karein।'); return;
-    }
+window.approveShop = async function(reqId, userId, naam, phone, district, area, lat, lng, category) {
+    if (!confirm(`"${naam}" ko APPROVE karna chahte ho?\n\nYeh dukaan ab Gramoo par live ho jaayegi.`)) return;
     try {
-        await _add(_col(_db, 'problemReports'), {
-            category,
-            desc:        document.getElementById('rpDesc').value.trim() || '—',
-            phone:       document.getElementById('rpPhone').value.trim() || '—',
-            page:        'shop.html',
-            url:         window.location.href,
-            activeTab:   typeof currentTab !== 'undefined' ? currentTab : '—',
-            device:      getDeviceType(),
-            browser:     getBrowserName(),
-            browserFull: navigator.userAgent.substring(0,120),
-            screen:      window.screen.width + '×' + window.screen.height,
-            loginStatus: u ? 'logged_in'  : 'logged_out',
-            userEmail:   u ? (u.email||'—') : '—',
-            userUID:     u ? (u.uid||'—')   : '—',
-            createdAt:   _ts(),
-            type:        'problem_report'
-        });
-        document.getElementById('rpForm').style.display    = 'none';
-        document.getElementById('rpSuccess').style.display = 'block';
-        setTimeout(() => closeReportProblem(), 3000);
-    } catch(err) {
-        btn.disabled    = false;
-        btn.textContent = '🚨 Report भेजें';
-        alert('Error: ' + err.message);
-    }
-}
-document.getElementById('rpOverlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('rpOverlay')) closeReportProblem();
-});
-</script>
+        const now = serverTimestamp();
 
+        // 1. shopRequests mein status update karo
+        await updateDoc(doc(db, "shopRequests", reqId), {
+            status:     "approved",
+            approvedAt: now,
+            approvedBy: "admin"
+        });
+
+        // 2. shops/{userId} document create karo — shop.html isi se check karta hai
+        await setDoc(doc(db, "shops", userId), {
+            naam:      naam,
+            phone:     phone,
+            district:  district,
+            area:      area,
+            lat:       parseFloat(lat) || 0,
+            lng:       parseFloat(lng) || 0,
+            category:  category || "general",
+            status:    "approved",
+            uid:       userId,
+            approvedAt: now,
+            createdAt:  now
+        });
+
+        alert(`✅ "${naam}" approve ho gayi!\nDukandaar ko portal access mil gaya.`);
+        // Manually update UI for instant feedback
+        const req = DATA.shopReqs.find(r => r.id === reqId);
+        if (req) req.status = 'approved';
+        renderShopRequests();
+        updateShopBadge();
+
+    } catch(e) { alert("Error: " + e.message); }
+};
+
+window.openRejectModal = function(reqId, userId) {
+    document.getElementById("rejectReqId").value = reqId;
+    document.getElementById("rejectUid").value = userId;
+    document.getElementById("rejectReason").value = "";
+    document.getElementById("rejectModal").classList.add("active");
+};
+window.closeRejectModal = function() {
+    document.getElementById("rejectModal").classList.remove("active");
+};
+window.confirmReject = async function() {
+    const reqId  = document.getElementById("rejectReqId").value;
+    const userId = document.getElementById("rejectUid").value;
+    const reason = document.getElementById("rejectReason").value.trim();
+    try {
+        await updateDoc(doc(db, "shopRequests", reqId), {
+            status: "rejected",
+            rejectReason: reason || "Admin ne reject kiya",
+            rejectedAt: serverTimestamp()
+        });
+        // shops collection se bhi hata do agar tha
+        await updateDoc(doc(db, "shops", userId), { status: "rejected" }).catch(()=>{});
+        closeRejectModal();
+        alert("Request reject ho gayi.");
+        // Manually update UI for instant feedback
+        const req = DATA.shopReqs.find(r => r.id === reqId);
+        if (req) {
+            req.status = 'rejected';
+            req.rejectReason = reason || "Admin ne reject kiya";
+        }
+        renderShopRequests();
+        updateShopBadge();
+    } catch(e) { alert("Error: " + e.message); }
+};
+
+window.deleteShopReq = async function(reqId, naam) {
+    if (!confirm(`"${naam}" ki request ko 'Deleted' mark karna chahte ho?\n\nयह लिस्ट से हट जाएगी पर database में record रहेगा।`)) return;
+    try {
+        await updateDoc(doc(db, "shopRequests", reqId), { status: 'deleted' });
+        // Active shop ko bhi disable karo
+        await updateDoc(doc(db, "shops", reqId), { status: 'deleted' }).catch(()=>{});
+        alert("✅ Request 'deleted' mark ho gayi!");
+        // Manually update UI for instant feedback
+        const req = DATA.shopReqs.find(r => r.id === reqId);
+        if (req) req.status = 'deleted';
+        // Re-render to apply filter
+        renderShopRequests();
+        updateShopBadge(); // Badge count update hoga
+    } catch(e) { alert("Error: " + e.message); }
+};
+
+// ── LISTINGS ──
+function renderListingsTable() {
+    const search = document.getElementById("listingSearch").value.toLowerCase();
+    const type   = document.getElementById("listingType").value;
+    const filtered = (DATA[type]||[]).filter(i => JSON.stringify(i).toLowerCase().includes(search));
+    const el = document.getElementById("listingsTable");
+    if (!filtered.length) { el.innerHTML='<div class="empty"><div>📋</div><p>Koi listing nahi mili</p></div>'; return; }
+    const isGrain = type==="sell"||type==="buy";
+    el.innerHTML = `<table>
+        <tr><th>Naam</th><th>${isGrain?"Anaaj":type==="shop"?"Category":"Type"}</th>
+        <th>${isGrain?"Qty/Price":type==="shop"?"Product":"Title"}</th>
+        <th>Jagah</th><th>Samay</th><th>Action</th></tr>
+        ${filtered.map(i=>`<tr>
+            <td><b>${i.name||"—"}</b></td>
+            <td>${i.grain||i.cat||i.type||"—"}</td>
+            <td>${isGrain?(i.qty+"KG @ ₹"+i.price):(i.product||i.title||"—")}</td>
+            <td>${i.loc||"—"}</td><td>${timeAgo(i.createdAt)}</td>
+            <td>
+                <button class="btn-edit" onclick="openEdit('${type}','${i.id}')">✏️</button>
+                <button class="btn-del"  onclick="delListing('${type}','${i.id}','${(i.name||i.title||"").replace(/'/g,"\\'")}')">🗑️</button>
+            </td>
+        </tr>`).join("")}
+    </table>`;
+}
+
+window.delListing = async (col, id, name) => {
+    if (!confirm(`"${name}" delete karna chahte ho?`)) return;
+    try { await deleteDoc(doc(db,col,id)); alert("✅ Delete ho gayi!"); }
+    catch(e) { alert("Error: "+e.message); }
+};
+
+window.openEdit = async (col, id) => {
+    const snap = await getDoc(doc(db,col,id));
+    if (!snap.exists()) { alert("Listing nahi mili!"); return; }
+    const data = snap.data();
+    document.getElementById("editId").value = id;
+    document.getElementById("editCollection").value = col;
+    const fields = ["name","grain","cat","product","title","qty","price","loc","desc","type"];
+    const labels = {name:"Naam",grain:"Anaaj",cat:"Category",product:"Product",title:"Title",qty:"Quantity (KG)",price:"Price",loc:"Jagah",desc:"Description",type:"Type"};
+    let html = "";
+    fields.forEach(f => {
+        if (data[f]!==undefined&&data[f]!==null)
+            html+=`<div class="fgroup"><label>${labels[f]||f}</label><input type="text" id="ef_${f}" value="${String(data[f]).replace(/"/g,'&quot;')}"></div>`;
+    });
+    document.getElementById("editFields").innerHTML = html;
+    document.getElementById("editModal").classList.add("active");
+};
+window.closeEdit = () => document.getElementById("editModal").classList.remove("active");
+window.saveEdit  = async () => {
+    const id=document.getElementById("editId").value, col=document.getElementById("editCollection").value;
+    const fields=["name","grain","cat","product","title","qty","price","loc","desc","type"];
+    const updates={};
+    fields.forEach(f=>{const el=document.getElementById("ef_"+f);if(el)updates[f]=f==="qty"||f==="price"?Number(el.value):el.value;});
+    try { await updateDoc(doc(db,col,id),updates); alert("✅ Update ho gayi!"); window.closeEdit(); }
+    catch(e) { alert("Error: "+e.message); }
+};
+
+// ── CATEGORIES ──
+function loadCategories() {
+    onSnapshot(collection(db,"categories"), snap => {
+        DATA.categories = snap.docs.map(d=>({id:d.id,...d.data()}));
+        renderCategories();
+    });
+}
+function renderCategories() {
+    ["grain","shop","suchna"].forEach(type => {
+        const cats = DATA.categories.filter(c=>c.type===type);
+        const el = document.getElementById("cat"+type.charAt(0).toUpperCase()+type.slice(1));
+        if (!el) return;
+        el.innerHTML = cats.length
+            ? cats.map(c=>`<div class="cat-tag">
+                <span>${c.name}</span>
+                <span class="del-cat" onclick="deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">×</span>
+              </div>`).join("")
+            : '<span style="color:#aaa;font-size:13px">Koi category nahi</span>';
+    });
+}
+window.addCategory = async (type) => {
+    const inputId="new"+type.charAt(0).toUpperCase()+type.slice(1);
+    const val=document.getElementById(inputId).value.trim();
+    if (!val) { alert("Category naam likho!"); return; }
+    if (DATA.categories.some(c=>c.type===type&&c.name===val)) { alert("Pehle se hai!"); return; }
+    try {
+        await addDoc(collection(db,"categories"),{type,name:val,createdAt:serverTimestamp()});
+        document.getElementById(inputId).value="";
+    } catch(e) { alert("Error: "+e.message); }
+};
+window.deleteCat = async (id, name) => {
+    if (!confirm(`"${name}" delete karna chahte ho?`)) return;
+    try { await deleteDoc(doc(db,"categories",id)); }
+    catch(e) { alert("Error: "+e.message); }
+};
+
+// ── SITE SETTINGS ──
+async function loadSettings() {
+    try {
+        const snap = await getDoc(doc(db,"settings","tabs"));
+        const d = snap.exists() ? snap.data() : { shop:false, suchna:false };
+        document.getElementById("toggleShop").checked   = d.shop   === true;
+        document.getElementById("toggleSuchna").checked = d.suchna === true;
+        if (!snap.exists()) await setDoc(doc(db,"settings","tabs"),{shop:false,suchna:false});
+    } catch(e) { console.log("Settings error:", e.message); }
+
+    document.getElementById("toggleShop").addEventListener("change", async (e) => {
+        const suchna = document.getElementById("toggleSuchna").checked;
+        await setDoc(doc(db,"settings","tabs"),{shop:e.target.checked,suchna});
+        alert(e.target.checked ? "✅ Dukan tab ON!" : "⛔ Dukan tab BAND!");
+    });
+    document.getElementById("toggleSuchna").addEventListener("change", async (e) => {
+        const shop = document.getElementById("toggleShop").checked;
+        await setDoc(doc(db,"settings","tabs"),{shop,suchna:e.target.checked});
+        alert(e.target.checked ? "✅ Suchna tab ON!" : "⛔ Suchna tab BAND!");
+    });
+}
+
+// ── FEEDBACK ──
+function loadFeedback() {
+    onSnapshot(query(collection(db,"feedback"),orderBy("createdAt","desc")), snap => {
+        DATA.feedback = snap.docs.map(d=>({id:d.id,...d.data()}));
+        renderFeedback();
+        document.getElementById("dTotalFeedback").textContent = DATA.feedback.length;
+    });
+}
+function renderFeedback() {
+    const el = document.getElementById("feedbackList");
+    if (!DATA.feedback.length) { el.innerHTML='<div class="empty"><div>💬</div><p>Abhi koi feedback nahi</p></div>'; return; }
+    const stars = r => "⭐".repeat(Math.min(r||0,5))+"☆".repeat(Math.max(5-(r||0),0));
+    el.innerHTML = DATA.feedback.map(f=>`
+        <div class="feedback-card">
+            <div class="feedback-stars">${stars(f.rating)} <span style="font-size:13px;color:#888">(${f.rating||"?"}/5)</span></div>
+            <div class="feedback-text">"${f.text||"—"}"</div>
+            <div class="feedback-meta">
+                👤 ${f.name||"Anonymous"} &nbsp;•&nbsp; 📍 ${f.loc||"—"} &nbsp;•&nbsp; 🕐 ${timeAgo(f.createdAt)}
+                <button class="btn-del" onclick="delFeedback('${f.id}')">🗑️ Delete</button>
+            </div>
+        </div>`).join("");
+}
+window.delFeedback = async (id) => {
+    if (!confirm("Feedback delete karna chahte ho?")) return;
+    try { await deleteDoc(doc(db,"feedback",id)); }
+    catch(e) { alert("Error: "+e.message); }
+};
+
+// ── REPORTS ──
+function loadReports() {
+    onSnapshot(collection(db,"reports"), snap => {
+        DATA.reports = snap.docs.map(d=>({id:d.id,...d.data()}));
+        renderReports();
+        document.getElementById("dTotalReports").textContent = DATA.reports.filter(r=>r.status==="pending"||!r.status).length;
+    });
+}
+function renderReports() {
+    const el = document.getElementById("reportsTable");
+    const reports = DATA.reports.filter(r=>r.reason);
+    if (!reports.length) { el.innerHTML='<div class="empty"><div>✅</div><p>Koi report nahi hai</p></div>'; return; }
+    el.innerHTML=`<table>
+        <tr><th>Karan</th><th>Listing</th><th>Reporter</th><th>Status</th><th>Action</th></tr>
+        ${reports.map(r=>`<tr>
+            <td>${r.reason||"—"}</td><td>${r.listingDesc||"—"}</td>
+            <td>${r.phone||"Anonymous"}</td>
+            <td><span class="badge badge-${r.status||'pending'}">${r.status==="resolved"?"✅ Resolved":"⏳ Pending"}</span></td>
+            <td>
+                ${r.status!=="resolved"?`<button class="btn-approve" onclick="resolveReport('${r.id}')">✅ Resolve</button>`:""}
+                <button class="btn-del" onclick="delReport('${r.id}')">🗑️</button>
+            </td>
+        </tr>`).join("")}
+    </table>`;
+}
+window.resolveReport = async (id) => {
+    try { await updateDoc(doc(db,"reports",id),{status:"resolved"}); }
+    catch(e) { alert("Error: "+e.message); }
+};
+window.delReport = async (id) => {
+    if (!confirm("Delete karna chahte ho?")) return;
+    try { await deleteDoc(doc(db,"reports",id)); }
+    catch(e) { alert("Error: "+e.message); }
+};
+
+// ── TRAFFIC ──
+function updateTraffic() {
+    document.getElementById("tSell").textContent   = DATA.sell.length;
+    document.getElementById("tBuy").textContent    = DATA.buy.length;
+    document.getElementById("tShop").textContent   = DATA.shop.length;
+    document.getElementById("tSuchna").textContent = DATA.suchna.length;
+}
+
+// ── HELPER ──
+function timeAgo(ts) {
+    if (!ts) return "—";
+    const sec=Math.floor((Date.now()-ts.toMillis())/1000);
+    if (sec<60) return "Abhi";
+    if (sec<3600) return Math.floor(sec/60)+" min pehle";
+    if (sec<86400) return Math.floor(sec/3600)+" ghante pehle";
+    return Math.floor(sec/86400)+" din pehle";
+}
+</script>
 </body>
 </html>
