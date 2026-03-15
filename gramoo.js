@@ -27,7 +27,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, doc, setDoc }
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, doc, setDoc, updateDoc, deleteDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ── 1. Firebase Init ─────────────────────────────────────
@@ -751,6 +751,19 @@ function openForm(defaultTab) {
         return;
     }
 
+    // Form reset karo (agar edit mode se aa rahe hain)
+    const anaajFormEl = document.getElementById("anaaj-form")?.querySelector("form");
+    if (anaajFormEl) {
+        anaajFormEl.reset();
+        document.getElementById('fEditId').value = '';
+        document.getElementById('fEditCollection').value = '';
+        document.getElementById('fSubmitBtn').textContent = '✅ लिस्टिंग जोड़ें';
+        updateSubtypeDropdown();
+        // Phone validation UI bhi reset karo
+        const fwaInput = DOM.fWA();
+        if (fwaInput) validatePhone(fwaInput,"fWAErr","fWAOk");
+    }
+
     // "फसल खरीदें" — form kholo with type=खरीदना है
     if (defaultTab === "kharido") {
         DOM.modalOverlay().classList.add("active");
@@ -774,7 +787,19 @@ function openForm(defaultTab) {
     const typeSel = document.getElementById("fType");
     if (typeSel) typeSel.value = "बेचना है";
 }
-function closeForm() { DOM.modalOverlay().classList.remove("active"); }
+function closeForm() {
+    DOM.modalOverlay().classList.remove("active");
+    // Edit mode se bahar aane par form reset karo
+    const anaajFormEl = document.getElementById("anaaj-form")?.querySelector("form");
+    if (anaajFormEl) {
+        anaajFormEl.reset();
+        document.getElementById('fEditId').value = '';
+        document.getElementById('fEditCollection').value = '';
+        document.getElementById('fSubmitBtn').textContent = '✅ लिस्टिंग जोड़ें';
+        updateSubtypeDropdown();
+        validatePhone(DOM.fWA(),"fWAErr","fWAOk");
+    }
+}
 
 // Login required popup — contact/submit ke waqt
 function requireLogin(msg) {
@@ -850,6 +875,9 @@ async function addAnaajListing(e) {
         requireLogin("लिस्टिंग डालने के लिए Login करें");
         return;
     }
+    const editId = document.getElementById('fEditId').value;
+    const editCollection = document.getElementById('fEditCollection').value;
+
     const inp = DOM.fWA();
     if (!validatePhone(inp,"fWAErr","fWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
     const wa = inp.value.trim();
@@ -860,8 +888,7 @@ async function addAnaajListing(e) {
     const subtype     = document.getElementById("fSubtype")?.value || "";
     const collection_name = listingType === "खरीदना है" ? "buy" : "sell";
 
-    try {
-        await addDoc(collection(db, collection_name), {
+    const data = {
             name:  DOM.fName().value,
             grain: DOM.fGrain().value,
             subtype: subtype,
@@ -871,25 +898,48 @@ async function addAnaajListing(e) {
             loc:   DOM.fLoc().value,
             wa:    encPhone(wa),
             desc:  DOM.fDesc().value,
-            tag:   "naya", verified: false,
-            uid:   G.currentUser.uid,
-            lat:   G.userLat||28.40, lng: G.userLng||77.85,
-            createdAt: serverTimestamp()
-        });
-        DOM.successMsg().style.display = "block";
-        // email ke liye values reset se PEHLE save karo
-        const emailData = {
-            type:  listingType,
-            grain: DOM.fGrain().value,
-            qty:   DOM.fQty().value   || '',
-            price: DOM.fPrice().value || '',
-            loc:   DOM.fLoc().value,
-            name:  DOM.fName().value,
-        };
-        e.target.reset();
-        updateSubtypeDropdown();
-        sendListingEmail(G.currentUser, emailData);
-        setTimeout(() => { closeForm(); openMissedCall(); }, 1500);
+    };
+
+    try {
+        if (editId && editCollection) {
+            // UPDATE logic
+            data.updatedAt = serverTimestamp();
+            // Agar user ne type (sell/buy) change kiya hai
+            if (editCollection !== collection_name) {
+                // Delete old and create new
+                await deleteDoc(doc(db, editCollection, editId));
+                data.uid = G.currentUser.uid;
+                data.createdAt = serverTimestamp();
+                data.lat = G.userLat||28.40;
+                data.lng = G.userLng||77.85;
+                await addDoc(collection(db, collection_name), data);
+            } else {
+                // Simple update
+                await updateDoc(doc(db, collection_name, editId), data);
+            }
+            DOM.successMsg().textContent = "✅ लिस्टिंग अपडेट हो गई!";
+            DOM.successMsg().style.display = "block";
+            setTimeout(() => closeForm(), 1500);
+
+        } else {
+            // CREATE logic (existing)
+            data.tag = "naya";
+            data.verified = false;
+            data.uid = G.currentUser.uid;
+            data.lat = G.userLat||28.40;
+            data.lng = G.userLng||77.85;
+            data.createdAt = serverTimestamp();
+            await addDoc(collection(db, collection_name), data);
+
+            DOM.successMsg().textContent = "✅ सेव हो गया! सभी को दिखेगा।";
+            DOM.successMsg().style.display = "block";
+            const emailData = { type: listingType, grain: data.grain, qty: data.qty, price: data.price, loc: data.loc, name: data.name };
+            e.target.reset();
+            updateSubtypeDropdown();
+            sendListingEmail(G.currentUser, emailData);
+            setTimeout(() => { closeForm(); openMissedCall(); }, 1500);
+        }
+
     } catch(err) { alert("❌ Error: " + err.message); }
     setLoading("fSubmitBtn", false);
 }
@@ -960,6 +1010,10 @@ function bindEvents() {
     if (btnLogout)          btnLogout.addEventListener("click", () => signOut(auth));
     if (btnMyListings)      btnMyListings.addEventListener("click", openMyListings);
     if (btnCloseMyListings) btnCloseMyListings.addEventListener("click", closeMyListings);
+
+    // My Listings panel actions
+    const myListingsBody = document.getElementById("myListingsBody");
+    if (myListingsBody) myListingsBody.addEventListener("click", handleMyListingsActions);
 
     // Header btn — null-safe
     const headerBtn = document.querySelector(".header-btn");
@@ -1241,8 +1295,16 @@ function renderMyListings() {
     const body = document.getElementById("myListingsBody");
     if (!body || !G.currentUser) return;
     const uid = G.currentUser.uid;
-    const all = [...(G.allSell||[]), ...(G.allBuy||[]), ...(G.allShop||[]), ...(G.allSuchna||[])]
-        .filter(i => i.uid === uid);
+
+    // Add collection info to each item
+    const sellItems   = (G.allSell   || []).filter(i => i.uid === uid).map(i => ({ ...i, collection: 'sell' }));
+    const buyItems    = (G.allBuy    || []).filter(i => i.uid === uid).map(i => ({ ...i, collection: 'buy' }));
+    const shopItems   = (G.allShop   || []).filter(i => i.uid === uid).map(i => ({ ...i, collection: 'shop' }));
+    const suchnaItems = (G.allSuchna || []).filter(i => i.uid === uid).map(i => ({ ...i, collection: 'suchna' }));
+
+    const all = [...sellItems, ...buyItems, ...shopItems, ...suchnaItems];
+    all.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+
     if (!all.length) {
         body.innerHTML = '<p style="text-align:center;color:#888;padding:20px">अभी कोई listing नहीं</p>';
         return;
@@ -1251,11 +1313,62 @@ function renderMyListings() {
         <div class="my-listing-item">
             <div>
                 <div class="my-listing-title">${i.name||i.title||"—"}</div>
-                <div class="my-listing-meta">${i.grain||i.product||i.type||""} • ${i.loc||""}</div>
+                <div class="my-listing-meta">
+                    ${i.grain||i.product||i.type||""} • ${i.loc||""} • <span style="color:#aaa">${timeAgo(i.createdAt)}</span>
+                </div>
+            </div>
+            <div class="my-listing-actions">
+                <button class="btn-my-edit" data-action="edit-my-listing" data-id="${i.id}" data-collection="${i.collection}">✏️ Edit</button>
+                <button class="btn-my-delete" data-action="delete-my-listing" data-id="${i.id}" data-collection="${i.collection}">🗑️ Delete</button>
             </div>
         </div>`).join("");
 }
 
+async function handleMyListingsActions(e) {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+
+    const { action, id, collection } = btn.dataset;
+
+    if (action === "delete-my-listing") {
+        if (!confirm("क्या आप इस लिस्टिंग को पक्का हटाना चाहते हैं?")) return;
+        try {
+            await deleteDoc(doc(db, collection, id));
+            // The list will auto-update because of the onSnapshot listener.
+            alert("✅ लिस्टिंग हटा दी गई!");
+        } catch (err) {
+            alert("❌ Error: " + err.message);
+        }
+    }
+
+    if (action === "edit-my-listing") {
+        const item = G[`all${collection.charAt(0).toUpperCase() + collection.slice(1)}`].find(i => i.id === id);
+        if (!item) { alert("लिस्टिंग नहीं मिली!"); return; }
+        openFormForEdit(collection, item);
+    }
+}
+
+function openFormForEdit(collection, item) {
+    if (collection !== 'sell' && collection !== 'buy') {
+        alert("इस प्रकार की लिस्टिंग के लिए अभी एडिटिंग उपलब्ध नहीं है।");
+        return;
+    }
+    openForm();
+    document.getElementById('fEditId').value = item.id;
+    document.getElementById('fEditCollection').value = collection;
+    DOM.fName().value = item.name || '';
+    document.getElementById('fType').value = item.type || (collection === 'sell' ? 'बेचना है' : 'खरीदना है');
+    DOM.fGrain().value = item.grain || '';
+    updateSubtypeDropdown();
+    document.getElementById('fSubtype').value = item.subtype || '';
+    DOM.fQty().value = item.qty || '';
+    DOM.fPrice().value = item.price || '';
+    DOM.fLoc().value = item.loc || '';
+    DOM.fWA().value = decPhone(item.wa) || '';
+    DOM.fDesc().value = item.desc || '';
+    document.getElementById('fSubmitBtn').textContent = '💾 अपडेट करें';
+    closeMyListings();
+}
 
 // ── Window Exports (type=module ke liye zaroori) ─────────
 window.updateSubtypeDropdown = updateSubtypeDropdown;
