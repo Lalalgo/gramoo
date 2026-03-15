@@ -666,7 +666,7 @@ function renderShopRequests() {
                         💬 WhatsApp
                     </a>
                 ` : ""}
-                ${status !== 'demo' && status !== 'deleted' ? `<button class="btn-del" onclick="deleteShopReq('${reqId}','${(r.shopName||"").replace(/'/g,"\\'")}')">🗑️ Delete</button>` : ''}
+                ${status !== 'demo' && status !== 'deleted' ? `<button class="btn-del" onclick="deleteShopReq('${reqId}','${userId}','${(r.shopName||"").replace(/'/g,"\\'")}')">🗑️ Delete</button>` : ''}
             </div>
         </div>`;
     }).join("");
@@ -743,12 +743,12 @@ window.confirmReject = async function() {
     } catch(e) { alert("Error: " + e.message); }
 };
 
-window.deleteShopReq = async function(reqId, naam) {
+window.deleteShopReq = async function(reqId, userId, naam) {
     if (!confirm(`"${naam}" ki request ko 'Deleted' mark karna chahte ho?\n\nयह लिस्ट से हट जाएगी पर database में record रहेगा।`)) return;
     try {
         await updateDoc(doc(db, "shopRequests", reqId), { status: 'deleted' });
         // Active shop ko bhi disable karo
-        await updateDoc(doc(db, "shops", reqId), { status: 'deleted' }).catch(()=>{});
+        await updateDoc(doc(db, "shops", userId), { status: 'deleted' }).catch(()=>{});
         alert("✅ Request 'deleted' mark ho gayi!");
         // Manually update UI for instant feedback
         const req = DATA.shopReqs.find(r => r.id === reqId);
