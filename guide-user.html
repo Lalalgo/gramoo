@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gramoo User Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Baloo 2', sans-serif;
+            background: #f1f8e9;
+            color: #1b2a1b;
+            line-height: 1.7;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 24px 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(27,94,32,0.10);
+            border-top: 5px solid #2e7d32;
+        }
+        h1 {
+            color: #1b5e20;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        h1 span {
+            font-size: 14px;
+            color: #5a7a5a;
+            display: block;
+        }
+        h2 {
+            color: #2e7d32;
+            font-size: 20px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #c8e6c9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h3 {
+            color: #43a047;
+            font-size: 16px;
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+        p, ul {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 6px;
+        }
+        .key {
+            background: #e8f5e9;
+            color: #1b5e20;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: 'Segoe UI', monospace;
+            font-weight: 600;
+            border: 1px solid #c8e6c9;
+        }
+        .print-btn {
+            display: block;
+            width: 200px;
+            margin: 24px auto 0;
+            padding: 12px;
+            background: #1b5e20;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        @media print {
+            body { padding: 0; background: none; }
+            .container { box-shadow: none; border: none; padding: 0; }
+            .print-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌾 Gramoo User Guide <span>(उपयोग करने की पूरी जानकारी)</span></h1>
+        <div id="guideContent" style="padding: 40px 20px; text-align: center; color: #888; font-size: 14px;">
+            ⏳ Guide load ho rahi hai...
+        </div>
+        <button class="print-btn" onclick="window.print()">📄 Print / Save as PDF</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey:            "AIzaSyAeeN9ijnSuA3IyV43QQsiEshTrRdEjL0A",
+            authDomain:        "gramoo-44d83.firebaseapp.com",
+            projectId:         "gramoo-44d83",
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadGuideContent() {
+            const contentEl = document.getElementById('guideContent');
+            try {
+                const snap = await getDoc(doc(db, "settings", "guides"));
+                if (snap.exists() && snap.data().userGuide) {
+                    contentEl.innerHTML = snap.data().userGuide;
+                    contentEl.style.textAlign = 'left';
+                    contentEl.style.padding = '0';
+                } else {
+                    contentEl.innerHTML = '<p>Guide abhi uplabdh nahi hai.</p>';
+                }
+            } catch (e) {
+                console.error("Error loading guide:", e);
+                contentEl.innerHTML = '<p>Guide load nahi ho saki. Internet connection check karein.</p>';
+            }
+        }
+        loadGuideContent();
+    </script>
+</body>
+</html>
