@@ -3,6 +3,9 @@ const CACHE = 'gramoo-v2';
 const ASSETS = [
   '/',
   '/index.html',
+  '/shop.html',
+  '/guide-user.html',
+  '/guide-shopkeeper.html',
   '/style.css',
   '/gramoo.js',
   '/legal.js',
