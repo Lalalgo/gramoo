@@ -180,7 +180,7 @@
 <header>
     <div class="logo">🌾 Gramoo <span>किसान की डिजिटल मंडी</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-        <button class="btn-help-nav" onclick="openHelpModal()">❓ सहायता</button>
+        <a href="guide-user.html" target="_blank" class="btn-help-nav" style="text-decoration: none;">❓ सहायता</a>
         <span class="fb-status fb-online" id="fbStatus">● Live</span>
         <!-- Login elements — hidden, JS use karta hai -->
         <button class="auth-btn" id="authBtn" style="display:none;">🔐 Login</button>
@@ -499,47 +499,6 @@
                 <button type="submit" class="btn-submit blue" id="nSubmitBtn">📢 सूचना प्रकाशित करें</button>
             </form>
         </div>
-    </div>
-</div>
-
-<!-- HELP / GUIDE MODAL -->
-<div class="legal-overlay" id="helpModal" onclick="if(event.target===this) closeHelp()">
-    <div class="legal-box">
-        <div class="legal-header">
-            <h3>📚 Gramoo कैसे इस्तेमाल करें?</h3>
-            <button class="legal-close" onclick="closeHelp()">✕</button>
-        </div>
-        <div class="legal-body">
-            <div class="help-step">
-                <div class="help-num">1</div>
-                <div class="help-content">
-                    <h4>🌾 फसल कैसे बेचें?</h4>
-                    <p>"<b>फसल बेचें</b>" बटन दबाएं, फॉर्म में अनाज का नाम, मात्रा और कीमत भरें। 'Submit' करते ही आपकी लिस्टिंग सबको दिखने लगेगी।</p>
-                </div>
-            </div>
-            <div class="help-step">
-                <div class="help-num">2</div>
-                <div class="help-content">
-                    <h4>🛒 फसल कैसे खरीदें?</h4>
-                    <p>होम पेज पर लिस्ट देखें या "<b>फसल खरीदें</b>" बटन दबाकर अपनी ज़रूरत बताएं। विक्रेता आपसे WhatsApp पर संपर्क करेंगे।</p>
-                </div>
-            </div>
-            <div class="help-step">
-                <div class="help-num">3</div>
-                <div class="help-content">
-                    <h4>🏪 अपनी दुकान कैसे जोड़ें?</h4>
-                    <p>"<b>नज़दीकी दुकान</b>" टैब पर जाएं → "अपनी दुकान जोड़ें" बटन दबाएं। जानकारी भरें, Admin अप्रूव होते ही दुकान लाइव हो जाएगी।</p>
-                </div>
-            </div>
-            <div class="help-step">
-                <div class="help-num">4</div>
-                <div class="help-content">
-                    <h4>🔐 लॉग इन क्यों जरूरी है?</h4>
-                    <p>लिस्टिंग डालने के लिए <b>Google Login</b> जरूरी है ताकि हम फर्जी लोगों को रोक सकें। यह पूरी तरह सुरक्षित है।</p>
-                </div>
-            </div>
-        </div>
-        <div class="legal-footer"><button onclick="closeHelp()">✅ समझ गया</button></div>
     </div>
 </div>
 
