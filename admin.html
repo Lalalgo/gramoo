@@ -197,6 +197,7 @@
     <div class="nav-tabs">
         <button class="nav-tab active" data-sec="dashboard">📊 Dashboard</button>
         <button class="nav-tab" data-sec="shops">🏪 Dukan Requests <span class="nav-badge" id="shopBadge" style="display:none">0</span></button>
+        <button class="nav-tab" data-sec="item-requests">📦 Item Requests <span class="nav-badge" id="itemReqBadge" style="display:none">0</span></button>
         <button class="nav-tab" data-sec="listings">📋 Listings</button>
         <button class="nav-tab" data-sec="categories">🏷️ Categories</button>
         <button class="nav-tab" data-sec="settings">⚙️ Settings</button>
@@ -257,6 +258,21 @@
             </div>
 
             <div id="shopRequestsList"><div class="loading">Load ho raha hai...</div></div>
+        </div>
+
+        <!-- ITEM ADD REQUESTS -->
+        <div class="section" id="sec-item-requests">
+            <div class="sec-title">
+                📦 New Item Add Requests
+                <span id="itemReqCount" style="font-size:13px;font-weight:400;color:var(--muted);"></span>
+            </div>
+            <div class="reg-filter-tabs">
+                <button class="reg-filter-tab active" data-filter="pending"  onclick="filterItemReqs('pending',this)">⏳ Pending</button>
+                <button class="reg-filter-tab"        data-filter="approved" onclick="filterItemReqs('approved',this)">✅ Approved</button>
+                <button class="reg-filter-tab"        data-filter="rejected" onclick="filterItemReqs('rejected',this)">❌ Rejected</button>
+                <button class="reg-filter-tab"        data-filter="all"      onclick="filterItemReqs('all',this)">📋 Sabhi</button>
+            </div>
+            <div id="itemRequestsList"><div class="loading">Load ho raha hai...</div></div>
         </div>
 
         <!-- LISTINGS -->
@@ -510,13 +526,15 @@ window.goTo = function(sec) {
     if (el) el.classList.add("active");
 };
 
-const DATA = { sell:[], buy:[], shop:[], suchna:[], reports:[], categories:[], feedback:[], shopReqs:[] };
+const DATA = { sell:[], buy:[], shop:[], suchna:[], reports:[], categories:[], feedback:[], shopReqs:[], itemReqs:[] };
 let shopReqFilter = "pending";
+let itemReqFilter = "pending";
 
 function loadAll() {
     loadListeners();
     loadShopRequests();
     loadCategories();
+    loadItemRequests();
     loadReports();
     loadFeedback();
     loadSettings();
@@ -782,6 +800,109 @@ window.deleteShopReq = async function(reqId, userId, naam) {
     } catch(e) { alert("Error: " + e.message); }
 };
 
+// ── ITEM ADD REQUESTS ─────────────────────────
+function loadItemRequests() {
+    onSnapshot(query(collection(db,"itemAddRequests"), orderBy("createdAt","desc")), snap => {
+        DATA.itemReqs = snap.docs.map(d => ({id:d.id,...d.data()}));
+        updateItemReqBadge();
+        renderItemRequests();
+    });
+}
+
+function updateItemReqBadge() {
+    const pending = DATA.itemReqs.filter(r => r.status === "pending").length;
+    const badge   = document.getElementById("itemReqBadge");
+    if (pending > 0) {
+        badge.style.display = "flex";
+        badge.textContent   = pending;
+    } else {
+        badge.style.display = "none";
+    }
+}
+
+window.filterItemReqs = function(filter, el) {
+    itemReqFilter = filter;
+    document.querySelectorAll("#sec-item-requests .reg-filter-tab").forEach(b => b.classList.remove("active"));
+    el.classList.add("active");
+    renderItemRequests();
+};
+
+function renderItemRequests() {
+    const el = document.getElementById("itemRequestsList");
+    let list = DATA.itemReqs;
+    if (itemReqFilter !== "all") {
+        list = list.filter(r => (r.status||"pending") === itemReqFilter);
+    }
+
+    document.getElementById("itemReqCount").textContent = `(${list.length} ${itemReqFilter})`;
+
+    if (!list.length) {
+        el.innerHTML = `<div class="empty"><div>📦</div><p>Koi item request nahi</p></div>`;
+        return;
+    }
+
+    const catOptions = `<option value="">-- Category Chuno --</option>
+                        <option value="खाद">🌿 खाद</option>
+                        <option value="बीज">🌱 बीज</option>
+                        <option value="कीटनाशक">💊 कीटनाशक</option>
+                        <option value="यंत्र">🚜 यंत्र</option>
+                        <option value="पशु आहार">🐄 पशु आहार</option>
+                        <option value="अन्य">🧪 अन्य</option>`;
+
+    el.innerHTML = list.map(r => {
+        const status = r.status || 'pending';
+        return `
+        <div class="reg-card ${status}" id="itemreq-${r.id}">
+            <div class="reg-card-top">
+                <div>
+                    <div class="reg-shop-name" style="color: var(--blue);">📦 ${r.itemName||"—"}</div>
+                    <div class="reg-meta">
+                        <b>Brand:</b> ${r.brand||"N/A"}<br>
+                        <b>Karan:</b> ${r.reason||"—"}<br>
+                        <b>Requested by:</b> ${r.shopName||"—"} &nbsp;•&nbsp; 🕐 ${timeAgo(r.createdAt)}
+                    </div>
+                </div>
+                <span class="badge badge-${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+            </div>
+            <div class="reg-actions">
+                ${status === "pending" ? `
+                    <select id="cat-for-${r.id}" style="padding:5px 8px; border-radius:6px; border:1px solid #ccc;">${catOptions}</select>
+                    <button class="btn-approve" onclick="approveItemRequest('${r.id}', '${(r.itemName||"").replace(/'/g,"\\'")}', '${(r.brand||"").replace(/'/g,"\\'")}')">
+                        ✅ Approve करें
+                    </button>
+                    <button class="btn-reject" onclick="rejectItemRequest('${r.id}')">
+                        ❌ Reject करें
+                    </button>
+                ` : ""}
+                <button class="btn-del" onclick="deleteItemRequest('${r.id}')">🗑️ Delete</button>
+            </div>
+        </div>`;
+    }).join("");
+}
+
+window.approveItemRequest = async function(reqId, itemName, brand) {
+    const category = document.getElementById(`cat-for-${reqId}`).value;
+    if (!category) { alert("Pehle category chuno!"); return; }
+    if (!confirm(`"${itemName}" ko '${category}' category mein approve karna hai?`)) return;
+    try {
+        await addDoc(collection(db, "masterItems"), {
+            nameHi: itemName, nameEn: '', cat: category,
+            brands: brand ? [brand] : [], packs: ['Per Piece'],
+            addedBy: 'admin', sourceRequestId: reqId, createdAt: serverTimestamp()
+        });
+        await updateDoc(doc(db, "itemAddRequests", reqId), { status: 'approved', approvedAt: serverTimestamp() });
+        alert(`✅ "${itemName}" approve ho gaya aur Master List mein jud gaya!`);
+    } catch(e) { alert("Error: " + e.message); }
+};
+
+window.rejectItemRequest = async function(reqId) {
+    if (!confirm("Is request ko REJECT karna hai?")) return;
+    try { await updateDoc(doc(db, "itemAddRequests", reqId), { status: 'rejected', rejectedAt: serverTimestamp() }); alert("Request reject ho gayi."); } catch(e) { alert("Error: " + e.message); }
+};
+window.deleteItemRequest = async function(reqId) {
+    if (!confirm("Is request ko hamesha ke liye DELETE karna hai?")) return;
+    try { await deleteDoc(doc(db, "itemAddRequests", reqId)); alert("Request delete ho gayi."); } catch(e) { alert("Error: " + e.message); }
+};
 // ── LISTINGS ──
 function renderListingsTable() {
     const search = document.getElementById("listingSearch").value.toLowerCase();
