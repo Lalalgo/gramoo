@@ -533,13 +533,39 @@ function switchMainTab(tab, el) {
     filterListings();
 }
 // ── Master Item List (same as shop.html) ─────────────────
-const MASTER_ITEMS = {
+let MASTER_ITEMS = {
     'खाद':     ['डीएपी (DAP)','यूरिया','एनपीके (NPK)','एसएसपी','पोटाश (MOP)','जिंक सल्फेट','वर्मी कम्पोस्ट','ह्यूमिक एसिड','बोरोन'],
     'बीज':     ['गेहूं बीज','धान बीज','सरसों बीज','मक्का बीज','बाजरा बीज','टमाटर बीज','प्याज बीज','मिर्च बीज','मूंग/उड़द बीज'],
     'कीटनाशक': ['क्लोरपाइरीफॉस','इमिडाक्लोप्रिड','साइपरमेथ्रिन','मैंकोज़ेब','कार्बेन्डाजिम','ग्लाइफोसेट','ट्राइकोडर्मा'],
     'यंत्र':   ['नैपसैक स्प्रेयर','पावर स्प्रेयर','ड्रिप सिस्टम','तिरपाल','पाइप सेट','खुरपी/दरांती'],
     'पशु आहार':['कैटल फीड','पोल्ट्री फीड','मिनरल मिक्सचर','सरसों खल','बाईपास प्रोटीन'],
 };
+
+function startMasterItemsListener() {
+    onSnapshot(query(collection(db, "masterItems"), orderBy("createdAt", "desc")), snap => {
+        const newMasterItems = { 'खाद':[], 'बीज':[], 'कीटनाशक':[], 'यंत्र':[], 'पशु आहार':[], 'अन्य':[] };
+        snap.forEach(d => {
+            const item = d.data();
+            if (item.cat && newMasterItems[item.cat]) {
+                if (!newMasterItems[item.cat].includes(item.nameHi)) {
+                    newMasterItems[item.cat].push(item.nameHi);
+                }
+            } else if (item.cat) { // For new categories
+                if (!newMasterItems[item.cat]) newMasterItems[item.cat] = [];
+                if (!newMasterItems[item.cat].includes(item.nameHi)) {
+                    newMasterItems[item.cat].push(item.nameHi);
+                }
+            }
+        });
+        MASTER_ITEMS = newMasterItems;
+        // If the shop section is active, re-render the item buttons
+        if (G.mainTab === 'shop' && SEARCH.cat) {
+            renderItemButtons();
+        }
+    }, err => {
+        console.error("Master items listener error:", err);
+    });
+}
 
 // Search state
 const SEARCH = { cat: '', item: '', text: '' };
@@ -1599,6 +1625,7 @@ function init() {
     filterListings();
     updateActivity();
     startListeners();
+    startMasterItemsListener();
 
     // Auto GPS
     if (navigator.geolocation) {
