@@ -835,6 +835,18 @@ body {
     </div>
 </div>
 
+<!-- ITEM APPROVED NOTIFICATION MODAL -->
+<div class="modal-overlay" id="itemApprovedModal">
+    <div class="modal" style="max-width: 400px; text-align: center;">
+        <div style="font-size: 56px; margin-bottom: 12px;">✅</div>
+        <h3 style="color: var(--green);">आइटम अनुरोध स्वीकार हुआ!</h3>
+        <p id="itemApprovedMsg" style="font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 20px;">
+            आपके द्वारा अनुरोधित आइटम को मास्टर सूची में जोड़ दिया गया है।
+        </p>
+        <button class="btn-save" style="width: 100%;" onclick="closeItemApprovedModal()">ठीक है</button>
+    </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -1098,6 +1110,7 @@ function showMainApp(user) {
     loadRequests();
     loadMandiDemands();
     populatePriceCompareDropdown();
+    listenForItemApprovals();
 }
 
 // ── Registration Submit ──
@@ -1356,6 +1369,35 @@ window.savePriceUpdate = async function() {
     } catch(e) { showToast('❌ Error: ' + e.message); }
 };
 
+// ── Item Approval Notification ──
+function listenForItemApprovals() {
+    if (!currentUser) return;
+    const q = query(
+        collection(db, 'itemAddRequests'),
+        where('requestedByUid', '==', currentUser.uid),
+        where('status', '==', 'approved'),
+        where('notificationSeen', '==', false)
+    );
+
+    onSnapshot(q, snap => {
+        snap.docChanges().forEach(change => {
+            if (change.type === 'added') {
+                const item = change.doc.data();
+                showItemApprovedNotification(item);
+                // Mark as seen so it doesn't pop up again
+                updateDoc(change.doc.ref, { notificationSeen: true });
+            }
+        });
+    });
+}
+
+function showItemApprovedNotification(item) {
+    const modal = document.getElementById('itemApprovedModal');
+    const msgEl = document.getElementById('itemApprovedMsg');
+    if (!modal || !msgEl) return;
+    msgEl.innerHTML = `बधाई हो! आपका अनुरोध किया गया आइटम '<b>${item.itemName}</b>' अब Master List में जोड़ दिया गया है।<br>आप इसे "Items जोड़ें" टैब से अपनी Inventory में शामिल कर सकते हैं।`;
+    modal.classList.add('active');
+}
 // ── Toggle Stock ──
 window.toggleStock = async function(itemId, current) {
     try {
@@ -1379,7 +1421,7 @@ window.removeItem = async function(itemId) {
 function loadRequests() {
     if (!currentUser) return;
     onSnapshot(
-        query(collection(db,'shopRequests'), where('uid','==',currentUser.uid), orderBy('createdAt','desc')),
+        query(collection(db,'itemAddRequests'), where('requestedByUid','==',currentUser.uid), orderBy('createdAt','desc')),
         snap => {
             requests = snap.docs.map(d=>({id:d.id,...d.data()}));
             renderRequests();
@@ -1411,14 +1453,15 @@ window.sendItemRequest = async function() {
     if (!itemName) { showToast('❌ Item का नाम लिखें!'); return; }
     if (!shopData) { showToast('⚠️ पहले दुकान setup करें!'); return; }
     try {
-        await addDoc(collection(db,'shopRequests'), {
-            uid:      currentUser.uid,
-            shopName: shopData.naam,
+        await addDoc(collection(db,'itemAddRequests'), {
+            requestedByUid: currentUser.uid,
+            shopName:       shopData.naam,
             itemName,
-            brand:    document.getElementById('reqBrand').value.trim(),
-            reason:   document.getElementById('reqReason').value.trim(),
-            status:   'pending',
-            createdAt: serverTimestamp()
+            brand:          document.getElementById('reqBrand').value.trim(),
+            reason:         document.getElementById('reqReason').value.trim(),
+            status:         'pending',
+            notificationSeen: false,
+            createdAt:      serverTimestamp()
         });
         document.getElementById('reqItemName').value  = '';
         document.getElementById('reqBrand').value     = '';
@@ -1671,6 +1714,11 @@ function showToast(msg) {
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+window.closeItemApprovedModal = function() {
+    const modal = document.getElementById('itemApprovedModal');
+    if (modal) modal.classList.remove('active');
 }
 
 // Init master grid
