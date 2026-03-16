@@ -407,17 +407,28 @@ function renderSuchna(item) {
 // ── 10. Filter & Display ─────────────────────────────────
 function filterListings() {
     const search = DOM.searchInput().value.toLowerCase();
+    const grain  = document.getElementById("grainFilter")?.value || "";
     const dist   = parseInt(DOM.distanceSelect().value);
     const list   = G.mainTab==="suchna" ? G.allSuchna
                  : G.mainTab==="shop"   ? G.allShop
                  : G.subTab==="becho"   ? G.allSell : G.allBuy;
 
     const filtered = list.filter(item => {
+        // Text search
         const hay = JSON.stringify(item).toLowerCase();
         const mS  = !search || hay.includes(search);
+
+        // Distance filter
         let   mD  = true;
         if (G.userLat && item.lat) mD = getDist(G.userLat,G.userLng,item.lat,item.lng) <= dist;
-        return mS && mD;
+
+        // Grain filter (only for anaaj tab)
+        let mG = true;
+        if (G.mainTab === 'anaaj' && grain) {
+            mG = item.grain === grain;
+        }
+
+        return mS && mD && mG;
     });
 
     const c = DOM.listingsContainer();
