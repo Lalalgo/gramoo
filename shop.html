@@ -943,15 +943,16 @@ onAuthStateChanged(auth, async user => {
                 } else {
                     showApprovedScreen(user, regData);
                 }
-            } else if (shopSnap.exists() && !shopSnap.data().status) {
+            } else if (rData && rData.status === 'pending') {
+                // ✅ Fix: Pending check ko upar rakha, taaki old shop logic se bypass na ho
+                showPendingScreen(rData.shopName);
+            } else if (sData && !sData.status) {
                 showMainApp(user); // purana shop
-            } else if (regSnap.exists() && regSnap.data().status === 'pending') {
-                showPendingScreen(regSnap.data().shopName);
-            } else if (regSnap.exists() && regSnap.data().status === 'rejected') {
+            } else if (rData && rData.status === 'rejected') {
                 // Agar sirf request reject hui thi (shop create nahi hui thi), to naya form bharne do
                 showRegisterScreen(); 
                 showToast('⚠️ पिछली request reject हुई थी। नई details भरें।');
-            } else if (regSnap.exists() && regSnap.data().status === 'deleted') {
+            } else if (rData && rData.status === 'deleted') {
                 showBlockedScreen("Account deleted by Admin");
             } else {
                 showRegisterScreen();
