@@ -1699,6 +1699,8 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
         document.querySelectorAll('.tab-sec').forEach(s=>s.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+        // Fix: Agar add-items tab khula hai to grid render karo
+        if (tab.dataset.tab === 'add-items') renderMasterGrid();
     });
 });
 
@@ -1711,6 +1713,8 @@ window.switchTab = function(name) {
         if (s.id==='tab-'+name) s.classList.add('active');
         else s.classList.remove('active');
     });
+    // Fix: Switch hone par bhi render karo
+    if (name === 'add-items') renderMasterGrid();
 };
 
 // ── Filters ──
