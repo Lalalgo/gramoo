@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<title>Gramoo — Master Items Bulk Upload</title>
+<style>
+body { font-family: 'Segoe UI', sans-serif; background: #f1f8e9; padding: 20px; color: #1b2a1b; }
+.box { background: white; border-radius: 16px; padding: 28px; max-width: 700px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+h1 { color: #1b5e20; font-size: 22px; margin-bottom: 6px; }
+p { color: #555; font-size: 14px; margin-bottom: 20px; }
+button { background: #1b5e20; color: white; border: none; padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
+button:disabled { background: #aaa; cursor: not-allowed; }
+#log { background: #f8f8f8; border-radius: 10px; padding: 16px; font-size: 13px; font-family: monospace; max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; margin-top: 16px; white-space: pre-wrap; }
+.ok  { color: #2e7d32; }
+.err { color: #c62828; }
+.info{ color: #1565c0; }
+</style>
+</head>
+<body>
+<div class="box">
+    <h1>🌾 Gramoo — Master Items Bulk Upload</h1>
+    <p>यह tool सभी 70+ master items को एक ही बार Firebase Firestore में upload कर देगा।<br>
+    <b>सिर्फ एक बार चलाएं</b> — duplicate items नहीं बनेंगे (setDoc से overwrite होगा)।</p>
+    <button id="uploadBtn" onclick="startUpload()">🚀 Upload शुरू करें</button>
+    <button onclick="checkExisting()" style="background:#1565c0;">🔍 Already Uploaded Items Check करें</button>
+    <div id="log">यहाँ progress दिखेगा...</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDocs, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey:"AIzaSyAeeN9ijnSuA3IyV43QQsiEshTrRdEjL0A",
+    authDomain:"gramoo-44d83.firebaseapp.com",
+    projectId:"gramoo-44d83"
+};
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+const MASTER = [
+{id:'dap',hi:'डीएपी (DAP)',en:'DAP 18:46:0',cat:'खाद',subcat:'Macro',brands:['IFFCO','KRIBHCO','Zuari Agro','NFL','Coromandel','Smartek'],packs:['50kg bag'],unitPrice:{min:1300,max:1450},unit:'bag',desc:'Diammonium Phosphate — फास्फोरस व नाइट्रोजन का मुख्य स्रोत'},
+{id:'urea',hi:'यूरिया',en:'Urea 46% N',cat:'खाद',subcat:'Macro',brands:['IFFCO','KRIBHCO','NFL','Chambal Fertilisers','GSFC','RCF'],packs:['45kg bag'],unitPrice:{min:260,max:275},unit:'bag',desc:'नाइट्रोजन का सबसे सस्ता स्रोत — सभी फसलों के लिए'},
+{id:'npk_121717',hi:'NPK 12:17:17',en:'NPK 12-17-17',cat:'खाद',subcat:'Macro',brands:['IFFCO','Coromandel','Zuari','Khaitan'],packs:['50kg bag'],unitPrice:{min:1500,max:1700},unit:'bag',desc:'तीनों पोषक तत्व एक साथ — सब्जियों व दलहन के लिए'},
+{id:'npk_102626',hi:'NPK 10:26:26',en:'NPK 10-26-26',cat:'खाद',subcat:'Macro',brands:['IFFCO','Coromandel','Zuari'],packs:['50kg bag'],unitPrice:{min:1550,max:1750},unit:'bag',desc:'फास्फोरस व पोटाश अधिक — जड़ विकास के लिए'},
+{id:'ssp',hi:'एसएसपी (SSP)',en:'SSP 16% P2O5',cat:'खाद',subcat:'Macro',brands:['IFFCO','Zuari','Khaitan','Gujarat State','Local'],packs:['50kg bag'],unitPrice:{min:350,max:450},unit:'bag',desc:'Single Super Phosphate — सल्फर भी मिलता है'},
+{id:'mop',hi:'पोटाश MOP',en:'MOP 60% K2O',cat:'खाद',subcat:'Macro',brands:['IFFCO','SQM','Canpotex','Belarusian'],packs:['50kg bag'],unitPrice:{min:1100,max:1300},unit:'bag',desc:'Muriate of Potash — फल व दाने भरने के लिए'},
+{id:'sop',hi:'पोटाश SOP',en:'SOP 50% K2O',cat:'खाद',subcat:'Macro',brands:['SQM','Tessenderlo','Haifa'],packs:['25kg bag','50kg bag'],unitPrice:{min:65,max:85},unit:'kg',desc:'Sulphate of Potash — क्लोराइड संवेदनशील फसलों के लिए'},
+{id:'zinc',hi:'जिंक सल्फेट 21%',en:'Zinc Sulphate 21%',cat:'खाद',subcat:'Micro',brands:['Aries Agro','IFFCO','Swal Corp','Multiplex','Gujarat Ambuja'],packs:['500g','1kg','5kg','25kg'],unitPrice:{min:80,max:110},unit:'kg',desc:'जिंक की कमी दूर करे — चावल व मक्का में जरूरी'},
+{id:'zinc33',hi:'जिंक सल्फेट 33%',en:'Zinc Sulphate 33%',cat:'खाद',subcat:'Micro',brands:['Aries Agro','Multiplex','Swal'],packs:['500g','1kg','25kg'],unitPrice:{min:110,max:140},unit:'kg',desc:'उच्च सांद्रता — कम मात्रा में काम'},
+{id:'boron',hi:'बोरोन 20%',en:'Boron 20%',cat:'खाद',subcat:'Micro',brands:['Aries Agro','Swal Corp','Multiplex','Coromandel'],packs:['500g','1kg','5kg'],unitPrice:{min:200,max:280},unit:'kg',desc:'फूल व फल बनने में मदद — सरसों व सूरजमुखी के लिए'},
+{id:'ferro',hi:'फेरस सल्फेट',en:'Ferrous Sulphate',cat:'खाद',subcat:'Micro',brands:['Aries Agro','Multiplex','Local'],packs:['500g','1kg','25kg'],unitPrice:{min:30,max:50},unit:'kg',desc:'आयरन की कमी — पत्तियां पीली हों तो इस्तेमाल करें'},
+{id:'mangan',hi:'मैंगनीज सल्फेट',en:'Manganese Sulphate',cat:'खाद',subcat:'Micro',brands:['Aries Agro','Multiplex'],packs:['500g','1kg','5kg'],unitPrice:{min:70,max:100},unit:'kg',desc:'मैंगनीज — चाय व धान की फसल के लिए'},
+{id:'copper',hi:'कॉपर सल्फेट',en:'Copper Sulphate',cat:'खाद',subcat:'Micro',brands:['Aries Agro','Local','Multiplex'],packs:['500g','1kg','25kg'],unitPrice:{min:300,max:400},unit:'kg',desc:'तांबा — फफूंद रोग नियंत्रण में भी सहायक'},
+{id:'vermi',hi:'वर्मी कम्पोस्ट',en:'Vermi Compost',cat:'खाद',subcat:'Organic',brands:['Organic India','Madhu Amrit','Local','Patanjali'],packs:['5kg','10kg','25kg','50kg'],unitPrice:{min:8,max:15},unit:'kg',desc:'जैविक खाद — मिट्टी की सेहत सुधारे'},
+{id:'humic',hi:'ह्यूमिक एसिड',en:'Humic Acid',cat:'खाद',subcat:'Organic',brands:['Multiplex','Aries Agro','Anand Agro','Coromandel'],packs:['500g','1kg','5kg'],unitPrice:{min:180,max:300},unit:'kg',desc:'जड़ों की बढ़त — पोषक तत्वों का अवशोषण बढ़ाए'},
+{id:'seaweed',hi:'सी-वीड एक्सट्रेक्ट',en:'Seaweed Extract',cat:'खाद',subcat:'Organic',brands:['Multiplex','Aries','BASF','Biostadt'],packs:['250ml','500ml','1L'],unitPrice:{min:400,max:700},unit:'L',desc:'समुद्री शैवाल — प्राकृतिक विकास वर्धक'},
+{id:'psb',hi:'पीएसबी (PSB)',en:'PSB Bio Fertilizer',cat:'खाद',subcat:'Organic',brands:['IFFCO','Biofit','Multiplex','Anand Agro'],packs:['250g','500g','1kg'],unitPrice:{min:60,max:100},unit:'kg',desc:'फास्फोरस घोलने वाले बैक्टीरिया — बीज उपचार'},
+{id:'rhizo',hi:'राइजोबियम',en:'Rhizobium Biofertilizer',cat:'खाद',subcat:'Organic',brands:['IFFCO','Biofit','Anand Agro'],packs:['250g','500g'],unitPrice:{min:50,max:80},unit:'packet',desc:'दलहनी फसलों के लिए — नाइट्रोजन स्थिरीकरण'},
+{id:'wheat_dbw187',hi:'गेहूं — DBW-187',en:'Wheat DBW-187',cat:'बीज',subcat:'Cereals',brands:['IARI Certified','UP Seed Corp','MP State Seed'],packs:['40kg bag','5kg','10kg'],unitPrice:{min:50,max:65},unit:'kg',desc:'DBW-187 — अधिक उपज, गर्मी सहनशील, UP/Haryana के लिए'},
+{id:'wheat_hd2967',hi:'गेहूं — HD-2967',en:'Wheat HD-2967',cat:'बीज',subcat:'Cereals',brands:['IARI Certified','UP Seed Corp'],packs:['40kg bag','10kg'],unitPrice:{min:45,max:60},unit:'kg',desc:'HD-2967 — लोकप्रिय किस्म, उत्तर भारत के लिए उपयुक्त'},
+{id:'wheat_pbw725',hi:'गेहूं — PBW-725',en:'Wheat PBW-725',cat:'बीज',subcat:'Cereals',brands:['PAU Certified','Punjab Seed Corp'],packs:['40kg bag','10kg'],unitPrice:{min:48,max:63},unit:'kg',desc:'PBW-725 — पंजाब कृषि विश्वविद्यालय की किस्म'},
+{id:'wheat_lok1',hi:'गेहूं — Lokwan',en:'Wheat Lokwan',cat:'बीज',subcat:'Cereals',brands:['MP State Seed','Local'],packs:['40kg bag','10kg'],unitPrice:{min:42,max:55},unit:'kg',desc:'Lokwan — MP व राजस्थान के लिए, रोटी के लिए श्रेष्ठ'},
+{id:'paddy_1121',hi:'धान — बासमती 1121',en:'Paddy Basmati 1121',cat:'बीज',subcat:'Cereals',brands:['Pusa','IARI Certified','Nuziveedu','Pioneer'],packs:['5kg','10kg','25kg'],unitPrice:{min:80,max:130},unit:'kg',desc:'Pusa Basmati 1121 — लंबा दाना, सुगंधित, निर्यात योग्य'},
+{id:'paddy_1509',hi:'धान — 1509 बासमती',en:'Paddy Basmati 1509',cat:'बीज',subcat:'Cereals',brands:['Seed Works','Nuziveedu','Kaveri'],packs:['5kg','10kg'],unitPrice:{min:90,max:140},unit:'kg',desc:'1509 — जल्दी पकने वाली बासमती, अच्छा भाव मिलता है'},
+{id:'paddy_swarna',hi:'धान — स्वर्णा',en:'Paddy Swarna MTU-7029',cat:'बीज',subcat:'Cereals',brands:['UP Seed Corp','CRRI Certified'],packs:['5kg','10kg','25kg'],unitPrice:{min:45,max:65},unit:'kg',desc:'Swarna — अधिक उपज, पूर्वी भारत के लिए'},
+{id:'must_pusabold',hi:'सरसों — Pusa Bold',en:'Mustard Pusa Bold',cat:'बीज',subcat:'Oilseeds',brands:['IARI Certified','National Seeds','UP Seed Corp'],packs:['1kg','5kg'],unitPrice:{min:200,max:300},unit:'kg',desc:'Pusa Bold — अधिक तेल, अच्छी उपज, रबी मौसम'},
+{id:'must_rh749',hi:'सरसों — RH-749',en:'Mustard RH-749',cat:'बीज',subcat:'Oilseeds',brands:['HAU Certified','Haryana Seeds'],packs:['1kg','5kg'],unitPrice:{min:250,max:350},unit:'kg',desc:'RH-749 — हरियाणा के लिए सर्वोत्तम किस्म'},
+{id:'must_pioneer',hi:'सरसों — Pioneer',en:'Mustard Pioneer Hybrid',cat:'बीज',subcat:'Oilseeds',brands:['Pioneer (Corteva)'],packs:['1kg','4kg'],unitPrice:{min:400,max:600},unit:'kg',desc:'Pioneer Hybrid — उच्च उपज हाइब्रिड किस्म'},
+{id:'soybean',hi:'सोयाबीन बीज',en:'Soybean Seed',cat:'बीज',subcat:'Oilseeds',brands:['JS-335','MACS-450','NRC-7','Pusa'],packs:['5kg','10kg','30kg'],unitPrice:{min:80,max:130},unit:'kg',desc:'JS-335 सबसे लोकप्रिय — MP व विदर्भ के लिए'},
+{id:'tomato_sh',hi:'टमाटर — Shraddha',en:'Tomato Shraddha (Hybrid)',cat:'बीज',subcat:'Vegetables',brands:['Syngenta'],packs:['10g','50g'],unitPrice:{min:800,max:1200},unit:'10g pkt',desc:'Shraddha F1 — गोल फल, लंबे शेल्फ लाइफ, Heat tolerant'},
+{id:'tomato_mt',hi:'टमाटर — Mahyco',en:'Tomato Hybrid Mahyco',cat:'बीज',subcat:'Vegetables',brands:['Mahyco'],packs:['10g','50g'],unitPrice:{min:600,max:900},unit:'10g pkt',desc:'Mahyco hybrid — रोग प्रतिरोधी, अच्छी उपज'},
+{id:'onion_nasik',hi:'प्याज — Nasik Red',en:'Onion Nasik Red',cat:'बीज',subcat:'Vegetables',brands:['NHRDF','Mahyco','Seminis'],packs:['500g','1kg','5kg'],unitPrice:{min:600,max:900},unit:'kg',desc:'Nasik Red — लाल रंग, अच्छा भंडारण, निर्यात योग्य'},
+{id:'chilli_bot',hi:'मिर्च — Bullet',en:'Chilli Bullet Hybrid',cat:'बीज',subcat:'Vegetables',brands:['Syngenta','Mahyco','Indo-American'],packs:['10g','50g'],unitPrice:{min:1200,max:2000},unit:'10g pkt',desc:'Bullet — तीखी, लंबी, उच्च उपज हाइब्रिड मिर्च'},
+{id:'brinjal',hi:'बैंगन बीज',en:'Brinjal Hybrid',cat:'बीज',subcat:'Vegetables',brands:['Syngenta','Mahyco','East-West'],packs:['10g','50g'],unitPrice:{min:500,max:800},unit:'10g pkt',desc:'हाइब्रिड बैंगन — गोल/लंबा, Purple/Green'},
+{id:'gourd_bitt',hi:'करेला बीज',en:'Bitter Gourd Seed',cat:'बीज',subcat:'Vegetables',brands:['East-West','Nunhems','Mahyco'],packs:['50g','100g'],unitPrice:{min:400,max:700},unit:'100g pkt',desc:'हाइब्रिड करेला — लंबा, गहरा हरा, अधिक उपज'},
+{id:'moong_pdm',hi:'मूंग — PDM-139',en:'Moong PDM-139',cat:'बीज',subcat:'Pulses',brands:['IIPR Certified','UP Seed Corp'],packs:['5kg','10kg','25kg'],unitPrice:{min:100,max:140},unit:'kg',desc:'PDM-139 — 60 दिन में तैयार, खरीफ व जायद दोनों'},
+{id:'urd_pant',hi:'उड़द — Pant U-19',en:'Urad Pant U-19',cat:'बीज',subcat:'Pulses',brands:['GBPUAT Certified','UP Seed Corp'],packs:['5kg','10kg'],unitPrice:{min:90,max:120},unit:'kg',desc:'Pant U-19 — Yellow mosaic resistant, UP के लिए'},
+{id:'arhar',hi:'अरहर/तुअर बीज',en:'Pigeonpea/Arhar',cat:'बीज',subcat:'Pulses',brands:['ICRISAT','Pusa-992','Asha','UPAS-120'],packs:['5kg','10kg','25kg'],unitPrice:{min:120,max:180},unit:'kg',desc:'अरहर — प्रोटीन युक्त, MP/UP के लिए उपयुक्त'},
+{id:'maize_p3396',hi:'मक्का — Pioneer P3396',en:'Maize Pioneer P3396',cat:'बीज',subcat:'Cereals',brands:['Pioneer (Corteva)'],packs:['3.5kg bag','5kg'],unitPrice:{min:550,max:700},unit:'bag',desc:'P3396 — सबसे लोकप्रिय मक्का हाइब्रिड, UP/Bihar'},
+{id:'maize_dkc',hi:'मक्का — DKC 9144',en:'Maize DKC 9144',cat:'बीज',subcat:'Cereals',brands:['Dekalb (Bayer)'],packs:['3.5kg bag'],unitPrice:{min:500,max:650},unit:'bag',desc:'DKC 9144 — Dekalb का भरोसेमंद हाइब्रिड'},
+{id:'chlor50',hi:'क्लोरपाइरीफॉस 50%EC',en:'Chlorpyrifos 50% EC',cat:'कीटनाशक',subcat:'Insecticide',brands:['Dursban (Dow)','Coroban','Dorsan','Durmet'],packs:['250ml','500ml','1L','5L'],unitPrice:{min:250,max:380},unit:'L',desc:'दीमक, तना छेदक — मिट्टी व पत्ती दोनों पर असरदार'},
+{id:'imida17',hi:'इमिडाक्लोप्रिड 17.8%SL',en:'Imidacloprid 17.8% SL',cat:'कीटनाशक',subcat:'Insecticide',brands:['Confidor (Bayer)','Tatamida','Admire','Imida Star'],packs:['100ml','250ml','500ml','1L'],unitPrice:{min:700,max:1000},unit:'L',desc:'माहू, सफेद मक्खी — चूसने वाले कीटों के लिए'},
+{id:'lambda',hi:'लैम्बडा साइहेलोथ्रिन',en:'Lambda Cyhalothrin 5%EC',cat:'कीटनाशक',subcat:'Insecticide',brands:['Karate (Syngenta)','Lambda Super','Warrior'],packs:['100ml','250ml','500ml','1L'],unitPrice:{min:600,max:900},unit:'L',desc:'चबाने वाले कीट — तेज़ असर, broad spectrum'},
+{id:'cyper',hi:'साइपरमेथ्रिन 25%EC',en:'Cypermethrin 25% EC',cat:'कीटनाशक',subcat:'Insecticide',brands:['Ripcord','Cyper','Demon','Cyperkill'],packs:['250ml','500ml','1L'],unitPrice:{min:200,max:350},unit:'L',desc:'इल्ली, माहू — सस्ता व असरदार pyrethroid'},
+{id:'acephate',hi:'एसीफेट 75%SP',en:'Acephate 75% SP',cat:'कीटनाशक',subcat:'Insecticide',brands:['Asataf','Starthene','Ortho'],packs:['100g','250g','500g','1kg'],unitPrice:{min:300,max:450},unit:'kg',desc:'चूसने वाले व चबाने वाले — systemic action'},
+{id:'thio',hi:'थायोमेथोक्सम 25%WG',en:'Thiamethoxam 25% WG',cat:'कीटनाशक',subcat:'Insecticide',brands:['Actara (Syngenta)','Thumper','Cruiser'],packs:['100g','250g','500g'],unitPrice:{min:900,max:1400},unit:'kg',desc:'Actara — बीज उपचार व foliar दोनों के लिए'},
+{id:'spino',hi:'स्पिनोसेड 45%SC',en:'Spinosad 45% SC',cat:'कीटनाशक',subcat:'Insecticide',brands:['Tracer (Dow)','Success'],packs:['100ml','250ml'],unitPrice:{min:2500,max:3500},unit:'L',desc:'इल्ली — जैविक उत्पत्ति, bees के लिए सुरक्षित'},
+{id:'manco75',hi:'मैंकोज़ेब 75%WP',en:'Mancozeb 75% WP',cat:'कीटनाशक',subcat:'Fungicide',brands:['Dithane M-45 (Dow)','Indofil M-45','Kavach','Dhanuka'],packs:['250g','500g','1kg','5kg'],unitPrice:{min:180,max:260},unit:'kg',desc:'फफूंद रोग — broad spectrum, contact action'},
+{id:'carb50',hi:'कार्बेन्डाजिम 50%WP',en:'Carbendazim 50% WP',cat:'कीटनाशक',subcat:'Fungicide',brands:['Bavistin (BASF)','Derosal','Roko','Carbendazim 50'],packs:['100g','250g','500g','1kg'],unitPrice:{min:350,max:500},unit:'kg',desc:'बीज उपचार व foliar — systemic fungicide'},
+{id:'hexacona',hi:'हेक्साकोनाज़ोल 5%EC',en:'Hexaconazole 5% EC',cat:'कीटनाशक',subcat:'Fungicide',brands:['Contaf (FMC)','Hexadhan','Sitara'],packs:['250ml','500ml','1L'],unitPrice:{min:400,max:600},unit:'L',desc:'धान का blast व sheath blight — systemic'},
+{id:'propio',hi:'प्रोपिकोनाज़ोल 25%EC',en:'Propiconazole 25% EC',cat:'कीटनाशक',subcat:'Fungicide',brands:['Tilt (Syngenta)','Bumper','Shine'],packs:['250ml','500ml','1L'],unitPrice:{min:700,max:1000},unit:'L',desc:'गेहूं का rust — preventive व curative दोनों'},
+{id:'azoxy',hi:'एज़ॉक्सीस्ट्रोबिन 23%SC',en:'Azoxystrobin 23% SC',cat:'कीटनाशक',subcat:'Fungicide',brands:['Amistar (Syngenta)','Azoxy Top','Custodian'],packs:['100ml','250ml','500ml'],unitPrice:{min:1400,max:2000},unit:'L',desc:'Strobilurin group — broad spectrum, systemic'},
+{id:'glyph41',hi:'ग्लाइफोसेट 41%SL',en:'Glyphosate 41% SL',cat:'कीटनाशक',subcat:'Herbicide',brands:['Roundup (Bayer)','Glycel','Spark','Weedmar'],packs:['500ml','1L','5L'],unitPrice:{min:280,max:420},unit:'L',desc:'खरपतवार नाशक — non-selective, बुवाई से पहले'},
+{id:'2_4_d',hi:'2,4-D 58%SL',en:'2,4-D Ethyl Ester 58%',cat:'कीटनाशक',subcat:'Herbicide',brands:['Fernoxone','Weedone','2,4-D Dhanuka'],packs:['500ml','1L','5L'],unitPrice:{min:150,max:220},unit:'L',desc:'गेहूं में चौड़ी पत्ती वाले खरपतवार — selective'},
+{id:'pendime',hi:'पेन्डीमेथालिन 30%EC',en:'Pendimethalin 30% EC',cat:'कीटनाशक',subcat:'Herbicide',brands:['Stomp (BASF)','Pentagon','Pendi Gold'],packs:['500ml','1L','5L'],unitPrice:{min:300,max:430},unit:'L',desc:'बुवाई के तुरंत बाद — pre-emergence herbicide'},
+{id:'bispyr',hi:'बिस्पायरिबैक 10%SC',en:'Bispyribac Sodium 10%SC',cat:'कीटनाशक',subcat:'Herbicide',brands:['Nominee Gold (Bayer)','Cornex','Shafi'],packs:['100ml','250ml'],unitPrice:{min:1200,max:1800},unit:'L',desc:'धान में घास — Nominee Gold sabse popular'},
+{id:'tricho',hi:'ट्राइकोडर्मा',en:'Trichoderma (Bio-fungicide)',cat:'कीटनाशक',subcat:'Bio',brands:['Biofit','Multiplex','Anand Agro','Ecosom'],packs:['250g','500g','1kg'],unitPrice:{min:150,max:250},unit:'kg',desc:'जैविक फफूंद नाशक — मिट्टी जनित रोगों के लिए'},
+{id:'npv',hi:'NPV (Nuclear Polyhedrosis)',en:'NPV Bio Insecticide',cat:'कीटनाशक',subcat:'Bio',brands:['Biovita','Krishidoot','Multiplex'],packs:['250ml','500ml'],unitPrice:{min:400,max:650},unit:'L',desc:'इल्लियों के लिए — virus based, safe for humans'},
+{id:'knap16',hi:'नैपसैक स्प्रेयर 16L',en:'Knapsack Sprayer 16L',cat:'यंत्र',subcat:'Sprayer',brands:['Neptune','Swan','Aspee','Kisankraft','Bharat'],packs:['16L capacity'],unitPrice:{min:700,max:1200},unit:'piece',desc:'हाथ से pump करने वाला — छोटे खेत के लिए'},
+{id:'knap20',hi:'नैपसैक स्प्रेयर 20L',en:'Knapsack Sprayer 20L',cat:'यंत्र',subcat:'Sprayer',brands:['Neptune','Aspee','Swan','Kisankraft'],packs:['20L capacity'],unitPrice:{min:900,max:1500},unit:'piece',desc:'बड़ी टंकी — कम भरान, ज़्यादा छिड़काव'},
+{id:'battery_sp',hi:'बैटरी स्प्रेयर',en:'Battery Sprayer 12V',cat:'यंत्र',subcat:'Sprayer',brands:['Neptune','Aspee','Jacto','Kishan'],packs:['16L','20L'],unitPrice:{min:2000,max:4000},unit:'piece',desc:'बिना थकान — बैटरी से auto pump, कमर पर'},
+{id:'power_sp',hi:'पावर स्प्रेयर (Engine)',en:'Power Sprayer Engine',cat:'यंत्र',subcat:'Sprayer',brands:['Kisankraft','Neptune','Honda','Kawasaki'],packs:['16L','20L','25L'],unitPrice:{min:6000,max:15000},unit:'piece',desc:'पेट्रोल इंजन — बड़े खेत, तेज़ छिड़काव'},
+{id:'drone_sp',hi:'ड्रोन स्प्रेयर (किराया)',en:'Drone Sprayer Service',cat:'यंत्र',subcat:'Sprayer',brands:['DJI Agras','Garuda Agri','IdeaForge'],packs:['Per Acre Service'],unitPrice:{min:300,max:600},unit:'acre',desc:'ड्रोन छिड़काव — बड़े क्षेत्र, कम समय'},
+{id:'drip_kit',hi:'ड्रिप सिस्टम किट',en:'Drip Irrigation Kit',cat:'यंत्र',subcat:'Irrigation',brands:['Netafim','Jain Irrigation','Finolex','Rivulis'],packs:['Per Acre','Per Bigha','Per 100 Plant'],unitPrice:{min:18000,max:35000},unit:'acre kit',desc:'टपक सिंचाई — पानी बचाव, खाद के साथ दे सकते हैं'},
+{id:'sprinkler',hi:'स्प्रिंकलर सिस्टम',en:'Sprinkler System',cat:'यंत्र',subcat:'Irrigation',brands:['Jain','Finolex','Netafim','Rivulis'],packs:['Per Acre Kit'],unitPrice:{min:12000,max:25000},unit:'acre kit',desc:'फुव्वारा सिंचाई — सब्जियों व चारे के लिए'},
+{id:'pump_mono',hi:'मोनोब्लॉक पंप',en:'Monoblock Water Pump',cat:'यंत्र',subcat:'Irrigation',brands:['Kirloskar','Crompton','Texmo','Oswal'],packs:['0.5HP','1HP','2HP','3HP','5HP'],unitPrice:{min:3500,max:18000},unit:'piece',desc:'पानी खींचने के लिए — नलकूप, तालाब, नहर'},
+{id:'pipe_hose',hi:'HDPE पाइप',en:'HDPE Pipe',cat:'यंत्र',subcat:'Irrigation',brands:['Supreme','Finolex','Prince','Jain'],packs:['16mm','20mm','25mm','32mm','50mm','63mm'],unitPrice:{min:18,max:80},unit:'meter',desc:'ड्रिप व सिंचाई के लिए — अलग-अलग diameter'},
+{id:'tarp_med',hi:'तिरपाल 18x12 ft',en:'Tarpaulin 18x12ft',cat:'यंत्र',subcat:'Field',brands:['Garware','SRF','Denim','Local'],packs:['18x12 ft','24x18 ft','30x20 ft'],unitPrice:{min:800,max:1800},unit:'piece',desc:'फसल ढकने व सुखाने के लिए — UV protected'},
+{id:'mulch_film',hi:'मल्चिंग फिल्म',en:'Mulching Film',cat:'यंत्र',subcat:'Field',brands:['Garware','SRF','Balaji','Local'],packs:['25 micron','30 micron','50 micron'],unitPrice:{min:35,max:80},unit:'kg',desc:'जमीन को ढकना — खरपतवार रोके, नमी बचाए'},
+{id:'seedrill',hi:'सीड ड्रिल (किराया सेवा)',en:'Seed Drill',cat:'यंत्र',subcat:'Field',brands:['Landforce','John Deere','Sonalika'],packs:['Per Acre Rental'],unitPrice:{min:400,max:800},unit:'acre',desc:'बुवाई मशीन — कतार में बोवाई, बीज बचाव'},
+{id:'khurpi',hi:'खुरपी',en:'Hand Weeder / Khurpi',cat:'यंत्र',subcat:'Field',brands:['Local','Nimbkar','Quality'],packs:['Small','Medium','Large'],unitPrice:{min:30,max:80},unit:'piece',desc:'हाथ से निराई — छोटे खेत व सब्जी बाग'},
+{id:'sickle',hi:'दरांती / हंसिया',en:'Sickle',cat:'यंत्र',subcat:'Field',brands:['Local Forge','Punjab Steel'],packs:['Small','Standard'],unitPrice:{min:50,max:120},unit:'piece',desc:'फसल काटने के लिए — sharp blade'},
+{id:'cattle_comp',hi:'कैटल कम्पाउंड फीड',en:'Cattle Compound Feed',cat:'पशु आहार',subcat:'Cattle',brands:['Godrej Agrovet','Amul','Purina (Cargill)','Khanna Feed'],packs:['25kg bag','50kg bag'],unitPrice:{min:1200,max:1600},unit:'bag (50kg)',desc:'गाय/भैंस के लिए — दूध बढ़ाने में सहायक'},
+{id:'cattle_cross',hi:'क्रॉसब्रीड कैटल फीड',en:'Crossbreed HF Cattle Feed',cat:'पशु आहार',subcat:'Cattle',brands:['Godrej','Amul','Suguna','Nandini'],packs:['25kg bag','50kg bag'],unitPrice:{min:1300,max:1700},unit:'bag (50kg)',desc:'HF/Jersey गाय — अधिक दूध उत्पादन के लिए'},
+{id:'bypass_prot',hi:'बाईपास प्रोटीन',en:'Bypass Protein',cat:'पशु आहार',subcat:'Cattle',brands:['Godrej Bypass','Kemin','Provimi','Novus'],packs:['25kg bag'],unitPrice:{min:1500,max:2200},unit:'bag',desc:'रूमन में नहीं घुलता — सीधे खून में जाता है, दूध बढ़ाए'},
+{id:'mineral_mix',hi:'मिनरल मिक्सचर',en:'Mineral Mixture',cat:'पशु आहार',subcat:'Cattle',brands:['Godrej','Tata Rallis','Provimi','Indian Immunologicals'],packs:['1kg','5kg','25kg'],unitPrice:{min:80,max:150},unit:'kg',desc:'कैल्शियम, फास्फोरस, आयोडीन — हड्डियां व प्रजनन'},
+{id:'mustcake',hi:'सरसों खल',en:'Mustard De-oiled Cake',cat:'पशु आहार',subcat:'Cattle',brands:['Local Mill','Patanjali','NDDB'],packs:['25kg','50kg'],unitPrice:{min:25,max:40},unit:'kg',desc:'प्रोटीन का सस्ता स्रोत — सभी पशुओं के लिए'},
+{id:'cottoncake',hi:'बिनौला खल',en:'Cotton Seed Cake',cat:'पशु आहार',subcat:'Cattle',brands:['Local Mill','Gujarat'],packs:['25kg','50kg'],unitPrice:{min:20,max:35},unit:'kg',desc:'कपास बीज की खल — प्रोटीन व वसा से भरपूर'},
+{id:'poultry_b',hi:'पोल्ट्री ब्रॉयलर फीड',en:'Poultry Broiler Feed',cat:'पशु आहार',subcat:'Poultry',brands:["Venky's",'Godrej','Suguna','Kegg Farms'],packs:['25kg bag','50kg bag'],unitPrice:{min:1300,max:1600},unit:'bag (50kg)',desc:'ब्रॉयलर मुर्गे के लिए — Starter/Grower/Finisher'},
+{id:'poultry_l',hi:'पोल्ट्री लेयर फीड',en:'Poultry Layer Feed',cat:'पशु आहार',subcat:'Poultry',brands:["Venky's",'Godrej','Suguna'],packs:['25kg bag','50kg bag'],unitPrice:{min:1200,max:1500},unit:'bag (50kg)',desc:'अंडे देने वाली मुर्गियों के लिए — कैल्शियम अधिक'},
+{id:'goat_feed',hi:'बकरी दाना',en:'Goat/Sheep Feed',cat:'पशु आहार',subcat:'Others',brands:['Godrej','Local','Amul'],packs:['25kg bag'],unitPrice:{min:900,max:1200},unit:'bag',desc:'बकरी व भेड़ — growth व reproduction के लिए'},
+{id:'fish_feed',hi:'मछली दाना',en:'Fish Feed',cat:'पशु आहार',subcat:'Others',brands:['Growel','Avanti','Provimi'],packs:['25kg bag'],unitPrice:{min:1500,max:2500},unit:'bag',desc:'मछली पालन — floating pellet, सिंचाई तालाब'},
+];
+
+const log = document.getElementById('log');
+function addLog(msg, cls='') { log.innerHTML += `<span class="${cls}">${msg}</span>\n`; log.scrollTop=log.scrollHeight; }
+
+// Login required for Firestore write
+let currentUser = null;
+onAuthStateChanged(auth, u => { currentUser = u; });
+
+window.startUpload = async function() {
+    if (!currentUser) {
+        addLog('🔐 Pehle Admin login karo...', 'info');
+        try {
+            const prov = new GoogleAuthProvider();
+            prov.setCustomParameters({ prompt: 'select_account' });
+            const result = await signInWithPopup(auth, prov);
+            addLog(`✅ Login: ${result.user.email}`, 'ok');
+        } catch(e) { addLog('❌ Login failed: ' + e.message, 'err'); return; }
+    }
+
+    const btn = document.getElementById('uploadBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Upload ho raha hai...';
+    addLog(`\n🚀 Upload shuru — ${MASTER.length} items\n`, 'info');
+
+    let success = 0, failed = 0;
+    for (const item of MASTER) {
+        try {
+            const { id, ...data } = item;
+            data.nameHi = data.hi; data.nameEn = data.en;
+            delete data.hi; delete data.en;
+            data.addedBy = 'admin_bulk';
+            data.createdAt = serverTimestamp();
+            await setDoc(doc(db, 'masterItems', id), data);
+            addLog(`  ✅ ${item.hi}`, 'ok');
+            success++;
+        } catch(e) {
+            addLog(`  ❌ ${item.hi} — ${e.message}`, 'err');
+            failed++;
+        }
+        await new Promise(r => setTimeout(r, 80));
+    }
+
+    addLog(`\n🎉 Complete! ✅ ${success} uploaded, ❌ ${failed} failed`, success===MASTER.length?'ok':'err');
+    btn.textContent = '✅ Upload Complete!';
+};
+
+window.checkExisting = async function() {
+    if (!currentUser) { addLog('Pehle login karo', 'err'); return; }
+    addLog('\n🔍 Firebase mein check kar raha hai...', 'info');
+    try {
+        const snap = await getDocs(collection(db, 'masterItems'));
+        addLog(`📦 ${snap.size} items already hai masterItems mein:`, 'info');
+        snap.forEach(d => addLog(`  • ${d.data().nameHi || d.id}`, 'ok'));
+    } catch(e) { addLog('Error: ' + e.message, 'err'); }
+};
+</script>
+</body>
+</html>
