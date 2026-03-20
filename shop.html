@@ -630,8 +630,8 @@ body {
         <div class="tab-sec" id="tab-add-items">
             <div class="add-item-box">
                 <h3>📋 Master List से Item चुनें</h3>
-                <div class="filter-row" style="flex-wrap:wrap;gap:8px;">
-                    <select id="catFilter" style="min-width:160px;">
+                <div class="filter-row">
+                    <select id="catFilter">
                         <option value="">सभी Category</option>
                         <option value="खाद">🌿 खाद / Fertilizers</option>
                         <option value="बीज">🌱 बीज / Seeds</option>
@@ -640,12 +640,8 @@ body {
                         <option value="पशु आहार">🐄 पशु आहार / Animal Feed</option>
                         <option value="अन्य">🧪 अन्य / Other</option>
                     </select>
-                    <select id="subcatFilter" style="min-width:150px;">
-                        <option value="">सभी Sub-Category</option>
-                    </select>
-                    <input type="text" id="itemSearch" placeholder="🔍 Item या Brand खोजें..." style="flex:1;min-width:160px;">
+                    <input type="text" id="itemSearch" placeholder="🔍 Item खोजें...">
                 </div>
-                <div id="priceRangeInfo" style="display:none;background:#e8f5e9;border-radius:8px;padding:8px 12px;font-size:12px;color:#2e7d32;margin-bottom:8px;"></div>
                 <div class="master-grid" id="masterGrid"></div>
 
                 <!-- Item Config Form -->
@@ -1253,40 +1249,12 @@ function updateDashboardStats() {
 // ── Master Grid ──
 function renderMasterGrid() {
     const cat    = document.getElementById('catFilter').value;
-    const subcat = document.getElementById('subcatFilter')?.value || '';
     const search = document.getElementById('itemSearch').value.toLowerCase();
     const addedIds = inventory.map(i => i.masterId);
 
-    // Subcat dropdown update karo jab cat change ho
-    const subcatSel = document.getElementById('subcatFilter');
-    if (subcatSel && cat) {
-        const subcats = [...new Set(MASTER.filter(m => m.cat === cat && m.subcat).map(m => m.subcat))];
-        const curVal = subcatSel.value;
-        subcatSel.innerHTML = '<option value="">सभी Sub-Category</option>' +
-            subcats.map(s => `<option value="${s}" ${s===curVal?'selected':''}>${s}</option>`).join('');
-    } else if (subcatSel && !cat) {
-        subcatSel.innerHTML = '<option value="">सभी Sub-Category</option>';
-    }
-
-    // Price range info bar
-    const priceBar = document.getElementById('priceRangeInfo');
-    if (priceBar && cat) {
-        const catItems = MASTER.filter(m => m.cat === cat && m.unitPrice);
-        if (catItems.length) {
-            const minP = Math.min(...catItems.map(m => m.unitPrice.min));
-            const maxP = Math.max(...catItems.map(m => m.unitPrice.max));
-            priceBar.textContent = `📊 ${cat} — Price range: ₹${minP} से ₹${maxP} तक`;
-            priceBar.style.display = 'block';
-        } else { priceBar.style.display = 'none'; }
-    } else if (priceBar) { priceBar.style.display = 'none'; }
-
     const filtered = MASTER.filter(m =>
-        (!cat    || m.cat === cat) &&
-        (!subcat || m.subcat === subcat) &&
-        (!search || m.hi.includes(search) || m.en.toLowerCase().includes(search) ||
-            (m.brands||[]).some(b => b.toLowerCase().includes(search)) ||
-            (m.subcat||'').toLowerCase().includes(search) ||
-            (m.desc||'').toLowerCase().includes(search))
+        (!cat || m.cat === cat) &&
+        (!search || m.hi.includes(search) || m.en.toLowerCase().includes(search))
     );
 
     const el = document.getElementById('masterGrid');
@@ -1294,14 +1262,11 @@ function renderMasterGrid() {
 
     el.innerHTML = filtered.map(m => {
         const added = addedIds.includes(m.id);
-        const priceStr = m.unitPrice ? `₹${m.unitPrice.min}–${m.unitPrice.max}/${m.unit||'unit'}` : '';
-        const subcatBadge = m.subcat ? `<span style="font-size:10px;background:var(--blue-pale);color:var(--blue);padding:1px 6px;border-radius:8px;margin-left:4px">${m.subcat}</span>` : '';
         return `<div class="master-item ${added?'already-added':''} ${selectedItem===m.id?'selected':''}"
             onclick="${added?'':'selectMasterItem(\''+m.id+'\')'}">
-            <div class="mi-name">${catIcons[m.cat]||'📦'} ${m.hi}${subcatBadge}</div>
+            <div class="mi-name">${catIcons[m.cat]||'📦'} ${m.hi}</div>
             <div class="mi-name-en">${m.en}</div>
-            ${priceStr ? `<div style="font-size:11px;color:var(--green-mid);font-weight:700;margin-top:2px">📊 ${priceStr}</div>` : ''}
-            ${m.desc ? `<div style="font-size:11px;color:#777;margin-top:3px;line-height:1.4">${m.desc}</div>` : ''}
+            <span class="mi-cat">${m.cat}</span>
             ${added?'<span style="font-size:10px;color:var(--green-mid);display:block;margin-top:4px">✅ Already added</span>':''}
         </div>`;
     }).join('');
@@ -1614,9 +1579,12 @@ window.loadPriceComparison = async function() {
                 ${myPrice > results[0].price ? ` (₹${myPrice-results[0].price} ज़्यादा)` : ' ✅ आप सबसे सस्ते हैं!'}
             </div>` : ''}`;
     } catch(e) {
-        el.innerHTML = `<div style="text-align:center;padding:20px;color:#aaa;font-size:12px;">
-            Price comparison के लिए Firestore indexing चाहिए।<br>
-            Admin से collectionGroup index setup करवाएं।</div>`;
+        // Index error ya koi bhi error — graceful empty state dikhao
+        el.innerHTML = `<div style="text-align:center;padding:30px;color:#aaa;">
+            <div style="font-size:36px;margin-bottom:8px;">📊</div>
+            <p style="font-size:13px;">अभी comparison के लिए data उपलब्ध नहीं है</p>
+            <p style="font-size:11px;margin-top:4px;color:#bbb;">जैसे-जैसे दुकानदार इस item को जोड़ेंगे, यहाँ price दिखेगा</p>
+        </div>`;
     }
 };
 window.getGpsSetup = function() {
@@ -1753,8 +1721,7 @@ window.switchTab = function(name) {
 };
 
 // ── Filters ──
-document.getElementById('catFilter').addEventListener('change', () => { if(document.getElementById('subcatFilter')) document.getElementById('subcatFilter').value=''; renderMasterGrid(); });
-document.getElementById('subcatFilter')?.addEventListener('change', renderMasterGrid);
+document.getElementById('catFilter').addEventListener('change', renderMasterGrid);
 document.getElementById('itemSearch').addEventListener('input', renderMasterGrid);
 
 // ── Toast ──

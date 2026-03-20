@@ -14,34 +14,36 @@
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
-            --green: #2e7d32; --green-light: #43a047; --orange: #e65100;
-            --bg: #f1f8e9; --card: #ffffff; --text: #1b2a1b;
-            --muted: #6a7b6a; --border: #c8e6c9; --red: #c62828; --blue: #1565c0;
+            --green: #00bfa5; --green-light: #1de9b6; --orange: #ff6d00;
+            --bg: #f5f7f8; --card: #ffffff; --text: #1e2d3d;
+            --muted: #607d8b; --border: #dde4ea; --red: #e53935; --blue: #0288d1;
+            --primary: #1e2d3d; --primary-dark: #0e1c2a; --primary-mid: #263545;
+            --accent: #00bfa5; --accent-dark: #00897b; --accent-pale: #e0faf5;
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
         /* LOGIN */
-        #loginScreen { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,#1b5e20,#2e7d32,#388e3c); }
-        .login-box { background:white; border-radius:20px; padding:48px 40px; text-align:center; width:360px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+        #loginScreen { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,#0e1c2a,#1e2d3d,#263545); }
+        .login-box { background:white; border-radius:20px; padding:48px 40px; text-align:center; width:360px; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
         .login-logo { font-size:48px; margin-bottom:8px; }
-        .login-title { font-size:28px; font-weight:700; color:var(--green); margin-bottom:24px; }
-        .btn-google { width:100%; padding:14px; background:var(--green); border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; color:white; transition:all 0.2s; }
-        .btn-google:hover { background:var(--green-light); }
+        .login-title { font-size:28px; font-weight:700; color:var(--primary); margin-bottom:24px; }
+        .btn-google { width:100%; padding:14px; background:var(--primary); border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; color:white; transition:all 0.2s; }
+        .btn-google:hover { background:var(--accent); color:var(--primary); }
 
         /* ADMIN */
         #adminPanel { display:none; }
-        .top-bar { background:var(--green); color:white; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
-        .top-bar-left { font-size:20px; font-weight:700; }
+        .top-bar { background:var(--primary); color:white; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+        .top-bar-left { font-size:20px; font-weight:700; color:white; }
         .top-bar-left span { font-size:13px; opacity:0.8; margin-left:8px; font-weight:400; }
         .btn-logout { background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:6px 16px; border-radius:8px; cursor:pointer; font-size:13px; }
         .btn-logout:hover { background:rgba(255,255,255,0.3); }
 
         /* NAV */
-        .nav-tabs { background:white; display:flex; gap:4px; padding:8px 16px; border-bottom:2px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+        .nav-tabs { background:var(--primary-mid); display:flex; gap:4px; padding:8px 16px; border-bottom:2px solid var(--accent-dark); overflow-x:auto; scrollbar-width:none; }
         .nav-tabs::-webkit-scrollbar { display:none; }
-        .nav-tab { padding:8px 16px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500; white-space:nowrap; color:var(--muted); border:none; background:none; transition:all 0.2s; position:relative; }
-        .nav-tab.active { background:var(--green); color:white; }
-        .nav-tab:hover:not(.active) { background:var(--bg); color:var(--green); }
+        .nav-tab { padding:8px 16px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500; white-space:nowrap; color:#90b4c8; border:none; background:none; transition:all 0.2s; position:relative; }
+        .nav-tab.active { background:var(--accent); color:var(--primary); font-weight:700; }
+        .nav-tab:hover:not(.active) { background:rgba(255,255,255,0.08); color:white; }
         .nav-badge { position:absolute; top:4px; right:4px; background:#c62828; color:white; border-radius:50%; width:18px; height:18px; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
 
         /* CONTENT */
@@ -53,17 +55,17 @@
         .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; margin-bottom:24px; }
         .stat-card { background:white; border-radius:12px; padding:20px; text-align:center; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05); cursor:pointer; transition:all 0.2s; }
         .stat-card:hover { transform:translateY(-2px); box-shadow:0 4px 16px rgba(0,0,0,0.1); }
-        .stat-card .num { font-size:32px; font-weight:700; color:var(--green); }
+        .stat-card .num { font-size:32px; font-weight:700; color:var(--primary); }
         .stat-card .lbl { font-size:13px; color:var(--muted); margin-top:4px; }
-        .stat-card.alert .num { color:var(--orange); }
+        .stat-card.alert .num { color:#e65100; }
 
         /* SEC TITLE */
-        .sec-title { font-size:18px; font-weight:700; color:var(--green); margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px; }
+        .sec-title { font-size:18px; font-weight:700; color:var(--primary); margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid var(--accent); display:flex; align-items:center; justify-content:space-between; gap:8px; }
 
         /* TABLE */
         .table-wrap { overflow-x:auto; }
         table { width:100%; border-collapse:collapse; background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
-        th { background:var(--green); color:white; padding:12px 16px; text-align:left; font-size:13px; font-weight:600; }
+        th { background:var(--primary); color:white; padding:12px 16px; text-align:left; font-size:13px; font-weight:600; }
         td { padding:12px 16px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
         tr:last-child td { border-bottom:none; }
         tr:hover td { background:var(--bg); }
@@ -73,11 +75,11 @@
         .btn-del:hover { background:#ffcdd2; }
         .btn-edit    { background:#e3f2fd; color:var(--blue);  border:1px solid #bbdefb; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
         .btn-edit:hover { background:#bbdefb; }
-        .btn-approve { background:#e8f5e9; color:var(--green); border:1px solid var(--border); padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
-        .btn-approve:hover { background:#c8e6c9; }
+        .btn-approve { background:var(--accent-pale); color:var(--accent-dark); border:1px solid #80d8cc; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
+        .btn-approve:hover { background:#b2dfdb; }
         .btn-reject  { background:#fff3e0; color:var(--orange); border:1px solid #ffe0b2; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:4px; }
         .btn-reject:hover { background:#ffe0b2; }
-        .btn-green   { background:var(--green); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; }
+        .btn-green   { background:var(--accent); color:var(--primary); border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; font-weight:700; }
         .btn-green:hover { background:var(--green-light); }
 
         /* SHOP REQUESTS */
@@ -94,7 +96,7 @@
         .reg-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
         .reg-filter-tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
         .reg-filter-tab { padding:7px 16px; border-radius:20px; border:1px solid var(--border); background:white; color:var(--muted); font-size:13px; cursor:pointer; font-family:inherit; }
-        .reg-filter-tab.active { background:var(--green); color:white; border-color:var(--green); }
+        .reg-filter-tab.active { background:var(--accent); color:var(--primary); border-color:var(--accent); font-weight:700; }
 
         /* REJECT MODAL */
         .reject-modal { background:white; border-radius:16px; padding:28px; width:100%; max-width:420px; }
@@ -104,7 +106,7 @@
 
         /* CATEGORY */
         .cat-section { background:white; border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid var(--border); }
-        .cat-title { font-weight:700; margin-bottom:12px; color:var(--green); font-size:15px; }
+        .cat-title { font-weight:700; margin-bottom:12px; color:var(--primary); font-size:15px; }
         .cat-list { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; min-height:36px; }
         .cat-tag { background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:6px 14px; font-size:13px; display:flex; align-items:center; gap:8px; }
         .cat-tag .del-cat { cursor:pointer; color:var(--red); font-weight:700; font-size:18px; line-height:1; padding:0 2px; }
@@ -123,7 +125,7 @@
         .toggle-switch input { opacity:0; width:0; height:0; }
         .toggle-slider { position:absolute; cursor:pointer; inset:0; background:#ccc; border-radius:28px; transition:0.3s; }
         .toggle-slider:before { content:""; position:absolute; height:20px; width:20px; left:4px; bottom:4px; background:white; border-radius:50%; transition:0.3s; }
-        input:checked + .toggle-slider { background:var(--green); }
+        input:checked + .toggle-slider { background:var(--accent); }
         input:checked + .toggle-slider:before { transform:translateX(24px); }
         .settings-note { background:#fff8e1; border:1px solid #ffe082; border-radius:10px; padding:14px; font-size:13px; color:#e65100; margin-top:8px; }
 
@@ -137,11 +139,11 @@
         .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px; }
         .modal-overlay.active { display:flex; }
         .modal { background:white; border-radius:16px; padding:28px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; }
-        .modal h3 { font-size:18px; color:var(--green); margin-bottom:20px; }
+        .modal h3 { font-size:18px; color:var(--primary); margin-bottom:20px; }
         .fgroup { margin-bottom:14px; }
         .fgroup label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--muted); }
         .fgroup input, .fgroup textarea { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; }
-        .fgroup input:focus, .fgroup textarea:focus { outline:none; border-color:var(--green); }
+        .fgroup input:focus, .fgroup textarea:focus { outline:none; border-color:var(--accent); }
         .modal-btns { display:flex; gap:8px; margin-top:20px; }
         .btn-cancel { flex:1; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:14px; }
 
@@ -149,7 +151,7 @@
         .traffic-note { background:white; border-radius:12px; padding:24px; border:1px solid var(--border); text-align:center; margin-top:20px; }
         .today-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; }
         .today-card { background:var(--bg); border-radius:10px; padding:16px; text-align:center; border:1px solid var(--border); }
-        .today-card .t-num { font-size:28px; font-weight:700; color:var(--green); }
+        .today-card .t-num { font-size:28px; font-weight:700; color:var(--accent-dark); }
         .today-card .t-lbl { font-size:12px; color:var(--muted); }
 
         /* BADGE */
@@ -157,13 +159,13 @@
         .badge-sell     { background:#e8f5e9; color:var(--green); }
         .badge-buy      { background:#e3f2fd; color:var(--blue); }
         .badge-pending  { background:#fff8e1; color:#f57f17; border:1px solid #ffe082; }
-        .badge-approved { background:#e8f5e9; color:var(--green); border:1px solid var(--border); }
+        .badge-approved { background:var(--accent-pale); color:var(--accent-dark); border:1px solid #80d8cc; }
         .badge-rejected { background:#ffebee; color:var(--red); border:1px solid #ffcdd2; }
         .badge-deleted  { background:#eceff1; color:#546e7a; border:1px solid #cfd8dc; }
         .badge-demo     { background:#f5f5f5; color:#616161; border:1px solid #e0e0e0; }
         .reg-card.deleted { border-left-color:#90a4ae; opacity:0.6; }
         .reg-card.demo { border-left-color:#78909c; }
-        .badge-resolved { background:#e8f5e9; color:var(--green); }
+        .badge-resolved { background:var(--accent-pale); color:var(--accent-dark); }
 
         .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
         .empty { text-align:center; padding:40px; color:var(--muted); }
@@ -198,7 +200,6 @@
         <button class="nav-tab active" data-sec="dashboard">📊 Dashboard</button>
         <button class="nav-tab" data-sec="shops">🏪 Dukan Requests <span class="nav-badge" id="shopBadge" style="display:none">0</span></button>
         <button class="nav-tab" data-sec="item-requests">📦 Item Requests <span class="nav-badge" id="itemReqBadge" style="display:none">0</span></button>
-        <button class="nav-tab" data-sec="master-items">🗂️ Master Items</button>
         <button class="nav-tab" data-sec="listings">📋 Listings</button>
         <button class="nav-tab" data-sec="categories">🏷️ Categories</button>
         <button class="nav-tab" data-sec="settings">⚙️ Settings</button>
@@ -274,97 +275,6 @@
                 <button class="reg-filter-tab"        data-filter="all"      onclick="filterItemReqs('all',this)">📋 Sabhi</button>
             </div>
             <div id="itemRequestsList"><div class="loading">Load ho raha hai...</div></div>
-        </div>
-
-
-        <!-- MASTER ITEMS -->
-        <div class="section" id="sec-master-items">
-            <div class="sec-title">
-                🗂️ Master Items Manager
-                <span id="masterItemCount" style="font-size:13px;font-weight:400;color:var(--muted);"></span>
-            </div>
-
-            <!-- Direct Add Form -->
-            <div style="background:white;border-radius:14px;padding:20px;margin-bottom:20px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-                <div style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:16px;">➕ नया Item सीधे Add करें</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                    <div class="fgroup">
-                        <label>हिंदी नाम *</label>
-                        <input type="text" id="mi_nameHi" placeholder="जैसे: डीएपी (DAP)">
-                    </div>
-                    <div class="fgroup">
-                        <label>English Name *</label>
-                        <input type="text" id="mi_nameEn" placeholder="e.g. DAP 18:46:0">
-                    </div>
-                    <div class="fgroup">
-                        <label>Category *</label>
-                        <select id="mi_cat">
-                            <option value="">— चुनें —</option>
-                            <option value="खाद">🌿 खाद</option>
-                            <option value="बीज">🌱 बीज</option>
-                            <option value="कीटनाशक">💊 कीटनाशक</option>
-                            <option value="यंत्र">🚜 यंत्र</option>
-                            <option value="पशु आहार">🐄 पशु आहार</option>
-                            <option value="अन्य">🧪 अन्य</option>
-                        </select>
-                    </div>
-                    <div class="fgroup">
-                        <label>Sub-Category</label>
-                        <input type="text" id="mi_subcat" placeholder="जैसे: Macro, Insecticide, Cereals">
-                    </div>
-                    <div class="fgroup" style="grid-column:1/-1;">
-                        <label>Brands (comma se अलग करें)</label>
-                        <input type="text" id="mi_brands" placeholder="जैसे: IFFCO, KRIBHCO, Zuari Agro">
-                    </div>
-                    <div class="fgroup" style="grid-column:1/-1;">
-                        <label>Pack Sizes (comma se अलग करें)</label>
-                        <input type="text" id="mi_packs" placeholder="जैसे: 50kg bag, 25kg bag">
-                    </div>
-                    <div class="fgroup">
-                        <label>Min Price (₹/unit)</label>
-                        <input type="number" id="mi_priceMin" placeholder="जैसे: 1300">
-                    </div>
-                    <div class="fgroup">
-                        <label>Max Price (₹/unit)</label>
-                        <input type="number" id="mi_priceMax" placeholder="जैसे: 1450">
-                    </div>
-                    <div class="fgroup">
-                        <label>Price Unit</label>
-                        <input type="text" id="mi_unit" placeholder="जैसे: bag, kg, L, piece">
-                    </div>
-                    <div class="fgroup">
-                        <label>Item ID (unique, lowercase)</label>
-                        <input type="text" id="mi_id" placeholder="जैसे: dap, urea, wheat_dbw187">
-                    </div>
-                    <div class="fgroup" style="grid-column:1/-1;">
-                        <label>Description</label>
-                        <input type="text" id="mi_desc" placeholder="जैसे: नाइट्रोजन का मुख्य स्रोत — सभी फसलों के लिए">
-                    </div>
-                </div>
-                <div style="display:flex;gap:10px;margin-top:8px;">
-                    <button class="btn-green" onclick="addMasterItemDirect()" style="flex:1;">➕ Master List में Add करें</button>
-                    <button class="btn-cancel" onclick="clearMasterForm()" style="padding:10px 20px;">🔄 Clear</button>
-                </div>
-                <div id="miSuccess" style="display:none;background:#e8f5e9;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:10px;font-size:13px;color:var(--green);font-weight:600;"></div>
-            </div>
-
-            <!-- Filter & Search -->
-            <div class="filter-bar" style="margin-bottom:16px;">
-                <input type="text" id="miSearch" placeholder="🔍 Item dhundho..." oninput="renderMasterTable()">
-                <select id="miCatFilter" onchange="renderMasterTable()">
-                    <option value="">सभी Categories</option>
-                    <option value="खाद">🌿 खाद</option>
-                    <option value="बीज">🌱 बीज</option>
-                    <option value="कीटनाशक">💊 कीटनाशक</option>
-                    <option value="यंत्र">🚜 यंत्र</option>
-                    <option value="पशु आहार">🐄 पशु आहार</option>
-                </select>
-            </div>
-
-            <!-- Items Table -->
-            <div class="table-wrap">
-                <div id="masterItemsTable"><div class="loading">Load ho raha hai...</div></div>
-            </div>
         </div>
 
         <!-- LISTINGS -->
@@ -627,7 +537,6 @@ function loadAll() {
     loadShopRequests();
     loadCategories();
     loadItemRequests();
-    loadMasterItems();
     loadReports();
     loadFeedback();
     loadSettings();
@@ -996,142 +905,6 @@ window.deleteItemRequest = async function(reqId) {
     if (!confirm("Is request ko hamesha ke liye DELETE karna hai?")) return;
     try { await deleteDoc(doc(db, "itemAddRequests", reqId)); alert("Request delete ho gayi."); } catch(e) { alert("Error: " + e.message); }
 };
-
-// ── MASTER ITEMS ──────────────────────────────────────────
-let MASTER_DATA = [];
-
-function loadMasterItems() {
-    onSnapshot(query(collection(db, 'masterItems'), orderBy('createdAt', 'desc')), snap => {
-        MASTER_DATA = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        document.getElementById('masterItemCount').textContent = `(${MASTER_DATA.length} items)`;
-        renderMasterTable();
-    }, err => console.error('masterItems error:', err));
-}
-
-function renderMasterTable() {
-    const search = (document.getElementById('miSearch')?.value || '').toLowerCase();
-    const cat    = document.getElementById('miCatFilter')?.value || '';
-    const el     = document.getElementById('masterItemsTable');
-    if (!el) return;
-
-    const filtered = MASTER_DATA.filter(m =>
-        (!cat    || m.cat === cat) &&
-        (!search || (m.nameHi||'').includes(search) || (m.nameEn||'').toLowerCase().includes(search) || (m.subcat||'').toLowerCase().includes(search))
-    );
-
-    if (!filtered.length) { el.innerHTML = '<div class="empty"><div>📦</div><p>कोई item नहीं मिला</p></div>'; return; }
-
-    const catIcons = {'खाद':'🌿','बीज':'🌱','कीटनाशक':'💊','यंत्र':'🚜','पशु आहार':'🐄','अन्य':'🧪'};
-
-    el.innerHTML = `<table>
-        <tr>
-            <th>Hindi / English</th>
-            <th>Category</th>
-            <th>Sub-cat</th>
-            <th>Brands</th>
-            <th>Price Range</th>
-            <th>Action</th>
-        </tr>
-        ${filtered.map(m => `<tr>
-            <td>
-                <b>${m.nameHi || '—'}</b><br>
-                <span style="font-size:11px;color:var(--muted)">${m.nameEn || ''}</span>
-                ${m.desc ? `<br><span style="font-size:11px;color:#888;font-style:italic">${m.desc}</span>` : ''}
-            </td>
-            <td>${catIcons[m.cat]||'📦'} ${m.cat || '—'}</td>
-            <td><span style="font-size:12px;color:var(--muted)">${m.subcat || '—'}</span></td>
-            <td style="font-size:11px;max-width:160px">${(m.brands||[]).join(', ') || '—'}</td>
-            <td style="font-size:12px">
-                ${m.unitPrice ? `₹${m.unitPrice.min}–${m.unitPrice.max}/${m.unit||'unit'}` : (m.packs ? (m.packs[0]||'—') : '—')}
-            </td>
-            <td>
-                <button class="btn-edit" onclick="editMasterItem('${m.id}')" style="margin-right:4px">✏️</button>
-                <button class="btn-del" onclick="deleteMasterItem('${m.id}', '${(m.nameHi||'').replace(/'/g,"\'")}')">🗑️</button>
-            </td>
-        </tr>`).join('')}
-    </table>`;
-}
-
-window.addMasterItemDirect = async function() {
-    const nameHi  = document.getElementById('mi_nameHi').value.trim();
-    const nameEn  = document.getElementById('mi_nameEn').value.trim();
-    const cat     = document.getElementById('mi_cat').value;
-    const subcat  = document.getElementById('mi_subcat').value.trim();
-    const brandsRaw = document.getElementById('mi_brands').value.trim();
-    const packsRaw  = document.getElementById('mi_packs').value.trim();
-    const priceMin  = parseFloat(document.getElementById('mi_priceMin').value) || null;
-    const priceMax  = parseFloat(document.getElementById('mi_priceMax').value) || null;
-    const unit    = document.getElementById('mi_unit').value.trim();
-    const customId = document.getElementById('mi_id').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
-    const desc    = document.getElementById('mi_desc').value.trim();
-
-    if (!nameHi || !cat) { alert('हिंदी नाम और Category जरूरी हैं!'); return; }
-
-    const brands = brandsRaw ? brandsRaw.split(',').map(b => b.trim()).filter(Boolean) : [];
-    const packs  = packsRaw  ? packsRaw.split(',').map(p => p.trim()).filter(Boolean)  : [];
-
-    const docData = {
-        nameHi, nameEn, cat, subcat,
-        brands, packs,
-        unitPrice: (priceMin && priceMax) ? { min: priceMin, max: priceMax } : null,
-        unit: unit || 'piece',
-        desc,
-        addedBy: 'admin_direct',
-        createdAt: serverTimestamp()
-    };
-
-    try {
-        if (customId) {
-            await setDoc(doc(db, 'masterItems', customId), docData);
-        } else {
-            await addDoc(collection(db, 'masterItems'), docData);
-        }
-        const msg = document.getElementById('miSuccess');
-        msg.textContent = `✅ "${nameHi}" Master List mein add ho gaya!`;
-        msg.style.display = 'block';
-        clearMasterForm();
-        setTimeout(() => { msg.style.display = 'none'; }, 4000);
-    } catch(e) { alert('Error: ' + e.message); }
-};
-
-window.clearMasterForm = function() {
-    ['mi_nameHi','mi_nameEn','mi_subcat','mi_brands','mi_packs','mi_priceMin','mi_priceMax','mi_unit','mi_id','mi_desc']
-        .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-    document.getElementById('mi_cat').value = '';
-};
-
-window.deleteMasterItem = async function(docId, name) {
-    if (!confirm(`"${name}" ko Master List se hamesha ke liye DELETE karna hai?\nIsse shopkeepers ki inventory mein already added items affect nahi honge.`)) return;
-    try {
-        await deleteDoc(doc(db, 'masterItems', docId));
-        alert('✅ Delete ho gaya!');
-    } catch(e) { alert('Error: ' + e.message); }
-};
-
-window.editMasterItem = async function(docId) {
-    const item = MASTER_DATA.find(m => m.id === docId);
-    if (!item) return;
-    document.getElementById('mi_nameHi').value  = item.nameHi || '';
-    document.getElementById('mi_nameEn').value  = item.nameEn || '';
-    document.getElementById('mi_cat').value     = item.cat    || '';
-    document.getElementById('mi_subcat').value  = item.subcat || '';
-    document.getElementById('mi_brands').value  = (item.brands||[]).join(', ');
-    document.getElementById('mi_packs').value   = (item.packs||[]).join(', ');
-    document.getElementById('mi_priceMin').value = item.unitPrice?.min || '';
-    document.getElementById('mi_priceMax').value = item.unitPrice?.max || '';
-    document.getElementById('mi_unit').value    = item.unit    || '';
-    document.getElementById('mi_id').value      = docId;
-    document.getElementById('mi_desc').value    = item.desc    || '';
-    // Scroll to form
-    document.getElementById('mi_nameHi').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    document.getElementById('mi_nameHi').focus();
-    const msg = document.getElementById('miSuccess');
-    msg.textContent = '✏️ Edit mode — form mein changes karke "Add" karein (same ID hone se update ho jayega)';
-    msg.style.display = 'block';
-    msg.style.background = '#fff3e0';
-    msg.style.color = '#e65100';
-};
-
 // ── LISTINGS ──
 function renderListingsTable() {
     const search = document.getElementById("listingSearch").value.toLowerCase();
