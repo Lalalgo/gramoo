@@ -74,7 +74,13 @@ function closeReport() {
 function closeReportOutside(e) {
     if (e.target === document.getElementById('reportOverlay')) closeReport();
 }
+// submitReport — report.js mein real implementation hai (Firestore save karta hai)
+// Agar report.js load nahi hua tab bhi kaam kare, isliye yahan fallback:
 function submitReport() {
+    if (typeof window._submitReportImpl === 'function') {
+        window._submitReportImpl();
+        return;
+    }
     var reason = document.getElementById('reportReason').value;
     if (!reason) { alert('कृपया कारण चुनें'); return; }
     alert('✅ Report मिल गई! 24 घंटे में कार्रवाई होगी।\nकारण: ' + reason);

@@ -1,5 +1,5 @@
 // Gramoo Service Worker — PWA Offline Support
-const CACHE = 'gramoo-v5';
+const CACHE = 'gramoo-v6';
 const ASSETS = [
   '/',
   '/index.html',
@@ -8,7 +8,9 @@ const ASSETS = [
   '/guide-shopkeeper.html',
   '/style.css',
   '/gramoo.js',
+  '/firebase-config.js',
   '/legal.js',
+  '/report.js',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png'

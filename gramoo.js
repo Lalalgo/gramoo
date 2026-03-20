@@ -29,12 +29,14 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, doc, setDoc, updateDoc, deleteDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// ── Central config (firebase-config.js se import) ────────
+import { firebaseConfig, EJS_CONFIG } from "./firebase-config.js";
 
 // ── 1. Firebase Init ─────────────────────────────────────
-// ── EmailJS Config ────────────────────────────────────────
-const EJS_SERVICE     = 'service_un25x5y';
-const EJS_TPL_LISTING = 'template_g721f9g';
-const EJS_PUBKEY      = 'OAlzCN74cs01xSoZH';
+// ── EmailJS Config (central config se) ───────────────────
+const EJS_SERVICE     = EJS_CONFIG.SERVICE;
+const EJS_TPL_LISTING = EJS_CONFIG.TPL_LISTING;
+const EJS_PUBKEY      = EJS_CONFIG.PUBKEY;
 
 function sendListingEmail(user, data) {
     if (!user || !user.email) return;
@@ -57,20 +59,17 @@ function sendListingEmail(user, data) {
     } catch(e) { console.log('EmailJS error:', e); }
 }
 
-
-const firebaseConfig = {
-    apiKey:            "AIzaSyAeeN9ijnSuA3IyV43QQsiEshTrRdEjL0A",
-    authDomain:        "gramoo-44d83.firebaseapp.com",
-    projectId:         "gramoo-44d83",
-    storageBucket:     "gramoo-44d83.firebasestorage.app",
-    messagingSenderId: "527489942630",
-    appId:             "1:527489942630:web:08bc4f70cb17185ee199a7"
-};
 const app = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
+
+// ── report.js ke liye db expose karo (non-module script hai) ─
+window._gramooDb              = db;
+window._gramooServerTimestamp = serverTimestamp;
+window._gramooCollection      = collection;
+window._gramooAddDoc          = addDoc;
 
 
 // ── 2b. Grain Subtypes Master ─────────────────────────────
@@ -947,8 +946,8 @@ async function addAnaajListing(e) {
                 await deleteDoc(doc(db, editCollection, editId));
                 data.uid = G.currentUser.uid;
                 data.createdAt = serverTimestamp();
-                data.lat = G.userLat||28.40;
-                data.lng = G.userLng||77.85;
+                data.lat = G.userLat || null;
+                data.lng = G.userLng || null;
                 await addDoc(collection(db, collection_name), data);
             } else {
                 // Simple update
@@ -959,12 +958,30 @@ async function addAnaajListing(e) {
             setTimeout(() => closeForm(), 1500);
 
         } else {
-            // CREATE logic (existing)
+            // CREATE logic
+            // ── GPS Compulsory Check — fraud prevention ──────────
+            if (!G.userLat) {
+                setLoading("fSubmitBtn", false);
+                closeForm();
+                // Location popup kholo with warning message
+                openLocationPopup();
+                setTimeout(() => {
+                    const locBox = document.querySelector('#locationPopup .popup');
+                    if (locBox && !locBox.querySelector('.loc-required-msg')) {
+                        const msg = document.createElement('div');
+                        msg.className = 'loc-required-msg';
+                        msg.style.cssText = 'background:#fff3e0;color:#e65100;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:12px;border:1px solid #ffe0b2;text-align:center;';
+                        msg.textContent = '⚠️ लिस्टिंग डालने से पहले लोकेशन सेट करें';
+                        locBox.prepend(msg);
+                    }
+                }, 50);
+                return;
+            }
             data.tag = "naya";
             data.verified = false;
             data.uid = G.currentUser.uid;
-            data.lat = G.userLat||28.40;
-            data.lng = G.userLng||77.85;
+            data.lat = G.userLat;
+            data.lng = G.userLng;
             data.createdAt = serverTimestamp();
             await addDoc(collection(db, collection_name), data);
 
@@ -991,6 +1008,23 @@ async function addShopListing(e) {
     if (!validatePhone(inp,"sWAErr","sWAOk")) { alert("कृपया सही WhatsApp नंबर डालें"); return; }
     const wa = inp.value.trim();
     if (!checkSpam(wa)) return;
+    // GPS compulsory check
+    if (!G.userLat) {
+        setLoading("sSubmitBtn", false);
+        closeForm();
+        openLocationPopup();
+        setTimeout(() => {
+            const locBox = document.querySelector('#locationPopup .popup');
+            if (locBox && !locBox.querySelector('.loc-required-msg')) {
+                const msg = document.createElement('div');
+                msg.className = 'loc-required-msg';
+                msg.style.cssText = 'background:#fff3e0;color:#e65100;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:12px;border:1px solid #ffe0b2;text-align:center;';
+                msg.textContent = '⚠️ लिस्टिंग डालने से पहले लोकेशन सेट करें';
+                locBox.prepend(msg);
+            }
+        }, 50);
+        return;
+    }
     setLoading("sSubmitBtn", true);
     try {
         await addDoc(collection(db,"shop"), {
@@ -998,7 +1032,7 @@ async function addShopListing(e) {
             product: DOM.sProduct().value, price: DOM.sPrice().value,
             loc: DOM.sLoc().value, wa: encPhone(wa), desc: DOM.sDesc().value,
             uid: G.currentUser.uid,
-            lat: G.userLat||28.40, lng: G.userLng||77.85,
+            lat: G.userLat, lng: G.userLng,
             createdAt: serverTimestamp()
         });
         DOM.successMsg().style.display = "block";
@@ -1018,6 +1052,23 @@ async function addSuchnaListing(e) {
     if (!validatePhone(inp,"nPhErr","nPhOk")) { alert("कृपया सही संपर्क नंबर डालें"); return; }
     const ph = inp.value.trim();
     if (!checkSpam(ph)) return;
+    // GPS compulsory check
+    if (!G.userLat) {
+        setLoading("nSubmitBtn", false);
+        closeForm();
+        openLocationPopup();
+        setTimeout(() => {
+            const locBox = document.querySelector('#locationPopup .popup');
+            if (locBox && !locBox.querySelector('.loc-required-msg')) {
+                const msg = document.createElement('div');
+                msg.className = 'loc-required-msg';
+                msg.style.cssText = 'background:#fff3e0;color:#e65100;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:12px;border:1px solid #ffe0b2;text-align:center;';
+                msg.textContent = '⚠️ सूचना डालने से पहले लोकेशन सेट करें';
+                locBox.prepend(msg);
+            }
+        }, 50);
+        return;
+    }
     setLoading("nSubmitBtn", true);
     try {
         await addDoc(collection(db,"suchna"), {
@@ -1026,7 +1077,7 @@ async function addSuchnaListing(e) {
             loc: DOM.nLoc().value, phone: encPhone(ph),
             valid: DOM.nValid().value||"", urgent: DOM.nUrgent().value==="yes",
             uid: G.currentUser.uid,
-            lat: G.userLat||28.40, lng: G.userLng||77.85,
+            lat: G.userLat, lng: G.userLng,
             createdAt: serverTimestamp()
         });
         DOM.successMsg().style.display = "block";
@@ -1626,6 +1677,12 @@ function init() {
     updateActivity();
     startListeners();
     startMasterItemsListener();
+
+    // report.js ke liye db already exposed at top of file.
+    // Queue flush karo agar koi pending reports hain
+    if (typeof window._flushReportQueue === 'function') {
+        window._flushReportQueue();
+    }
 
     // Auto GPS
     if (navigator.geolocation) {
