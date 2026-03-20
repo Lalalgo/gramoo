@@ -198,6 +198,7 @@
         <button class="nav-tab active" data-sec="dashboard">📊 Dashboard</button>
         <button class="nav-tab" data-sec="shops">🏪 Dukan Requests <span class="nav-badge" id="shopBadge" style="display:none">0</span></button>
         <button class="nav-tab" data-sec="item-requests">📦 Item Requests <span class="nav-badge" id="itemReqBadge" style="display:none">0</span></button>
+        <button class="nav-tab" data-sec="master-items">🗂️ Master Items</button>
         <button class="nav-tab" data-sec="listings">📋 Listings</button>
         <button class="nav-tab" data-sec="categories">🏷️ Categories</button>
         <button class="nav-tab" data-sec="settings">⚙️ Settings</button>
@@ -273,6 +274,97 @@
                 <button class="reg-filter-tab"        data-filter="all"      onclick="filterItemReqs('all',this)">📋 Sabhi</button>
             </div>
             <div id="itemRequestsList"><div class="loading">Load ho raha hai...</div></div>
+        </div>
+
+
+        <!-- MASTER ITEMS -->
+        <div class="section" id="sec-master-items">
+            <div class="sec-title">
+                🗂️ Master Items Manager
+                <span id="masterItemCount" style="font-size:13px;font-weight:400;color:var(--muted);"></span>
+            </div>
+
+            <!-- Direct Add Form -->
+            <div style="background:white;border-radius:14px;padding:20px;margin-bottom:20px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <div style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:16px;">➕ नया Item सीधे Add करें</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="fgroup">
+                        <label>हिंदी नाम *</label>
+                        <input type="text" id="mi_nameHi" placeholder="जैसे: डीएपी (DAP)">
+                    </div>
+                    <div class="fgroup">
+                        <label>English Name *</label>
+                        <input type="text" id="mi_nameEn" placeholder="e.g. DAP 18:46:0">
+                    </div>
+                    <div class="fgroup">
+                        <label>Category *</label>
+                        <select id="mi_cat">
+                            <option value="">— चुनें —</option>
+                            <option value="खाद">🌿 खाद</option>
+                            <option value="बीज">🌱 बीज</option>
+                            <option value="कीटनाशक">💊 कीटनाशक</option>
+                            <option value="यंत्र">🚜 यंत्र</option>
+                            <option value="पशु आहार">🐄 पशु आहार</option>
+                            <option value="अन्य">🧪 अन्य</option>
+                        </select>
+                    </div>
+                    <div class="fgroup">
+                        <label>Sub-Category</label>
+                        <input type="text" id="mi_subcat" placeholder="जैसे: Macro, Insecticide, Cereals">
+                    </div>
+                    <div class="fgroup" style="grid-column:1/-1;">
+                        <label>Brands (comma se अलग करें)</label>
+                        <input type="text" id="mi_brands" placeholder="जैसे: IFFCO, KRIBHCO, Zuari Agro">
+                    </div>
+                    <div class="fgroup" style="grid-column:1/-1;">
+                        <label>Pack Sizes (comma se अलग करें)</label>
+                        <input type="text" id="mi_packs" placeholder="जैसे: 50kg bag, 25kg bag">
+                    </div>
+                    <div class="fgroup">
+                        <label>Min Price (₹/unit)</label>
+                        <input type="number" id="mi_priceMin" placeholder="जैसे: 1300">
+                    </div>
+                    <div class="fgroup">
+                        <label>Max Price (₹/unit)</label>
+                        <input type="number" id="mi_priceMax" placeholder="जैसे: 1450">
+                    </div>
+                    <div class="fgroup">
+                        <label>Price Unit</label>
+                        <input type="text" id="mi_unit" placeholder="जैसे: bag, kg, L, piece">
+                    </div>
+                    <div class="fgroup">
+                        <label>Item ID (unique, lowercase)</label>
+                        <input type="text" id="mi_id" placeholder="जैसे: dap, urea, wheat_dbw187">
+                    </div>
+                    <div class="fgroup" style="grid-column:1/-1;">
+                        <label>Description</label>
+                        <input type="text" id="mi_desc" placeholder="जैसे: नाइट्रोजन का मुख्य स्रोत — सभी फसलों के लिए">
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:8px;">
+                    <button class="btn-green" onclick="addMasterItemDirect()" style="flex:1;">➕ Master List में Add करें</button>
+                    <button class="btn-cancel" onclick="clearMasterForm()" style="padding:10px 20px;">🔄 Clear</button>
+                </div>
+                <div id="miSuccess" style="display:none;background:#e8f5e9;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:10px;font-size:13px;color:var(--green);font-weight:600;"></div>
+            </div>
+
+            <!-- Filter & Search -->
+            <div class="filter-bar" style="margin-bottom:16px;">
+                <input type="text" id="miSearch" placeholder="🔍 Item dhundho..." oninput="renderMasterTable()">
+                <select id="miCatFilter" onchange="renderMasterTable()">
+                    <option value="">सभी Categories</option>
+                    <option value="खाद">🌿 खाद</option>
+                    <option value="बीज">🌱 बीज</option>
+                    <option value="कीटनाशक">💊 कीटनाशक</option>
+                    <option value="यंत्र">🚜 यंत्र</option>
+                    <option value="पशु आहार">🐄 पशु आहार</option>
+                </select>
+            </div>
+
+            <!-- Items Table -->
+            <div class="table-wrap">
+                <div id="masterItemsTable"><div class="loading">Load ho raha hai...</div></div>
+            </div>
         </div>
 
         <!-- LISTINGS -->
@@ -535,6 +627,7 @@ function loadAll() {
     loadShopRequests();
     loadCategories();
     loadItemRequests();
+    loadMasterItems();
     loadReports();
     loadFeedback();
     loadSettings();
@@ -903,6 +996,142 @@ window.deleteItemRequest = async function(reqId) {
     if (!confirm("Is request ko hamesha ke liye DELETE karna hai?")) return;
     try { await deleteDoc(doc(db, "itemAddRequests", reqId)); alert("Request delete ho gayi."); } catch(e) { alert("Error: " + e.message); }
 };
+
+// ── MASTER ITEMS ──────────────────────────────────────────
+let MASTER_DATA = [];
+
+function loadMasterItems() {
+    onSnapshot(query(collection(db, 'masterItems'), orderBy('createdAt', 'desc')), snap => {
+        MASTER_DATA = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        document.getElementById('masterItemCount').textContent = `(${MASTER_DATA.length} items)`;
+        renderMasterTable();
+    }, err => console.error('masterItems error:', err));
+}
+
+function renderMasterTable() {
+    const search = (document.getElementById('miSearch')?.value || '').toLowerCase();
+    const cat    = document.getElementById('miCatFilter')?.value || '';
+    const el     = document.getElementById('masterItemsTable');
+    if (!el) return;
+
+    const filtered = MASTER_DATA.filter(m =>
+        (!cat    || m.cat === cat) &&
+        (!search || (m.nameHi||'').includes(search) || (m.nameEn||'').toLowerCase().includes(search) || (m.subcat||'').toLowerCase().includes(search))
+    );
+
+    if (!filtered.length) { el.innerHTML = '<div class="empty"><div>📦</div><p>कोई item नहीं मिला</p></div>'; return; }
+
+    const catIcons = {'खाद':'🌿','बीज':'🌱','कीटनाशक':'💊','यंत्र':'🚜','पशु आहार':'🐄','अन्य':'🧪'};
+
+    el.innerHTML = `<table>
+        <tr>
+            <th>Hindi / English</th>
+            <th>Category</th>
+            <th>Sub-cat</th>
+            <th>Brands</th>
+            <th>Price Range</th>
+            <th>Action</th>
+        </tr>
+        ${filtered.map(m => `<tr>
+            <td>
+                <b>${m.nameHi || '—'}</b><br>
+                <span style="font-size:11px;color:var(--muted)">${m.nameEn || ''}</span>
+                ${m.desc ? `<br><span style="font-size:11px;color:#888;font-style:italic">${m.desc}</span>` : ''}
+            </td>
+            <td>${catIcons[m.cat]||'📦'} ${m.cat || '—'}</td>
+            <td><span style="font-size:12px;color:var(--muted)">${m.subcat || '—'}</span></td>
+            <td style="font-size:11px;max-width:160px">${(m.brands||[]).join(', ') || '—'}</td>
+            <td style="font-size:12px">
+                ${m.unitPrice ? `₹${m.unitPrice.min}–${m.unitPrice.max}/${m.unit||'unit'}` : (m.packs ? (m.packs[0]||'—') : '—')}
+            </td>
+            <td>
+                <button class="btn-edit" onclick="editMasterItem('${m.id}')" style="margin-right:4px">✏️</button>
+                <button class="btn-del" onclick="deleteMasterItem('${m.id}', '${(m.nameHi||'').replace(/'/g,"\'")}')">🗑️</button>
+            </td>
+        </tr>`).join('')}
+    </table>`;
+}
+
+window.addMasterItemDirect = async function() {
+    const nameHi  = document.getElementById('mi_nameHi').value.trim();
+    const nameEn  = document.getElementById('mi_nameEn').value.trim();
+    const cat     = document.getElementById('mi_cat').value;
+    const subcat  = document.getElementById('mi_subcat').value.trim();
+    const brandsRaw = document.getElementById('mi_brands').value.trim();
+    const packsRaw  = document.getElementById('mi_packs').value.trim();
+    const priceMin  = parseFloat(document.getElementById('mi_priceMin').value) || null;
+    const priceMax  = parseFloat(document.getElementById('mi_priceMax').value) || null;
+    const unit    = document.getElementById('mi_unit').value.trim();
+    const customId = document.getElementById('mi_id').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
+    const desc    = document.getElementById('mi_desc').value.trim();
+
+    if (!nameHi || !cat) { alert('हिंदी नाम और Category जरूरी हैं!'); return; }
+
+    const brands = brandsRaw ? brandsRaw.split(',').map(b => b.trim()).filter(Boolean) : [];
+    const packs  = packsRaw  ? packsRaw.split(',').map(p => p.trim()).filter(Boolean)  : [];
+
+    const docData = {
+        nameHi, nameEn, cat, subcat,
+        brands, packs,
+        unitPrice: (priceMin && priceMax) ? { min: priceMin, max: priceMax } : null,
+        unit: unit || 'piece',
+        desc,
+        addedBy: 'admin_direct',
+        createdAt: serverTimestamp()
+    };
+
+    try {
+        if (customId) {
+            await setDoc(doc(db, 'masterItems', customId), docData);
+        } else {
+            await addDoc(collection(db, 'masterItems'), docData);
+        }
+        const msg = document.getElementById('miSuccess');
+        msg.textContent = `✅ "${nameHi}" Master List mein add ho gaya!`;
+        msg.style.display = 'block';
+        clearMasterForm();
+        setTimeout(() => { msg.style.display = 'none'; }, 4000);
+    } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.clearMasterForm = function() {
+    ['mi_nameHi','mi_nameEn','mi_subcat','mi_brands','mi_packs','mi_priceMin','mi_priceMax','mi_unit','mi_id','mi_desc']
+        .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    document.getElementById('mi_cat').value = '';
+};
+
+window.deleteMasterItem = async function(docId, name) {
+    if (!confirm(`"${name}" ko Master List se hamesha ke liye DELETE karna hai?\nIsse shopkeepers ki inventory mein already added items affect nahi honge.`)) return;
+    try {
+        await deleteDoc(doc(db, 'masterItems', docId));
+        alert('✅ Delete ho gaya!');
+    } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.editMasterItem = async function(docId) {
+    const item = MASTER_DATA.find(m => m.id === docId);
+    if (!item) return;
+    document.getElementById('mi_nameHi').value  = item.nameHi || '';
+    document.getElementById('mi_nameEn').value  = item.nameEn || '';
+    document.getElementById('mi_cat').value     = item.cat    || '';
+    document.getElementById('mi_subcat').value  = item.subcat || '';
+    document.getElementById('mi_brands').value  = (item.brands||[]).join(', ');
+    document.getElementById('mi_packs').value   = (item.packs||[]).join(', ');
+    document.getElementById('mi_priceMin').value = item.unitPrice?.min || '';
+    document.getElementById('mi_priceMax').value = item.unitPrice?.max || '';
+    document.getElementById('mi_unit').value    = item.unit    || '';
+    document.getElementById('mi_id').value      = docId;
+    document.getElementById('mi_desc').value    = item.desc    || '';
+    // Scroll to form
+    document.getElementById('mi_nameHi').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('mi_nameHi').focus();
+    const msg = document.getElementById('miSuccess');
+    msg.textContent = '✏️ Edit mode — form mein changes karke "Add" karein (same ID hone se update ho jayega)';
+    msg.style.display = 'block';
+    msg.style.background = '#fff3e0';
+    msg.style.color = '#e65100';
+};
+
 // ── LISTINGS ──
 function renderListingsTable() {
     const search = document.getElementById("listingSearch").value.toLowerCase();
